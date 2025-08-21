@@ -1,0 +1,43 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+  <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+  <id>com.github.x0x0b.codex-launcher</id>
+
+  <!-- Public plugin name should be written in Title Case.
+       Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
+  <name>Codex-launcher</name>
+
+  <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+  <vendor url="https://www.yourcompany.com">YourCompany</vendor>
+
+  <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+       Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
+  <description><![CDATA[
+        Enter short description for your plugin here.<br>
+        <em>most HTML tags may be used</em>
+    ]]></description>
+
+  <!-- Product and plugin compatibility requirements.
+       Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+  <depends>com.intellij.modules.platform</depends>
+  <depends>org.jetbrains.plugins.terminal</depends>
+
+  <!-- Extension points defined by the plugin.
+       Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+  <extensions defaultExtensionNs="com.intellij">
+    <notificationGroup id="CodexLauncher" displayType="BALLOON" isLogByDefault="true"/>
+  </extensions>
+
+  <actions>
+    <action id="com.github.x0x0b.codexlauncher.launch" class="com.github.x0x0b.codexlauncher.LaunchCodexAction"
+            text="Launch Codex" description="Open a Codex terminal" icon="icons/codex.svg">
+      <!-- New UI toolbar (2022.3+) -->
+      <add-to-group group-id="MainToolbarRight" anchor="last"/>
+      <add-to-group group-id="MainToolbarLeft" anchor="last"/>
+      <!-- Fallback: old UI/NavBar toolbar -->
+      <add-to-group group-id="NavBarToolBar" anchor="last"/>
+      <!-- Also put it in the Tools menu for discoverability -->
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+    </action>
+  </actions>
+</idea-plugin>
