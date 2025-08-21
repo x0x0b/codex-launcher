@@ -5,16 +5,36 @@
 
   <!-- Public plugin name should be written in Title Case.
        Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
-  <name>Codex-launcher</name>
+  <name>Codex Launcher</name>
 
   <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-  <vendor url="https://www.yourcompany.com">YourCompany</vendor>
+  <vendor url="https://x0x0b.github.io/">x0x0b</vendor>
 
   <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
        Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
   <description><![CDATA[
-        Enter short description for your plugin here.<br>
-        <em>most HTML tags may be used</em>
+        <h2>Overview</h2>
+        <p>
+          Codex Launcher is a lightweight utility that opens an integrated Terminal tab and runs <code>codex</code> from your current project root. Start Codex in the right working directory without leaving the IDE.
+        </p>
+
+        <h2>Key Features</h2>
+        <ul>
+          <li>Adds a "Launch Codex" action to the main toolbar and the <em>Tools</em> menu</li>
+          <li>Creates a new integrated Terminal tab named "Codex" and executes <code>codex</code> in the project root</li>
+        </ul>
+
+        <h2>How It Works</h2>
+        <ol>
+          <li>Click the "Launch Codex" button in the main toolbar</li>
+          <li>Or choose <em>Tools | Launch Codex</em></li>
+          <li>The integrated Terminal opens and <code>codex</code> runs automatically</li>
+        </ol>
+
+        <h2>Requirements</h2>
+        <ul>
+          <li><code>codex</code> available on the PATH visible to the IDE</li>
+        </ul>
     ]]></description>
 
   <!-- Product and plugin compatibility requirements.
@@ -29,8 +49,9 @@
   </extensions>
 
   <actions>
-    <action id="com.github.x0x0b.codexlauncher.launch" class="com.github.x0x0b.codexlauncher.LaunchCodexAction"
-            text="Launch Codex" description="Open a Codex terminal" icon="icons/codex.svg">
+    <action id="com.github.x0x0b.codexlauncher.launch"
+      class="com.github.x0x0b.codexlauncher.LaunchCodexAction"
+      text="Launch Codex" description="Open a Codex terminal" icon="icons/codex.svg">
       <!-- New UI toolbar (2022.3+) -->
       <add-to-group group-id="MainToolbarRight" anchor="last"/>
       <add-to-group group-id="MainToolbarLeft" anchor="last"/>

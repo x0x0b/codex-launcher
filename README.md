@@ -2,7 +2,6 @@ Codex Launcher IntelliJ Plugin
 
 What it does
 - Adds a toolbar button and Tools menu action to open a new integrated Terminal tab named "Codex" and run `codex` in the current project directory.
-- If the integrated Terminal API is unavailable, it falls back to launching `codex` externally (macOS Terminal via AppleScript, Windows `start`, Linux shell).
 
 Build and run (from this project root)
 - Run IDE with the plugin: `./gradlew runIde`

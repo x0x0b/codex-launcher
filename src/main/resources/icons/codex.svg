@@ -1,7 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-  <g fill="none" fill-rule="evenodd">
-    <rect x="1" y="2" width="14" height="12" rx="2" ry="2" stroke="#6C707E" stroke-width="1"/>
-    <path d="M4 6l2.5 2L4 10" stroke="#6C707E" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M7.5 10H11.5" stroke="#6C707E" stroke-width="1.2" stroke-linecap="round"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Codex Launcher">
+  <!-- frame: inherits color from parent -->
+  <rect x="2" y="3" width="20" height="18" rx="3.2" fill="none" stroke="#CED0D5" stroke-width="1.8" stroke-linejoin="round"></rect>
+  <!-- "C" stroke: fixed to #2cb491 -->
+  <path d="M11 9.1 A3 3.3 0 1 0 11 15" fill="none" stroke="#2cb491" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+  <!-- small underscore/prompt: inherits color -->
+  <rect x="13.5" y="14.3" width="4" height="1.6" rx="0.6" fill="#CED0D5"></rect>
 </svg>
