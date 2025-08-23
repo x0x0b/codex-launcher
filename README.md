@@ -1,4 +1,4 @@
-Codex Launcher IntelliJ Plugin
+# Codex Launcher IntelliJ Plugin
 
 What it does
 - Adds a toolbar button and Tools menu action to open a new integrated Terminal tab named "Codex" and run `codex` in the current project directory.
