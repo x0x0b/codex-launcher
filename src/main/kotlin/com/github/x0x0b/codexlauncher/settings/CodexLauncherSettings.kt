@@ -10,7 +10,9 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 @State(name = "CodexLauncherSettings", storages = [Storage("CodexLauncher.xml")])
 class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.State> {
     data class State(
-        var mode: Mode = Mode.DEFAULT
+        var mode: Mode = Mode.DEFAULT,
+        var model: Model = Model.DEFAULT,
+        var customModel: String = ""
     )
 
     private var state = State()
@@ -22,9 +24,20 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
     }
 
     fun getArgs(): String {
-        var args = ""
-        if (state.mode == Mode.FULL_AUTO) {args += "--full-auto"}
+        val parts = mutableListOf<String>()
+        if (state.mode == Mode.FULL_AUTO) {
+            parts += "--full-auto"
+        }
 
-        return args
+        val modelName = when (state.model) {
+            Model.DEFAULT -> null
+            Model.CUSTOM -> state.customModel.trim().ifBlank { null }
+            else -> state.model.cliName()
+        }
+        if (modelName != null) {
+            parts += listOf("--model", modelName)
+        }
+
+        return parts.joinToString(" ")
     }
 }

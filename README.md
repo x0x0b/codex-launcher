@@ -10,5 +10,5 @@ Build and run (from this project root)
 
 Notes
 - Toolbar placement targets both the new UI (MainToolbarLeft/Right) and a fallback group (NavBarToolBar), plus a Tools menu entry.
-- Settings: Preferences | Tools | Codex Launcher — checkbox "Pass --full-auto when launching Codex".
+- Settings: Preferences | Tools | Codex Launcher — choose Mode (Default or Full Auto) and optional Model. When a model is selected (or a custom model id is entered), the launcher adds `--model <id>`.
 - Toolbar: use the "Full Auto" toggle to quickly enable/disable the flag.
