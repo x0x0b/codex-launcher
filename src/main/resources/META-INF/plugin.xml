@@ -13,9 +13,12 @@
   <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
        Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
   <description><![CDATA[
+        <blockquote><b>IMPORTANT</b>: This plugin requires <a href="https://github.com/openai/codex/blob/main/README.md">OpenAI Codex CLI</a> to be installed separately.</blockquote>
+
         <h2>Overview</h2>
         <p>
-          Codex Launcher is a lightweight utility that opens an integrated Terminal tab and runs <code>codex</code> from your current project root. Start Codex in the right working directory without leaving the IDE.
+          Codex Launcher is an <b>unofficial</b> lightweight utility that opens an integrated Terminal tab and runs <code>codex</code> from your current project root.
+          Start Codex in the right working directory without leaving the IDE.
         </p>
 
         <h2>Key Features</h2>
