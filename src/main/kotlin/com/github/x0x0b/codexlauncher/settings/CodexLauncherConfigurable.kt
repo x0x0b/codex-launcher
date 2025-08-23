@@ -29,7 +29,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         // Model controls
         modelCombo = JComboBox(Model.values())
         customModelField = JBTextField()
-        customModelField.emptyText.text = "e.g. gpt-4o, o4-mini"
+        customModelField.emptyText.text = "e.g. gpt-5"
         customModelField.isEnabled = false
         modelCombo.addActionListener {
             val selected = (modelCombo.selectedItem as? Model) ?: Model.DEFAULT
@@ -52,7 +52,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(modelCombo)
                 }
                 row("Custom model id") {
-                    cell(customModelField).resizableColumn()
+                    cell(customModelField)
+                        .resizableColumn()
+                        .applyToComponent { columns = 20 }
                 }
             }
         }
