@@ -1,10 +1,15 @@
 package com.github.x0x0b.codexlauncher.settings
 
+/**
+ * Model selection for the `--model` argument.
+ */
 enum class Model {
-    DEFAULT, // Do not pass --model
+    /** Do not pass --model. */
+    DEFAULT,
     GPT_5,
     CODEX_MINI_LATEST,
-    CUSTOM; // Use customModel string
+    /** Use customModel from settings. */
+    CUSTOM;
 
     fun cliName(): String = when (this) {
         DEFAULT -> ""

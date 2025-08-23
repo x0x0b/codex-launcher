@@ -1,5 +1,6 @@
 package com.github.x0x0b.codexlauncher.settings
 
+import com.github.x0x0b.codexlauncher.util.CodexArgsBuilder
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -23,21 +24,5 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
         XmlSerializerUtil.copyBean(state, this.state)
     }
 
-    fun getArgs(): String {
-        val parts = mutableListOf<String>()
-        if (state.mode == Mode.FULL_AUTO) {
-            parts += "--full-auto"
-        }
-
-        val modelName = when (state.model) {
-            Model.DEFAULT -> null
-            Model.CUSTOM -> state.customModel.trim().ifBlank { null }
-            else -> state.model.cliName()
-        }
-        if (modelName != null) {
-            parts += listOf("--model", "'${modelName}'")
-        }
-
-        return parts.joinToString(" ")
-    }
+    fun getArgs(): String = CodexArgsBuilder.build(state).joinToString(" ")
 }

@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.notification.NotificationGroupManager
 
 class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null), DumbAware {
     override fun actionPerformed(e: AnActionEvent) {
@@ -35,6 +36,7 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
     }
 
     private fun notify(project: Project, content: String, type: NotificationType) {
-        Notifications.Bus.notify(Notification("CodexLauncher", "Codex Launcher", content, type), project)
+        val group = NotificationGroupManager.getInstance().getNotificationGroup("CodexLauncher")
+        group.createNotification(content, type).notify(project)
     }
 }

@@ -1,16 +1,14 @@
 package com.github.x0x0b.codexlauncher.settings
 
+/**
+ * Launch mode for `codex`.
+ */
 enum class Mode {
-    DEFAULT, // 引数を渡さない
-    FULL_AUTO; // --full-autoを渡す
+    /** Do not pass any mode-related arguments. */
+    DEFAULT,
 
-    companion object {
-        fun fromString(value: String?): Mode = when (value) {
-            "DEFAULT" -> DEFAULT
-            "FULL_AUTO" -> FULL_AUTO
-            else -> throw IllegalArgumentException("Unknown mode: $value")
-        }
-    }
+    /** Pass --full-auto. */
+    FULL_AUTO;
 
     fun toDisplayName(): String = when (this) {
         DEFAULT -> "Default (No arguments)"
