@@ -35,7 +35,7 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
             else -> state.model.cliName()
         }
         if (modelName != null) {
-            parts += listOf("--model", modelName)
+            parts += listOf("--model", "'${modelName}'")
         }
 
         return parts.joinToString(" ")
