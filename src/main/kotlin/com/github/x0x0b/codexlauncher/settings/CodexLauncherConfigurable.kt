@@ -3,6 +3,7 @@ package com.github.x0x0b.codexlauncher.settings
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.options.ConfigurationException
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.panel
@@ -35,7 +36,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         modeFullAutoRadio = JBRadioButton(Mode.FULL_AUTO.toDisplayName())
 
         // Model controls
-        modelCombo = JComboBox(Model.values())
+        modelCombo = ComboBox(Model.entries.toTypedArray())
         customModelField = JBTextField()
         customModelField.emptyText.text = "e.g. gpt-5"
         customModelField.isEnabled = false
