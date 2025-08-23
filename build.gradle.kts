@@ -1,7 +1,7 @@
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.1.0"
-    id("org.jetbrains.intellij.platform") version "2.5.0"
+    id("org.jetbrains.kotlin.jvm") version "2.2.10"
+    id("org.jetbrains.intellij.platform") version "2.7.2"
 }
 
 group = "com.github.x0x0b"
