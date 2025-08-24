@@ -1,9 +1,7 @@
 package com.github.x0x0b.codexlauncher
 
 import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
-import com.intellij.notification.Notification
 import com.intellij.notification.NotificationType
-import com.intellij.notification.Notifications
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
