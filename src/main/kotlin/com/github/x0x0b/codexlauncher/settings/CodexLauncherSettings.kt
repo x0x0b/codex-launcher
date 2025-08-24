@@ -13,7 +13,8 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
     data class State(
         var mode: Mode = Mode.DEFAULT,
         var model: Model = Model.DEFAULT,
-        var customModel: String = ""
+        var customModel: String = "",
+        var openFileOnChange: Boolean = true
     )
 
     private var state = State()

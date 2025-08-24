@@ -2,6 +2,7 @@ package com.github.x0x0b.codexlauncher
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.util.messages.MessageBusConnection
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -12,6 +13,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
 import java.nio.file.*
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
@@ -140,6 +142,11 @@ class FileChangeService(private val project: Project) : Disposable {
     }
 
     private fun openFileInEditor(file: com.intellij.openapi.vfs.VirtualFile) {
+        val settings = service<CodexLauncherSettings>()
+        if (!settings.state.openFileOnChange) {
+            return
+        }
+        
         ApplicationManager.getApplication().invokeLater {
             if (project.isDisposed) return@invokeLater
             FileEditorManager.getInstance(project).openFile(file, true)
