@@ -4,6 +4,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.panel
@@ -19,6 +20,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var modeFullAutoRadio: JBRadioButton
     private lateinit var modelCombo: JComboBox<Model>
     private lateinit var customModelField: JBTextField
+    private lateinit var openFileOnChangeCheckbox: JBCheckBox
 
     private val settings by lazy { service<CodexLauncherSettings>() }
 
@@ -40,6 +42,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         customModelField = JBTextField()
         customModelField.emptyText.text = "e.g. gpt-5"
         customModelField.isEnabled = false
+        
+        // File opening control
+        openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed")
         // Block invalid characters at input time
         (customModelField.document as? AbstractDocument)?.documentFilter = object : DocumentFilter() {
 
@@ -88,6 +93,11 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                         .applyToComponent { columns = 50 }
                 }
             }
+            group("File Handling") {
+                row {
+                    cell(openFileOnChangeCheckbox)
+                }
+            }
         }
 
         return root
@@ -97,7 +107,8 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         val s = settings.state
         return getMode() != s.mode ||
                 getModel() != s.model ||
-                getCustomModel() != s.customModel
+                getCustomModel() != s.customModel ||
+                getOpenFileOnChange() != s.openFileOnChange
     }
 
     override fun apply() {
@@ -111,6 +122,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         s.mode = getMode()
         s.model = getModel()
         s.customModel = getCustomModel()
+        s.openFileOnChange = getOpenFileOnChange()
     }
 
     override fun reset() {
@@ -120,6 +132,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         modelCombo.selectedItem = s.model
         customModelField.text = s.customModel
         customModelField.isEnabled = (s.model == Model.CUSTOM)
+        openFileOnChangeCheckbox.isSelected = s.openFileOnChange
     }
 
     fun getMode(): Mode {
@@ -139,5 +152,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
     private fun getCustomModel(): String {
         return customModelField.text?.trim() ?: ""
+    }
+    
+    private fun getOpenFileOnChange(): Boolean {
+        return openFileOnChangeCheckbox.isSelected
     }
 }
