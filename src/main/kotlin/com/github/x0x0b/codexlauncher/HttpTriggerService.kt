@@ -12,15 +12,15 @@ import com.sun.net.httpserver.HttpExchange
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 
-@Service(Service.Level.PROJECT)
+@Service(Service.Level.APP)
 class HttpTriggerService : Disposable {
     
     private var server: HttpServer? = null
     private val logger = logger<HttpTriggerService>()
     
-    companion object {
-        const val DEFAULT_PORT = 45127
-    }
+    private var actualPort: Int = 0
+    
+    fun getActualPort(): Int = actualPort
     
     init {
         startHttpServer()
@@ -28,7 +28,9 @@ class HttpTriggerService : Disposable {
     
     private fun startHttpServer() {
         try {
-            server = HttpServer.create(InetSocketAddress("localhost", DEFAULT_PORT), 0)
+            // ポート0を指定してランダムポートを使用
+            server = HttpServer.create(InetSocketAddress("localhost", 0), 0)
+            actualPort = server?.address?.port ?: 0
             
             // /refresh エンドポイント - ファイル一覧をリフレッシュ
             server?.createContext("/refresh") { exchange ->
@@ -38,13 +40,12 @@ class HttpTriggerService : Disposable {
             server?.executor = Executors.newCachedThreadPool()
             server?.start()
             
-            logger.info("HTTP Trigger Server started on http://localhost:$DEFAULT_PORT")
+            logger.info("HTTP Trigger Server started on http://localhost:$actualPort")
             logger.info("Available endpoints:")
-            logger.info("  POST http://localhost:$DEFAULT_PORT/refresh - Refresh file list")
-            logger.info("  POST http://localhost:$DEFAULT_PORT/trigger - General trigger")
+            logger.info("  POST http://localhost:$actualPort/refresh - Refresh file list")
             
         } catch (e: Exception) {
-            logger.error("Failed to start HTTP server on port $DEFAULT_PORT: ${e.message}", e)
+            logger.error("Failed to start HTTP server: ${e.message}", e)
         }
     }
     
