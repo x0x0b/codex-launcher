@@ -42,3 +42,6 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+.gemini/
+gha-creds-*.json
