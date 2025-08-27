@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vcs.changes.ChangeListManager
 import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
 
@@ -19,9 +20,10 @@ class FileOpenService(private val project: Project) : Disposable {
         // IntelliJの変更検知を更新
         LocalFileSystem.getInstance().refresh(false)
         
-        // 変更されたファイル一覧を取得
-        val allChanges = changeListManager.allChanges
+        val filesToOpen = mutableSetOf<VirtualFile>()
         
+        // 1. 追跡済みファイルの変更を取得
+        val allChanges = changeListManager.allChanges
         for (change in allChanges) {
             val virtualFile = when {
                 change.afterRevision?.file?.virtualFile != null -> change.afterRevision?.file?.virtualFile
@@ -31,9 +33,25 @@ class FileOpenService(private val project: Project) : Disposable {
             
             virtualFile?.let { file ->
                 if (isProjectFile(file.path) && !file.isDirectory) {
-                    openFileInEditor(file)
+                    filesToOpen.add(file)
                 }
             }
+        }
+        
+        // 2. 未追跡ファイル（新規ファイル）を取得
+        val untrackedFilePaths = changeListManager.unversionedFilesPaths
+        for (untrackedPath in untrackedFilePaths) {
+            val virtualFile = LocalFileSystem.getInstance().findFileByPath(untrackedPath.toString())
+            virtualFile?.let { file ->
+                if (isProjectFile(file.path) && !file.isDirectory) {
+                    filesToOpen.add(file)
+                }
+            }
+        }
+        
+        // 3. 検出したファイルをエディタで開く
+        for (file in filesToOpen) {
+            openFileInEditor(file)
         }
     }
 
