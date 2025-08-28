@@ -2,6 +2,7 @@ package com.github.x0x0b.codexlauncher
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
+import com.intellij.openapi.application.ApplicationManager
 
 /**
  * Startup activity that initializes essential services when a project is opened.
@@ -26,6 +27,7 @@ class CodexStartupActivity : StartupActivity {
     override fun runActivity(project: Project) {
         // Explicitly initialize core services
         project.getService(FileOpenService::class.java)
-        project.getService(HttpTriggerService::class.java)
+        // HttpTriggerService is application-level, so initialize it via ApplicationManager
+        ApplicationManager.getApplication().getService(HttpTriggerService::class.java)
     }
 }
