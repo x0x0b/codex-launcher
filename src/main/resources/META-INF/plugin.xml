@@ -50,7 +50,7 @@
   <extensions defaultExtensionNs="com.intellij">
     <notificationGroup id="CodexLauncher" displayType="BALLOON" isLogByDefault="true"/>
     <applicationConfigurable instance="com.github.x0x0b.codexlauncher.settings.CodexLauncherConfigurable" id="com.github.x0x0b.codexlauncher.settings" displayName="Codex Launcher"/>
-    <postStartupActivity implementation="com.github.x0x0b.codexlauncher.FileChangeStartupActivity"/>
+    <postStartupActivity implementation="com.github.x0x0b.codexlauncher.CodexStartupActivity"/>
   </extensions>
 
   <actions>

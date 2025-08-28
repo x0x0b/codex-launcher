@@ -8,6 +8,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.notification.NotificationGroupManager
+import com.intellij.openapi.application.ApplicationManager
 
 class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null), DumbAware {
     override fun actionPerformed(e: AnActionEvent) {
@@ -20,8 +21,14 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
 
             val settings = service<CodexLauncherSettings>()
             val args = settings.getArgs()
+            
+            // HttpTriggerServiceから実際のポート番号を取得
+            val httpService = ApplicationManager.getApplication().service<HttpTriggerService>()
+            val port = httpService.getActualPort()
+            
             val command = buildString {
                 append("codex")
+                append(" -c 'notify=[\"curl\", \"-s\", \"-X\", \"POST\", \"http://localhost:$port/refresh\"]'")
                 if (args.isNotBlank()) {
                     append(" ")
                     append(args)
