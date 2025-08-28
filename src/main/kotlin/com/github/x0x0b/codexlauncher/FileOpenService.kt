@@ -23,13 +23,15 @@ class FileOpenService(private val project: Project) : Disposable {
     
     private val logger = logger<FileOpenService>()
     
+    // Track service startup time for file modification detection
+    private val serviceStartTime: Long = System.currentTimeMillis()
+    
     companion object {
         /** Time to wait for VCS update detection (in milliseconds) */
         private const val VCS_UPDATE_WAIT_MS = 1500L
-        
-        /** Threshold for considering a file recently modified (30 seconds in milliseconds) */
-        private const val FILE_LAST_EDIT_TIME_THRESHOLD_MS = 30000L
-        
+
+        /** Time to buffer after last /refresh call to ensure file timestamps are updated */
+        private const val REFRESH_BUFFER_MS = 1000L
     }
 
     /**
@@ -51,9 +53,21 @@ class FileOpenService(private val project: Project) : Disposable {
     
     /**
      * Calculates the timestamp threshold for determining recently modified files.
+     * Uses the latter of CodexLauncher startup time or the last /refresh call time.
+     * Files created/modified after this time will be opened.
      */
     private fun calculateThresholdTime(): Long {
-        return System.currentTimeMillis() - FILE_LAST_EDIT_TIME_THRESHOLD_MS
+        val httpTriggerService = try {
+            ApplicationManager.getApplication().service<HttpTriggerService>()
+        } catch (e: Exception) {
+            // If HttpTriggerService is not available, fall back to startup time only
+            logger.debug("HttpTriggerService not available, using startup time only", e)
+            null
+        }
+        
+        val lastRefreshTime = httpTriggerService?.getLastRefreshTime() ?: serviceStartTime
+
+        return lastRefreshTime + REFRESH_BUFFER_MS
     }
     
     /**

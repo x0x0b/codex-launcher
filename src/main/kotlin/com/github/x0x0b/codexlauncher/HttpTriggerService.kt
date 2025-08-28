@@ -42,9 +42,17 @@ class HttpTriggerService : Disposable {
     private val logger = logger<HttpTriggerService>()
     
     private var actualPort: Int = 0
-    
+
+    // Track timing for file modification detection
+    private var lastRefreshTime: Long = System.currentTimeMillis()
+
     fun getActualPort(): Int = actualPort
     
+    /**
+     * Gets the timestamp of the last refresh call, used for file modification detection.
+     */
+    fun getLastRefreshTime(): Long = lastRefreshTime
+
     init {
         startHttpServer()
     }
@@ -109,7 +117,9 @@ class HttpTriggerService : Disposable {
                 }
             }
         }
-        
+
+        // Update refresh time
+        lastRefreshTime = System.currentTimeMillis()
         logger.info("File system refresh and changed files processing completed for ${openProjects.size} projects")
     }
     
