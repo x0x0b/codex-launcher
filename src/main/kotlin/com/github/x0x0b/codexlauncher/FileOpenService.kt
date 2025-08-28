@@ -42,6 +42,7 @@ class FileOpenService(private val project: Project) : Disposable {
         }
         
         // 2. 未追跡ファイル（新規ファイル）を取得
+        // FIXME: 新規ファイルの検知が間に合わずunversionedFilesPathsに入らない
         val untrackedFilePaths = changeListManager.unversionedFilesPaths
         for (untrackedPath in untrackedFilePaths) {
             val virtualFile = LocalFileSystem.getInstance().findFileByPath(untrackedPath.toString())
