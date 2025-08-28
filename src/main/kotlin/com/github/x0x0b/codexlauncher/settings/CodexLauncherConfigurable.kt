@@ -44,7 +44,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         customModelField.isEnabled = false
         
         // File opening control
-        openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed")
+        openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed (experimental)")
         // Block invalid characters at input time
         (customModelField.document as? AbstractDocument)?.documentFilter = object : DocumentFilter() {
 

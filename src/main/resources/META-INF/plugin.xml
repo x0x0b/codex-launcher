@@ -40,7 +40,7 @@
 
         <h2>Requirements</h2>
         <ul>
-          <li>IntelliJ IDEA 2024.2 or later</li>
+          <li>IntelliJ IDEA 2024.2 or later (or other compatible JetBrains IDEs)</li>
           <li>OpenAI Codex CLI installed and available in your system PATH</li>
         </ul>
     ]]></description>
