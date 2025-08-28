@@ -1,5 +1,6 @@
 package com.github.x0x0b.codexlauncher
 
+import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -106,21 +107,23 @@ class HttpTriggerService : Disposable {
         LocalFileSystem.getInstance().refresh(false)
         
         // Process changed files for all open projects
-        val openProjects = ProjectManager.getInstance().openProjects
-        for (project in openProjects) {
-            if (!project.isDisposed) {
-                try {
-                    val fileOpenService = project.service<FileOpenService>()
-                    fileOpenService.processChangedFilesAndOpen()
-                } catch (e: Exception) {
-                    logger.warn("Failed to process changed files for project ${project.name}: ${e.message}")
+        val settings = service<CodexLauncherSettings>()
+        if (settings.state.openFileOnChange) {
+            val openProjects = ProjectManager.getInstance().openProjects
+            for (project in openProjects) {
+                if (!project.isDisposed) {
+                    try {
+                        val fileOpenService = project.service<FileOpenService>()
+                        fileOpenService.processChangedFilesAndOpen()
+                    } catch (e: Exception) {
+                        logger.warn("Failed to process changed files for project ${project.name}: ${e.message}")
+                    }
                 }
             }
         }
 
         // Update refresh time
         lastRefreshTime = System.currentTimeMillis()
-        logger.info("File system refresh and changed files processing completed for ${openProjects.size} projects")
     }
     
     private fun sendResponse(exchange: HttpExchange, statusCode: Int, response: String) {
