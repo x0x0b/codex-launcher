@@ -136,13 +136,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     }
 
     fun getMode(): Mode {
-        if (modeDefaultRadio.isSelected) {
-            return Mode.DEFAULT
-        } else if (modeFullAutoRadio.isSelected) {
-            return Mode.FULL_AUTO
-        } else {
-            // Fallback
-            return Mode.DEFAULT
+        return when {
+            modeDefaultRadio.isSelected -> Mode.DEFAULT
+            modeFullAutoRadio.isSelected -> Mode.FULL_AUTO
+            else -> Mode.DEFAULT // Fallback
         }
     }
 
