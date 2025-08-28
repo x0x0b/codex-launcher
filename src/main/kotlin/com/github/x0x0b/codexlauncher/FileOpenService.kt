@@ -21,18 +21,19 @@ class FileOpenService(private val project: Project) : Disposable {
     }
 
     fun processChangedFilesAndOpen() {
-        val filesToOpen = mutableSetOf<VirtualFile>()
-
         val changeListManager = ChangeListManager.getInstance(project)
         // ChangeListManagerの変更検知をトリガー
         changeListManager.invokeAfterUpdate({
-            // 少し待つ（主に2の新規ファイル認識待ち）
-            Thread.sleep(VCS_UPDATE_WAIT_MS)
-
-            // 1. 追跡済みファイルの変更を取得
+            // 現在時刻とファイル更新時刻の閾値を計算
             val currentTime = System.currentTimeMillis()
             val thresholdTime = currentTime - FILE_LAST_EDIT_TIME_THRESHOLD_MS
 
+            // 少し待つ（主に2の新規ファイル認識待ち）
+            Thread.sleep(VCS_UPDATE_WAIT_MS)
+
+            val filesToOpen = mutableSetOf<VirtualFile>()
+
+            // 1. 追跡済みファイルの変更を取得
             val allChanges = changeListManager.allChanges
             for (change in allChanges) {
                 val virtualFile = when {
@@ -64,7 +65,7 @@ class FileOpenService(private val project: Project) : Disposable {
             for (file in filesToOpen) {
                 openFileInEditor(file)
             }
-        }, InvokeAfterUpdateMode.SYNCHRONOUS_CANCELLABLE, null, null)
+        }, InvokeAfterUpdateMode.SYNCHRONOUS_NOT_CANCELLABLE, null, null)
     }
 
     private fun isProjectFile(filePath: String): Boolean {
