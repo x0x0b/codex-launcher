@@ -58,7 +58,7 @@ class HttpTriggerService : Disposable {
                     refreshFileSystem()
                 }
                 
-                sendResponse(exchange, 200, "File system refreshed")
+                sendResponse(exchange, 200, "")
                 logger.info("File system refresh triggered via HTTP")
             } else {
                 sendResponse(exchange, 405, "Method not allowed. Use POST.")
