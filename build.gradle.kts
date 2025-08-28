@@ -35,7 +35,7 @@ intellijPlatform {
         }
 
         changeNotes = """
-            Initial version
+            A slightly improved file-opening feature.
         """.trimIndent()
     }
     publishing {
