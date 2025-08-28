@@ -33,7 +33,7 @@ An **unofficial** IntelliJ IDEA plugin that seamlessly integrates OpenAI Codex C
 3. The integrated Terminal opens with a new "Codex" tab and runs `codex` automatically
 
 ### Configuration
-Access plugin settings via **Preferences** → **Codex Launcher**
+Access plugin settings via **Preferences** → **Other Settings** → **Codex Launcher**
 
 #### Available Options
 - **Launch Mode**: 
