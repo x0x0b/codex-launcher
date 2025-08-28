@@ -118,7 +118,7 @@ class HttpTriggerService : Disposable {
             }
         }
 
-        // Update refresh time with the time of request receive
+        // Update refresh time
         lastRefreshTime = System.currentTimeMillis()
         logger.info("File system refresh and changed files processing completed for ${openProjects.size} projects")
     }
