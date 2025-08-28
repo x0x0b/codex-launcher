@@ -12,8 +12,31 @@ import com.sun.net.httpserver.HttpExchange
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
 
+/**
+ * HTTP server service that provides endpoints for triggering file refresh operations.
+ * The server runs on a random available port and provides a /refresh endpoint for external notifications.
+ */
+
 @Service(Service.Level.APP)
 class HttpTriggerService : Disposable {
+    
+    companion object {
+        private const val DEFAULT_PORT = 0 // Use random available port
+        private const val SERVER_SHUTDOWN_TIMEOUT_SECONDS = 1
+        private const val LOCALHOST = "localhost"
+        private const val REFRESH_ENDPOINT = "/refresh"
+        private const val HTTP_METHOD_POST = "POST"
+        private const val CONTENT_TYPE_PLAIN_TEXT = "text/plain; charset=utf-8"
+        
+        // HTTP status codes
+        private const val HTTP_OK = 200
+        private const val HTTP_METHOD_NOT_ALLOWED = 405
+        private const val HTTP_INTERNAL_SERVER_ERROR = 500
+        
+        // Response messages
+        private const val MSG_METHOD_NOT_ALLOWED = "Method not allowed. Use POST."
+        private const val MSG_INTERNAL_ERROR = "Internal server error"
+    }
     
     private var server: HttpServer? = null
     private val logger = logger<HttpTriggerService>()
@@ -28,12 +51,12 @@ class HttpTriggerService : Disposable {
     
     private fun startHttpServer() {
         try {
-            // ポート0を指定してランダムポートを使用
-            server = HttpServer.create(InetSocketAddress("localhost", 0), 0)
+            // Use random available port
+            server = HttpServer.create(InetSocketAddress(LOCALHOST, DEFAULT_PORT), 0)
             actualPort = server?.address?.port ?: 0
             
-            // /refresh エンドポイント - ファイル一覧をリフレッシュ
-            server?.createContext("/refresh") { exchange ->
+            // Endpoint to refresh file list
+            server?.createContext(REFRESH_ENDPOINT) { exchange ->
                 handleRefreshRequest(exchange)
             }
             
@@ -53,28 +76,28 @@ class HttpTriggerService : Disposable {
         try {
             val requestMethod = exchange.requestMethod
             
-            if (requestMethod == "POST") {
+            if (requestMethod == HTTP_METHOD_POST) {
                 ApplicationManager.getApplication().invokeLater {
                     refreshFileSystem()
                 }
                 
-                sendResponse(exchange, 200, "")
+                sendResponse(exchange, HTTP_OK, "")
                 logger.info("File system refresh triggered via HTTP")
             } else {
-                sendResponse(exchange, 405, "Method not allowed. Use POST.")
+                sendResponse(exchange, HTTP_METHOD_NOT_ALLOWED, MSG_METHOD_NOT_ALLOWED)
             }
             
         } catch (e: Exception) {
             logger.error("Error handling refresh request", e)
-            sendResponse(exchange, 500, "Internal server error")
+            sendResponse(exchange, HTTP_INTERNAL_SERVER_ERROR, MSG_INTERNAL_ERROR)
         }
     }
 
     private fun refreshFileSystem() {
-        // ファイルシステム全体をリフレッシュ
+        // Refresh entire file system
         LocalFileSystem.getInstance().refresh(false)
         
-        // 全ての開いているプロジェクトに対して変更されたファイルを処理
+        // Process changed files for all open projects
         val openProjects = ProjectManager.getInstance().openProjects
         for (project in openProjects) {
             if (!project.isDisposed) {
@@ -91,7 +114,7 @@ class HttpTriggerService : Disposable {
     }
     
     private fun sendResponse(exchange: HttpExchange, statusCode: Int, response: String) {
-        exchange.responseHeaders.set("Content-Type", "text/plain; charset=utf-8")
+        exchange.responseHeaders.set("Content-Type", CONTENT_TYPE_PLAIN_TEXT)
         exchange.sendResponseHeaders(statusCode, response.toByteArray(Charsets.UTF_8).size.toLong())
         exchange.responseBody.use { 
             it.write(response.toByteArray(Charsets.UTF_8)) 
@@ -100,7 +123,7 @@ class HttpTriggerService : Disposable {
     
     override fun dispose() {
         try {
-            server?.stop(1)
+            server?.stop(SERVER_SHUTDOWN_TIMEOUT_SECONDS)
             logger.info("HTTP Trigger Server stopped")
         } catch (e: Exception) {
             logger.error("Error stopping HTTP server", e)
