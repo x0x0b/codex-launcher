@@ -19,7 +19,7 @@ An **unofficial** IntelliJ IDEA plugin that seamlessly integrates OpenAI Codex C
 ## 🛠️ Installation
 
 ### Prerequisites
-- IntelliJ IDEA 2024.2 or later
+- IntelliJ IDEA 2024.2 or later (or other compatible JetBrains IDEs)
 - OpenAI Codex CLI installed and available in your system PATH
 
 ### Installation
@@ -44,12 +44,6 @@ Access plugin settings via **Preferences** → **Other Settings** → **Codex La
   - Preset models
   - Custom model configuration
 - **Auto File Open**: Automatically open files modified by Codex in the editor
-
-## 🔧 Requirements
-
-- **OpenAI Codex CLI**: Must be installed separately and available in your system PATH
-- **IntelliJ IDEA**: Version 2024.2 or later
-- **Java**: JDK 21 or later (for plugin development)
 
 ## 📝 Development
 
