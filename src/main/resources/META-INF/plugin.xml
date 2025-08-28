@@ -17,26 +17,31 @@
 
         <h2>Overview</h2>
         <p>
-          Codex Launcher is an <b>unofficial</b> lightweight utility that opens an integrated Terminal tab and runs <code>codex</code> from your current project root.
-          Start Codex in the right working directory without leaving the IDE.
+          An <b>unofficial</b> IntelliJ IDEA plugin that seamlessly integrates OpenAI Codex CLI into your development workflow by launching it directly from the IDE.
         </p>
 
         <h2>Key Features</h2>
         <ul>
-          <li>Adds a "Launch Codex" action to the main toolbar and the <em>Tools</em> menu</li>
-          <li>Creates a new integrated Terminal tab named "Codex" and executes <code>codex</code> in the project root</li>
+          <li><b>One-click launch</b>: Toolbar button and Tools menu action for instant access</li>
+          <li><b>Integrated Terminal</b>: Opens a dedicated "Codex" terminal tab in your IDE</li>
+          <li><b>Project-aware</b>: Automatically runs <code>codex</code> in the current project root directory</li>
+          <li><b>Configurable</b>: Customizable launch modes, model selection, and auto file opening</li>
         </ul>
 
-        <h2>How It Works</h2>
-        <ol>
-          <li>Click the "Launch Codex" button in the main toolbar</li>
-          <li>Or choose <em>Tools | Launch Codex</em></li>
-          <li>The integrated Terminal opens and <code>codex</code> runs automatically</li>
-        </ol>
+        <h2>Configuration</h2>
+        <p>
+          Access plugin settings via <em>Preferences | Other Settings | Codex Launcher</em> to configure:
+        </p>
+        <ul>
+          <li>Launch modes (default or --full-auto)</li>
+          <li>Model selection (default, preset, or custom models)</li>
+          <li>Auto file opening for files modified by Codex</li>
+        </ul>
 
         <h2>Requirements</h2>
         <ul>
-          <li><code>codex</code> available on the PATH visible to the IDE</li>
+          <li>IntelliJ IDEA 2024.2 or later</li>
+          <li>OpenAI Codex CLI installed and available in your system PATH</li>
         </ul>
     ]]></description>
 
