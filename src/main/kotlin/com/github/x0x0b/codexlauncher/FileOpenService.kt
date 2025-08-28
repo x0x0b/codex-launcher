@@ -23,6 +23,9 @@ class FileOpenService(private val project: Project) : Disposable {
         val filesToOpen = mutableSetOf<VirtualFile>()
         
         // 1. 追跡済みファイルの変更を取得
+        val currentTime = System.currentTimeMillis()
+        val threeSecondsAgo = currentTime - 3000
+        
         val allChanges = changeListManager.allChanges
         for (change in allChanges) {
             val virtualFile = when {
@@ -32,7 +35,7 @@ class FileOpenService(private val project: Project) : Disposable {
             }
             
             virtualFile?.let { file ->
-                if (isProjectFile(file.path) && !file.isDirectory) {
+                if (isProjectFile(file.path) && !file.isDirectory && file.timeStamp >= threeSecondsAgo) {
                     filesToOpen.add(file)
                 }
             }
@@ -43,7 +46,7 @@ class FileOpenService(private val project: Project) : Disposable {
         for (untrackedPath in untrackedFilePaths) {
             val virtualFile = LocalFileSystem.getInstance().findFileByPath(untrackedPath.toString())
             virtualFile?.let { file ->
-                if (isProjectFile(file.path) && !file.isDirectory) {
+                if (isProjectFile(file.path) && !file.isDirectory && file.timeStamp >= threeSecondsAgo) {
                     filesToOpen.add(file)
                 }
             }
@@ -61,7 +64,7 @@ class FileOpenService(private val project: Project) : Disposable {
         return filePath.startsWith(projectBasePath) && !filePath.endsWith("/")
     }
 
-    private fun openFileInEditor(file: com.intellij.openapi.vfs.VirtualFile) {
+    private fun openFileInEditor(file: VirtualFile) {
         val settings = service<CodexLauncherSettings>()
         if (!settings.state.openFileOnChange) {
             return
