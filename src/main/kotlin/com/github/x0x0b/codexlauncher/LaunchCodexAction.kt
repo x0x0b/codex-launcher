@@ -72,7 +72,7 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
         val os = System.getProperty("os.name").lowercase()
         return when {
             os.contains("win") -> {
-                // Windows Command Prompt/PowerShell compatible
+                // Windows PowerShell compatible
                 "notify='[\\\"curl\\\", \\\"-s\\\", \\\"-X\\\", \\\"POST\\\", \\\"http://localhost:$port/refresh\\\", \\\"-d\\\"]'"
             }
             else -> {
