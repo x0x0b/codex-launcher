@@ -12,7 +12,7 @@ class NotificationService(private val project: Project) {
         private const val NOTIFICATION_GROUP_ID = "Codex Launcher"
     }
     
-    fun notifyRefreshReceived(message: String = "Refresh request received") {
+    fun notifyRefreshReceived(message: String = "Codex CLI processing completed.") {
         val notificationGroup = NotificationGroupManager.getInstance()
             .getNotificationGroup(NOTIFICATION_GROUP_ID)
             
