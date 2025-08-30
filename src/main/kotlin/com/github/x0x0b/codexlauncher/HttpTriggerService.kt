@@ -12,6 +12,9 @@ import com.sun.net.httpserver.HttpServer
 import com.sun.net.httpserver.HttpExchange
 import java.net.InetSocketAddress
 import java.util.concurrent.Executors
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * HTTP server service that provides endpoints for triggering file refresh operations.
@@ -77,8 +80,24 @@ class HttpTriggerService : Disposable {
             val requestMethod = exchange.requestMethod
 
             if (requestMethod == HTTP_METHOD_POST) {
+                // Read request body
+                val requestBody = exchange.requestBody.bufferedReader().use { it.readText() }
+                
+                // Parse JSON and extract last-assistant-message
+                val notificationMessage = try {
+                    if (requestBody.isNotEmpty()) {
+                        val json = Json.parseToJsonElement(requestBody) as JsonObject
+                        json["last-assistant-message"]?.jsonPrimitive?.content ?: "Codex CLI processing completed."
+                    } else {
+                        "Codex CLI processing completed."
+                    }
+                } catch (e: Exception) {
+                    logger.warn("Failed to parse request body as JSON: ${e.message}")
+                    "Codex CLI processing completed."
+                }
+                
                 ApplicationManager.getApplication().invokeLater {
-                    refreshFileSystem()
+                    processRefreshRequest(notificationMessage)
                 }
 
                 sendResponse(exchange, HTTP_OK, "")
@@ -93,7 +112,7 @@ class HttpTriggerService : Disposable {
         }
     }
 
-    private fun refreshFileSystem() {
+    private fun processRefreshRequest(notificationMessage: String) {
         // Refresh entire file system
         LocalFileSystem.getInstance().refresh(false)
 
@@ -104,12 +123,30 @@ class HttpTriggerService : Disposable {
             if (!project.isDisposed) {
                 try {
                     val fileOpenService = project.service<FileOpenService>()
+                    val notificationService = project.service<NotificationService>()
+
+                    // Send notification through IntelliJ
+                    if (settings.state.enableNotification) {
+                        notificationService.notifyRefreshReceived(notificationMessage)
+                    }
+
+                    // Process changed files and open
                     if (settings.state.openFileOnChange) {
                         fileOpenService.processChangedFilesAndOpen()
                     }
+
+                    // Update last refresh time
                     fileOpenService.updateLastRefreshTime()
                 } catch (e: Exception) {
                     logger.warn("Failed to process changed files for project ${project.name}: ${e.message}")
+                    
+                    // Send error notification
+                    try {
+                        val notificationService = project.service<NotificationService>()
+                        notificationService.notifyRefreshError(e.message ?: "Unknown error")
+                    } catch (notifyError: Exception) {
+                        logger.error("Failed to send error notification", notifyError)
+                    }
                 }
             }
         }

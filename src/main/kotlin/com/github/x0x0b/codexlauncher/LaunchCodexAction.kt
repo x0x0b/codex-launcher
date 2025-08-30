@@ -59,7 +59,7 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
     private fun buildCommand(port: Int, args: String): String {
         return buildString {
             append(CODEX_COMMAND)
-            append(" -c 'notify=[\"curl\", \"-s\", \"-X\", \"POST\", \"http://localhost:$port/refresh\"]'")
+            append(" -c 'notify=[\"curl\", \"-s\", \"-X\", \"POST\", \"http://localhost:$port/refresh\", \"-d\"]'")
             if (args.isNotBlank()) {
                 append(" ")
                 append(args)
