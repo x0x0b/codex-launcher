@@ -8,6 +8,7 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.HyperlinkLabel
 import javax.swing.JComponent
 import javax.swing.JComboBox
 import javax.swing.text.AbstractDocument
@@ -105,6 +106,14 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             group("Notifications") {
                 row {
                     cell(enableNotificationCheckbox)
+                }
+                row {
+                    comment("Customize notification sounds and display options in Settings | Appearance & Behavior | Notifications | CodexLauncher.")
+                }
+                row {
+                    val link = HyperlinkLabel("Learn more about IntelliJ notification settings")
+                    link.setHyperlinkTarget("https://www.jetbrains.com/help/idea/notifications.html")
+                    cell(link)
                 }
             }
         }
