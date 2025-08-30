@@ -78,7 +78,7 @@ class HttpTriggerService : Disposable {
 
             if (requestMethod == HTTP_METHOD_POST) {
                 ApplicationManager.getApplication().invokeLater {
-                    refreshFileSystem()
+                    processRefreshRequest()
                 }
 
                 sendResponse(exchange, HTTP_OK, "")
@@ -93,7 +93,7 @@ class HttpTriggerService : Disposable {
         }
     }
 
-    private fun refreshFileSystem() {
+    private fun processRefreshRequest() {
         // Refresh entire file system
         LocalFileSystem.getInstance().refresh(false)
 
@@ -104,12 +104,30 @@ class HttpTriggerService : Disposable {
             if (!project.isDisposed) {
                 try {
                     val fileOpenService = project.service<FileOpenService>()
+                    val notificationService = project.service<NotificationService>()
+
+                    // Send notification through IntelliJ
+                    if (settings.state.enableNotification) {
+                        notificationService.notifyRefreshReceived()
+                    }
+
+                    // Process changed files and open
                     if (settings.state.openFileOnChange) {
                         fileOpenService.processChangedFilesAndOpen()
                     }
+
+                    // Update last refresh time
                     fileOpenService.updateLastRefreshTime()
                 } catch (e: Exception) {
                     logger.warn("Failed to process changed files for project ${project.name}: ${e.message}")
+                    
+                    // Send error notification
+                    try {
+                        val notificationService = project.service<NotificationService>()
+                        notificationService.notifyRefreshError(e.message ?: "Unknown error")
+                    } catch (notifyError: Exception) {
+                        logger.error("Failed to send error notification", notifyError)
+                    }
                 }
             }
         }

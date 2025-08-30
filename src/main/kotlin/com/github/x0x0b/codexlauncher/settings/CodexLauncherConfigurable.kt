@@ -21,6 +21,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var modelCombo: JComboBox<Model>
     private lateinit var customModelField: JBTextField
     private lateinit var openFileOnChangeCheckbox: JBCheckBox
+    private lateinit var enableNotificationCheckbox: JBCheckBox
 
     private val settings by lazy { service<CodexLauncherSettings>() }
 
@@ -45,6 +46,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         
         // File opening control
         openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed (experimental)")
+        
+        // Notification control
+        enableNotificationCheckbox = JBCheckBox("Enable notifications when events are completed by Codex CLI")
         // Block invalid characters at input time
         (customModelField.document as? AbstractDocument)?.documentFilter = object : DocumentFilter() {
 
@@ -98,6 +102,11 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(openFileOnChangeCheckbox)
                 }
             }
+            group("Notifications") {
+                row {
+                    cell(enableNotificationCheckbox)
+                }
+            }
         }
 
         return root
@@ -108,7 +117,8 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         return getMode() != s.mode ||
                 getModel() != s.model ||
                 getCustomModel() != s.customModel ||
-                getOpenFileOnChange() != s.openFileOnChange
+                getOpenFileOnChange() != s.openFileOnChange ||
+                getEnableNotification() != s.enableNotification
     }
 
     override fun apply() {
@@ -123,6 +133,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         s.model = getModel()
         s.customModel = getCustomModel()
         s.openFileOnChange = getOpenFileOnChange()
+        s.enableNotification = getEnableNotification()
     }
 
     override fun reset() {
@@ -133,6 +144,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         customModelField.text = s.customModel
         customModelField.isEnabled = (s.model == Model.CUSTOM)
         openFileOnChangeCheckbox.isSelected = s.openFileOnChange
+        enableNotificationCheckbox.isSelected = s.enableNotification
     }
 
     fun getMode(): Mode {
@@ -153,5 +165,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     
     private fun getOpenFileOnChange(): Boolean {
         return openFileOnChangeCheckbox.isSelected
+    }
+    
+    private fun getEnableNotification(): Boolean {
+        return enableNotificationCheckbox.isSelected
     }
 }
