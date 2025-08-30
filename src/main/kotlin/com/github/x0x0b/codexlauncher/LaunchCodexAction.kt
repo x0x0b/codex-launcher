@@ -76,7 +76,7 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
                 "notify='[\\\"curl\\\", \\\"-s\\\", \\\"-X\\\", \\\"POST\\\", \\\"http://localhost:$port/refresh\\\", \\\"-d\\\"]'"
             }
             else -> {
-                // Linux/Unix compatible
+                // Mac/Linux/Unix compatible
                 "'notify=[\"curl\", \"-s\", \"-X\", \"POST\", \"http://localhost:$port/refresh\", \"-d\"]'"
             }
         }
