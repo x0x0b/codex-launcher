@@ -31,12 +31,14 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
      * @property model The selected model for codex
      * @property customModel Custom model identifier when model is set to CUSTOM
      * @property openFileOnChange Whether to automatically open files when they change
+     * @property enableNotification Whether to enable notifications
      */
     data class State(
         var mode: Mode = Mode.DEFAULT,
         var model: Model = Model.DEFAULT,
         var customModel: String = "",
-        var openFileOnChange: Boolean = true
+        var openFileOnChange: Boolean = false,
+        var enableNotification: Boolean = false
     )
 
     private var state = State()

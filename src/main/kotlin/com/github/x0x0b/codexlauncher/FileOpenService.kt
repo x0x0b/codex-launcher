@@ -22,9 +22,8 @@ import com.intellij.openapi.diagnostic.logger
 class FileOpenService(private val project: Project) : Disposable {
     
     private val logger = logger<FileOpenService>()
-    
-    // Track service startup time for file modification detection
-    private val serviceStartTime: Long = System.currentTimeMillis()
+    // Track timing for file modification detection (project-specific)
+    private var lastRefreshTime: Long = System.currentTimeMillis()
     
     companion object {
         /** Time to wait for VCS update detection (in milliseconds) */
@@ -32,6 +31,13 @@ class FileOpenService(private val project: Project) : Disposable {
 
         /** Time to buffer after last /refresh call to ensure file timestamps are updated */
         private const val REFRESH_BUFFER_MS = 1000L
+    }
+    
+    /**
+     * Updates the last refresh time for this project.
+     */
+    fun updateLastRefreshTime() {
+        lastRefreshTime = System.currentTimeMillis()
     }
 
     /**
@@ -53,20 +59,10 @@ class FileOpenService(private val project: Project) : Disposable {
     
     /**
      * Calculates the timestamp threshold for determining recently modified files.
-     * Uses the latter of CodexLauncher startup time or the last /refresh call time.
+     * Uses the latter of service startup time or the last /refresh call time for this project.
      * Files created/modified after this time will be opened.
      */
     private fun calculateThresholdTime(): Long {
-        val httpTriggerService = try {
-            ApplicationManager.getApplication().service<HttpTriggerService>()
-        } catch (e: Exception) {
-            // If HttpTriggerService is not available, fall back to startup time only
-            logger.debug("HttpTriggerService not available, using startup time only", e)
-            null
-        }
-        
-        val lastRefreshTime = httpTriggerService?.getLastRefreshTime() ?: serviceStartTime
-
         return lastRefreshTime + REFRESH_BUFFER_MS
     }
     

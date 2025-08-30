@@ -1,6 +1,6 @@
 # Codex Launcher - IntelliJ Plugin
 
-[![Version](https://img.shields.io/badge/version-1.0.2-blue.svg)](https://github.com/x0x0b/codex-launcher/releases)
+[![Version](https://img.shields.io/badge/version-1.0.4-blue.svg)](https://github.com/x0x0b/codex-launcher/releases)
 [![IntelliJ IDEA](https://img.shields.io/badge/IntelliJ%20IDEA-2024.2+-orange.svg)](https://www.jetbrains.com/idea/)
 
 <img width="800" alt="The screenshot of Codex Launcher." src="https://github.com/user-attachments/assets/4ee3fbd8-e384-4672-94c6-e4e9041a8e0d" />
@@ -15,11 +15,12 @@ An **unofficial** IntelliJ IDEA plugin that seamlessly integrates OpenAI Codex C
 - 🖥️ **Integrated Terminal**: Opens a dedicated "Codex" terminal tab in your IDE
 - 📁 **Project-aware**: Automatically runs `codex` in the current project root directory
 - ⚙️ **Configurable**: Customizable launch modes, model selection, and auto file opening
+- 🔔 **IDE Notifications**: Optional refresh notifications when Codex processing is completed
 
 ## 🛠️ Installation
 
 ### Prerequisites
-- IntelliJ IDEA 2024.2 or later
+- IntelliJ IDEA 2024.2 or later (or other compatible JetBrains IDEs)
 - OpenAI Codex CLI installed and available in your system PATH
 
 ### Installation
@@ -44,12 +45,7 @@ Access plugin settings via **Preferences** → **Other Settings** → **Codex La
   - Preset models
   - Custom model configuration
 - **Auto File Open**: Automatically open files modified by Codex in the editor
-
-## 🔧 Requirements
-
-- **OpenAI Codex CLI**: Must be installed separately and available in your system PATH
-- **IntelliJ IDEA**: Version 2024.2 or later
-- **Java**: JDK 21 or later (for plugin development)
+- **IDE Notifications**: Enable notifications
 
 ## 📝 Development
 
