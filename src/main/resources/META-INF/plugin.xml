@@ -26,7 +26,7 @@
           <li><b>Integrated Terminal</b>: Opens a dedicated "Codex" terminal tab in your IDE</li>
           <li><b>Project-aware</b>: Automatically runs <code>codex</code> in the current project root directory</li>
           <li><b>Configurable</b>: Customizable launch modes, model selection, and auto file opening</li>
-          <li><b>IDE Notifications</b>: Optional refresh notifications when Codex processing is completed</li>
+          <li><b>IDE Notifications</b>: Optional notifications when Codex processing is completed</li>
         </ul>
 
         <h2>Configuration</h2>

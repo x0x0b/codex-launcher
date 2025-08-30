@@ -15,7 +15,7 @@ An **unofficial** IntelliJ IDEA plugin that seamlessly integrates OpenAI Codex C
 - 🖥️ **Integrated Terminal**: Opens a dedicated "Codex" terminal tab in your IDE
 - 📁 **Project-aware**: Automatically runs `codex` in the current project root directory
 - ⚙️ **Configurable**: Customizable launch modes, model selection, and auto file opening
-- 🔔 **IDE Notifications**: Optional refresh notifications when Codex processing is completed
+- 🔔 **IDE Notifications**: Optional notifications when Codex processing is completed
 
 ## 🛠️ Installation
 
