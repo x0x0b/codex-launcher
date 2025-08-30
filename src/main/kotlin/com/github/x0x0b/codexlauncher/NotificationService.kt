@@ -9,7 +9,7 @@ import com.intellij.openapi.project.Project
 class NotificationService(private val project: Project) {
     
     companion object {
-        private const val NOTIFICATION_GROUP_ID = "Codex Launcher"
+        private const val NOTIFICATION_GROUP_ID = "CodexLauncher"
     }
     
     fun notifyRefreshReceived(message: String = "Codex CLI processing completed.") {
