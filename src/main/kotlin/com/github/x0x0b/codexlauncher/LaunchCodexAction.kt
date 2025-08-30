@@ -59,10 +59,25 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
     private fun buildCommand(port: Int, args: String): String {
         return buildString {
             append(CODEX_COMMAND)
-            append(" -c 'notify=[\"curl\", \"-s\", \"-X\", \"POST\", \"http://localhost:$port/refresh\", \"-d\"]'")
+            append(" -c ")
+            append(buildNotifyCommand(port))
             if (args.isNotBlank()) {
                 append(" ")
                 append(args)
+            }
+        }
+    }
+
+    private fun buildNotifyCommand(port: Int): String {
+        val os = System.getProperty("os.name").lowercase()
+        return when {
+            os.contains("win") -> {
+                // Windows PowerShell compatible
+                "notify='[\\\"curl\\\", \\\"-s\\\", \\\"-X\\\", \\\"POST\\\", \\\"http://localhost:$port/refresh\\\", \\\"-d\\\"]'"
+            }
+            else -> {
+                // Mac/Linux/Unix compatible
+                "'notify=[\"curl\", \"-s\", \"-X\", \"POST\", \"http://localhost:$port/refresh\", \"-d\"]'"
             }
         }
     }
