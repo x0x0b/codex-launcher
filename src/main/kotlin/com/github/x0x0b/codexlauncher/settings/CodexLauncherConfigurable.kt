@@ -195,7 +195,8 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 getModel() != s.model ||
                 getCustomModel() != s.customModel ||
                 getOpenFileOnChange() != s.openFileOnChange ||
-                getEnableNotification() != s.enableNotification
+                getEnableNotification() != s.enableNotification ||
+                getMcpConfigInput() != s.mcpConfigInput
     }
 
     override fun apply() {
@@ -211,6 +212,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         s.customModel = getCustomModel()
         s.openFileOnChange = getOpenFileOnChange()
         s.enableNotification = getEnableNotification()
+        s.mcpConfigInput = getMcpConfigInput()
     }
 
     override fun reset() {

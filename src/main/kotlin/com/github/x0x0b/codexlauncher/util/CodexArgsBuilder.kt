@@ -3,6 +3,8 @@ package com.github.x0x0b.codexlauncher.util
 import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
 import com.github.x0x0b.codexlauncher.settings.Model
 import com.github.x0x0b.codexlauncher.settings.Mode
+import com.google.gson.JsonParser
+import com.google.gson.JsonSyntaxException
 
 /**
  * Utility object for building command-line arguments for codex execution.
@@ -50,7 +52,81 @@ object CodexArgsBuilder {
             parts += listOf("--model", "'${modelName}'")
         }
 
+        // Add MCP configuration if specified
+        val mcpConfigArgs = buildMcpConfigArgs(state.mcpConfigInput)
+        parts += mcpConfigArgs
+
         return parts
     }
-}
 
+    /**
+     * Builds MCP configuration arguments from JSON input.
+     * 
+     * Parses the JSON configuration and generates -c arguments for:
+     * - mcp_servers.<ideaName>.command
+     * - mcp_servers.<ideaName>.args
+     * - mcp_servers.<ideaName>.env
+     * 
+     * @param mcpConfigInput JSON configuration string
+     * @return List of -c arguments
+     */
+    private fun buildMcpConfigArgs(mcpConfigInput: String): List<String> {
+        if (mcpConfigInput.trim().isEmpty()) {
+            return emptyList()
+        }
+
+        return try {
+            val jsonElement = JsonParser.parseString(mcpConfigInput)
+            val jsonObject = jsonElement.asJsonObject
+            val args = mutableListOf<String>()
+
+            val command = jsonObject.get("command")?.asString ?: ""
+            val argsArray = jsonObject.get("args")?.asJsonArray
+            val env = jsonObject.get("env")?.asJsonObject
+
+            val ideaName = extractIdeNameFromCommand(command)
+
+            // Add command configuration
+            if (command.isNotEmpty()) {
+                args += listOf("-c", "'mcp_servers.$ideaName.command=$command'")
+            }
+
+            // Add args configuration
+            if (argsArray != null && argsArray.size() > 0) {
+                val argsList = argsArray.map { "\"${it.asString}\"" }.joinToString(",")
+                args += listOf("-c", "'mcp_servers.$ideaName.args=[$argsList]'")
+            }
+
+            // Add env configuration
+            if (env != null && env.size() > 0) {
+                val envEntries = env.entrySet().map { "\"${it.key}\"=\"${it.value.asString}\"" }
+                val envMap = "{${envEntries.joinToString(",")}}"
+                args += listOf("-c", "'mcp_servers.$ideaName.env=$envMap'")
+            }
+
+            args
+        } catch (e: JsonSyntaxException) {
+            emptyList() // Return empty list if JSON is invalid
+        } catch (e: Exception) {
+            emptyList() // Return empty list for any other errors
+        }
+    }
+
+    /**
+     * Extracts IDE name from the command path for use in MCP configuration.
+     */
+    private fun extractIdeNameFromCommand(command: String): String {
+        return when {
+            command.contains("IntelliJ IDEA") -> "intellij"
+            command.contains("PyCharm") -> "pycharm"
+            command.contains("WebStorm") -> "webstorm"
+            command.contains("CLion") -> "clion"
+            command.contains("PhpStorm") -> "phpstorm"
+            command.contains("RubyMine") -> "rubymine"
+            command.contains("GoLand") -> "goland"
+            command.contains("DataGrip") -> "datagrip"
+            command.contains("Rider") -> "rider"
+            else -> "ide"
+        }
+    }
+}
