@@ -38,7 +38,8 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
         var model: Model = Model.DEFAULT,
         var customModel: String = "",
         var openFileOnChange: Boolean = false,
-        var enableNotification: Boolean = false
+        var enableNotification: Boolean = false,
+        var mcpConfigInput: String = ""
     )
 
     private var state = State()

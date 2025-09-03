@@ -7,13 +7,24 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.components.JBTextArea
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.HyperlinkLabel
+import com.intellij.util.ui.JBUI
 import javax.swing.JComponent
 import javax.swing.JComboBox
 import javax.swing.text.AbstractDocument
 import javax.swing.text.AttributeSet
 import javax.swing.text.DocumentFilter
+import java.awt.Font
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
+import javax.swing.JButton
+import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.options.ShowSettingsUtil
+import com.google.gson.JsonParser
+import com.google.gson.JsonSyntaxException
 
 class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var root: JComponent
@@ -23,6 +34,8 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var customModelField: JBTextField
     private lateinit var openFileOnChangeCheckbox: JBCheckBox
     private lateinit var enableNotificationCheckbox: JBCheckBox
+    private lateinit var mcpConfigInputArea: JBTextArea
+    private lateinit var mcpConfigOutputArea: JBTextArea
 
     private val settings by lazy { service<CodexLauncherSettings>() }
 
@@ -50,6 +63,25 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         
         // Notification control
         enableNotificationCheckbox = JBCheckBox("Enable notifications when events are completed by Codex CLI")
+        
+        // MCP Configuration controls
+        mcpConfigInputArea = JBTextArea(10, 50)
+        mcpConfigInputArea.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
+        mcpConfigInputArea.lineWrap = false
+        mcpConfigInputArea.wrapStyleWord = false
+        
+        mcpConfigOutputArea = JBTextArea(5, 50)
+        mcpConfigOutputArea.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
+        mcpConfigOutputArea.lineWrap = false
+        mcpConfigOutputArea.wrapStyleWord = false
+        mcpConfigOutputArea.isEditable = false
+        mcpConfigOutputArea.background = JBUI.CurrentTheme.EditorTabs.background()
+        
+        mcpConfigInputArea.document.addDocumentListener(object : javax.swing.event.DocumentListener {
+            override fun insertUpdate(e: javax.swing.event.DocumentEvent?) = updateOutput()
+            override fun removeUpdate(e: javax.swing.event.DocumentEvent?) = updateOutput()
+            override fun changedUpdate(e: javax.swing.event.DocumentEvent?) = updateOutput()
+        })
         // Block invalid characters at input time
         (customModelField.document as? AbstractDocument)?.documentFilter = object : DocumentFilter() {
 
@@ -116,6 +148,42 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(link)
                 }
             }
+            group("MCP Configuration") {
+                row {
+                    comment("Paste JSON configuration to convert to TOML format")
+                }
+                row("JSON Input:") {
+                    cell(JBScrollPane(mcpConfigInputArea))
+                        .resizableColumn()
+                }
+                row("TOML Output:") {
+                    cell(JBScrollPane(mcpConfigOutputArea))
+                        .resizableColumn()
+                }
+                row {
+                    val copyButton = JButton("Copy to Clipboard")
+                    copyButton.addActionListener {
+                        val content = mcpConfigOutputArea.text
+                        if (content.isNotEmpty()) {
+                            val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+                            clipboard.setContents(StringSelection(content), null)
+                            Messages.showInfoMessage("Copied to clipboard!", "Success")
+                        }
+                    }
+                    cell(copyButton)
+                }
+//                FIXME: Link to MCP settings does not work as expected
+//                row {
+//                    val mcpSettingsLink = HyperlinkLabel("Open MCP server settings")
+//                    mcpSettingsLink.addHyperlinkListener {
+//                        ShowSettingsUtil.getInstance().showSettingsDialog(
+//                            null,
+//                            "com.intellij.mcpserver.settings"
+//                        )
+//                    }
+//                    cell(mcpSettingsLink)
+//                }
+            }
         }
 
         return root
@@ -154,6 +222,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         customModelField.isEnabled = (s.model == Model.CUSTOM)
         openFileOnChangeCheckbox.isSelected = s.openFileOnChange
         enableNotificationCheckbox.isSelected = s.enableNotification
+        mcpConfigInputArea.text = s.mcpConfigInput
     }
 
     fun getMode(): Mode {
@@ -178,5 +247,73 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     
     private fun getEnableNotification(): Boolean {
         return enableNotificationCheckbox.isSelected
+    }
+    
+    private fun getMcpConfigInput(): String {
+        return mcpConfigInputArea.text ?: ""
+    }
+    
+    private fun updateOutput() {
+        val inputText = mcpConfigInputArea.text?.trim() ?: ""
+        if (inputText.isEmpty()) {
+            mcpConfigOutputArea.text = ""
+            return
+        }
+        
+        try {
+            val jsonElement = JsonParser.parseString(inputText)
+            val jsonObject = jsonElement.asJsonObject
+            
+            val type = jsonObject.get("type")?.asString ?: ""
+            val command = jsonObject.get("command")?.asString ?: ""
+            val args = jsonObject.get("args")?.asJsonArray
+            val env = jsonObject.get("env")?.asJsonObject
+            
+            val ideaName = extractIdeNameFromCommand(command)
+            
+            val tomlBuilder = StringBuilder()
+            tomlBuilder.append("[mcp_servers.$ideaName]\n")
+            tomlBuilder.append("command = \"$command\"\n")
+            
+            if (args != null && args.size() > 0) {
+                tomlBuilder.append("args = [")
+                args.forEachIndexed { index, element ->
+                    if (index > 0) tomlBuilder.append(", ")
+                    tomlBuilder.append("\"${element.asString}\"")
+                }
+                tomlBuilder.append("]\n")
+            }
+            
+            if (env != null && env.size() > 0) {
+                tomlBuilder.append("env = { ")
+                val entries = env.entrySet().toList()
+                entries.forEachIndexed { index, entry ->
+                    if (index > 0) tomlBuilder.append(", ")
+                    tomlBuilder.append("\"${entry.key}\" = \"${entry.value.asString}\"")
+                }
+                tomlBuilder.append(" }\n")
+            }
+            
+            mcpConfigOutputArea.text = tomlBuilder.toString()
+        } catch (e: JsonSyntaxException) {
+            mcpConfigOutputArea.text = "Invalid JSON format"
+        } catch (e: Exception) {
+            mcpConfigOutputArea.text = "Error parsing JSON: ${e.message}"
+        }
+    }
+    
+    private fun extractIdeNameFromCommand(command: String): String {
+        return when {
+            command.contains("IntelliJ IDEA") -> "intellij"
+            command.contains("PyCharm") -> "pycharm"
+            command.contains("WebStorm") -> "webstorm"
+            command.contains("CLion") -> "clion"
+            command.contains("PhpStorm") -> "phpstorm"
+            command.contains("RubyMine") -> "rubymine"
+            command.contains("GoLand") -> "goland"
+            command.contains("DataGrip") -> "datagrip"
+            command.contains("Rider") -> "rider"
+            else -> "ide"
+        }
     }
 }
