@@ -35,7 +35,6 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var openFileOnChangeCheckbox: JBCheckBox
     private lateinit var enableNotificationCheckbox: JBCheckBox
     private lateinit var mcpConfigInputArea: JBTextArea
-    private lateinit var mcpConfigOutputArea: JBTextArea
 
     private val settings by lazy { service<CodexLauncherSettings>() }
 
@@ -69,19 +68,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         mcpConfigInputArea.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
         mcpConfigInputArea.lineWrap = false
         mcpConfigInputArea.wrapStyleWord = false
-        
-        mcpConfigOutputArea = JBTextArea(5, 50)
-        mcpConfigOutputArea.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
-        mcpConfigOutputArea.lineWrap = false
-        mcpConfigOutputArea.wrapStyleWord = false
-        mcpConfigOutputArea.isEditable = false
-        mcpConfigOutputArea.background = JBUI.CurrentTheme.EditorTabs.background()
-        
-        mcpConfigInputArea.document.addDocumentListener(object : javax.swing.event.DocumentListener {
-            override fun insertUpdate(e: javax.swing.event.DocumentEvent?) = updateOutput()
-            override fun removeUpdate(e: javax.swing.event.DocumentEvent?) = updateOutput()
-            override fun changedUpdate(e: javax.swing.event.DocumentEvent?) = updateOutput()
-        })
+
         // Block invalid characters at input time
         (customModelField.document as? AbstractDocument)?.documentFilter = object : DocumentFilter() {
 
@@ -155,22 +142,6 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 row("JSON Input:") {
                     cell(JBScrollPane(mcpConfigInputArea))
                         .resizableColumn()
-                }
-                row("TOML Output:") {
-                    cell(JBScrollPane(mcpConfigOutputArea))
-                        .resizableColumn()
-                }
-                row {
-                    val copyButton = JButton("Copy to Clipboard")
-                    copyButton.addActionListener {
-                        val content = mcpConfigOutputArea.text
-                        if (content.isNotEmpty()) {
-                            val clipboard = Toolkit.getDefaultToolkit().systemClipboard
-                            clipboard.setContents(StringSelection(content), null)
-                            Messages.showInfoMessage("Copied to clipboard!", "Success")
-                        }
-                    }
-                    cell(copyButton)
                 }
 //                FIXME: Link to MCP settings does not work as expected
 //                row {
@@ -253,69 +224,5 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     
     private fun getMcpConfigInput(): String {
         return mcpConfigInputArea.text ?: ""
-    }
-    
-    private fun updateOutput() {
-        val inputText = mcpConfigInputArea.text?.trim() ?: ""
-        if (inputText.isEmpty()) {
-            mcpConfigOutputArea.text = ""
-            return
-        }
-        
-        try {
-            val jsonElement = JsonParser.parseString(inputText)
-            val jsonObject = jsonElement.asJsonObject
-            
-            val type = jsonObject.get("type")?.asString ?: ""
-            val command = jsonObject.get("command")?.asString ?: ""
-            val args = jsonObject.get("args")?.asJsonArray
-            val env = jsonObject.get("env")?.asJsonObject
-            
-            val ideaName = extractIdeNameFromCommand(command)
-            
-            val tomlBuilder = StringBuilder()
-            tomlBuilder.append("[mcp_servers.$ideaName]\n")
-            tomlBuilder.append("command = \"$command\"\n")
-            
-            if (args != null && args.size() > 0) {
-                tomlBuilder.append("args = [")
-                args.forEachIndexed { index, element ->
-                    if (index > 0) tomlBuilder.append(", ")
-                    tomlBuilder.append("\"${element.asString}\"")
-                }
-                tomlBuilder.append("]\n")
-            }
-            
-            if (env != null && env.size() > 0) {
-                tomlBuilder.append("env = { ")
-                val entries = env.entrySet().toList()
-                entries.forEachIndexed { index, entry ->
-                    if (index > 0) tomlBuilder.append(", ")
-                    tomlBuilder.append("\"${entry.key}\" = \"${entry.value.asString}\"")
-                }
-                tomlBuilder.append(" }\n")
-            }
-            
-            mcpConfigOutputArea.text = tomlBuilder.toString()
-        } catch (e: JsonSyntaxException) {
-            mcpConfigOutputArea.text = "Invalid JSON format"
-        } catch (e: Exception) {
-            mcpConfigOutputArea.text = "Error parsing JSON: ${e.message}"
-        }
-    }
-    
-    private fun extractIdeNameFromCommand(command: String): String {
-        return when {
-            command.contains("IntelliJ IDEA") -> "intellij"
-            command.contains("PyCharm") -> "pycharm"
-            command.contains("WebStorm") -> "webstorm"
-            command.contains("CLion") -> "clion"
-            command.contains("PhpStorm") -> "phpstorm"
-            command.contains("RubyMine") -> "rubymine"
-            command.contains("GoLand") -> "goland"
-            command.contains("DataGrip") -> "datagrip"
-            command.contains("Rider") -> "rider"
-            else -> "ide"
-        }
     }
 }
