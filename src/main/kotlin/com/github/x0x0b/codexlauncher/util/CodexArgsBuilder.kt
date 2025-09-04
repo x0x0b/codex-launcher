@@ -3,7 +3,9 @@ package com.github.x0x0b.codexlauncher.util
 import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
 import com.github.x0x0b.codexlauncher.settings.Model
 import com.github.x0x0b.codexlauncher.settings.Mode
+import com.google.gson.JsonArray
 import com.google.gson.JsonParser
+import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSyntaxException
 import groovy.json.StringEscapeUtils
 
@@ -54,14 +56,13 @@ object CodexArgsBuilder {
             parts += listOf("--model", "'${modelName}'")
         }
 
-        // Add MCP configuration if specified
-        val mcpConfigArgs = buildMcpConfigArgs(state.mcpConfigInput)
-        parts += mcpConfigArgs
-
         // Add notify command if port is provided
         if (port != null) {
-            parts += listOf("-c", buildNotifyCommand(port))
+            parts += buildNotifyCommand(port)
         }
+
+        // Add MCP configuration if specified
+        parts += buildMcpConfigArgs(state.mcpConfigInput)
 
         return parts
     }
@@ -142,7 +143,7 @@ object CodexArgsBuilder {
     /**
      * Formats JSON args array for the target OS.
      */
-    private fun formatArgsArray(argsArray: com.google.gson.JsonArray, isWindows: Boolean): String {
+    private fun formatArgsArray(argsArray: JsonArray, isWindows: Boolean): String {
         return if (isWindows) {
             argsArray.joinToString(", ") { "\\\"${StringEscapeUtils.escapeJava(it.asString)}\\\"" }
         } else {
@@ -170,11 +171,20 @@ object CodexArgsBuilder {
      */
     fun buildNotifyCommand(port: Int): String {
         val isWindows = isWindowsOS()
-        return if (isWindows) {
-            "notify='[\\\"curl\\\", \\\"-s\\\", \\\"-X\\\", \\\"POST\\\", \\\"http://localhost:$port/refresh\\\", \\\"-d\\\"]'"
-        } else {
-            "'notify=[\"curl\", \"-s\", \"-X\", \"POST\", \"http://localhost:$port/refresh\", \"-d\"]'"
+        
+        // Create JsonArray for the curl command arguments
+        val curlArgs = JsonArray().apply {
+            add(JsonPrimitive("curl"))
+            add(JsonPrimitive("-s"))
+            add(JsonPrimitive("-X"))
+            add(JsonPrimitive("POST"))
+            add(JsonPrimitive("http://localhost:$port/refresh"))
+            add(JsonPrimitive("-d"))
         }
+        
+        val formattedArgs = formatArgsArray(curlArgs, isWindows)
+        val configArgs = createConfigArgument("notify", "[$formattedArgs]", isWindows)
+        return configArgs.joinToString(" ")
     }
 
     /**
