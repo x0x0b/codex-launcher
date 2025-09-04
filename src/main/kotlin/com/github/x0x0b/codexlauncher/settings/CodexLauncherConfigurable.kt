@@ -7,13 +7,24 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.components.JBTextArea
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.HyperlinkLabel
+import com.intellij.util.ui.JBUI
 import javax.swing.JComponent
 import javax.swing.JComboBox
 import javax.swing.text.AbstractDocument
 import javax.swing.text.AttributeSet
 import javax.swing.text.DocumentFilter
+import java.awt.Font
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
+import javax.swing.JButton
+import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.options.ShowSettingsUtil
+import com.google.gson.JsonParser
+import com.google.gson.JsonSyntaxException
 
 class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var root: JComponent
@@ -23,6 +34,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var customModelField: JBTextField
     private lateinit var openFileOnChangeCheckbox: JBCheckBox
     private lateinit var enableNotificationCheckbox: JBCheckBox
+    private lateinit var mcpConfigInputArea: JBTextArea
 
     private val settings by lazy { service<CodexLauncherSettings>() }
 
@@ -50,6 +62,13 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         
         // Notification control
         enableNotificationCheckbox = JBCheckBox("Enable notifications when events are completed by Codex CLI")
+        
+        // MCP Configuration controls
+        mcpConfigInputArea = JBTextArea(10, 50)
+        mcpConfigInputArea.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
+        mcpConfigInputArea.lineWrap = false
+        mcpConfigInputArea.wrapStyleWord = false
+
         // Block invalid characters at input time
         (customModelField.document as? AbstractDocument)?.documentFilter = object : DocumentFilter() {
 
@@ -116,6 +135,26 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(link)
                 }
             }
+            group("MCP Configuration") {
+                row {
+                    comment("Paste JSON configuration to convert to TOML format")
+                }
+                row("JSON Input:") {
+                    cell(JBScrollPane(mcpConfigInputArea))
+                        .resizableColumn()
+                }
+//                FIXME: Link to MCP settings does not work as expected
+//                row {
+//                    val mcpSettingsLink = HyperlinkLabel("Open MCP server settings")
+//                    mcpSettingsLink.addHyperlinkListener {
+//                        ShowSettingsUtil.getInstance().showSettingsDialog(
+//                            null,
+//                            "com.intellij.mcpserver.settings"
+//                        )
+//                    }
+//                    cell(mcpSettingsLink)
+//                }
+            }
         }
 
         return root
@@ -127,7 +166,8 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 getModel() != s.model ||
                 getCustomModel() != s.customModel ||
                 getOpenFileOnChange() != s.openFileOnChange ||
-                getEnableNotification() != s.enableNotification
+                getEnableNotification() != s.enableNotification ||
+                getMcpConfigInput() != s.mcpConfigInput
     }
 
     override fun apply() {
@@ -143,6 +183,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         s.customModel = getCustomModel()
         s.openFileOnChange = getOpenFileOnChange()
         s.enableNotification = getEnableNotification()
+        s.mcpConfigInput = getMcpConfigInput()
     }
 
     override fun reset() {
@@ -154,6 +195,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         customModelField.isEnabled = (s.model == Model.CUSTOM)
         openFileOnChangeCheckbox.isSelected = s.openFileOnChange
         enableNotificationCheckbox.isSelected = s.enableNotification
+        mcpConfigInputArea.text = s.mcpConfigInput
     }
 
     fun getMode(): Mode {
@@ -178,5 +220,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     
     private fun getEnableNotification(): Boolean {
         return enableNotificationCheckbox.isSelected
+    }
+    
+    private fun getMcpConfigInput(): String {
+        return mcpConfigInputArea.text ?: ""
     }
 }

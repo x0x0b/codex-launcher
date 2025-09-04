@@ -33,9 +33,6 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
             val terminalView = org.jetbrains.plugins.terminal.TerminalToolWindowManager.getInstance(project)
             val widget = terminalView.createShellWidget(baseDir, "Codex", true, true)
 
-            val settings = service<CodexLauncherSettings>()
-            val args = settings.getArgs()
-            
             val httpService = ApplicationManager.getApplication().service<HttpTriggerService>()
             val port = httpService.getActualPort()
             
@@ -44,8 +41,11 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
                 notify(project, "HTTP service is not properly initialized", NotificationType.WARNING)
                 return
             }
+
+            val settings = service<CodexLauncherSettings>()
+            val args = settings.getArgs(port)
             
-            val command = buildCommand(port, args)
+            val command = buildCommand(args)
             widget.sendCommandToExecute(command)
             
             logger.info("Codex command executed successfully: $command")
@@ -56,28 +56,12 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
         }
     }
     
-    private fun buildCommand(port: Int, args: String): String {
+    private fun buildCommand(args: String): String {
         return buildString {
             append(CODEX_COMMAND)
-            append(" -c ")
-            append(buildNotifyCommand(port))
             if (args.isNotBlank()) {
                 append(" ")
                 append(args)
-            }
-        }
-    }
-
-    private fun buildNotifyCommand(port: Int): String {
-        val os = System.getProperty("os.name").lowercase()
-        return when {
-            os.contains("win") -> {
-                // Windows PowerShell compatible
-                "notify='[\\\"curl\\\", \\\"-s\\\", \\\"-X\\\", \\\"POST\\\", \\\"http://localhost:$port/refresh\\\", \\\"-d\\\"]'"
-            }
-            else -> {
-                // Mac/Linux/Unix compatible
-                "'notify=[\"curl\", \"-s\", \"-X\", \"POST\", \"http://localhost:$port/refresh\", \"-d\"]'"
             }
         }
     }
