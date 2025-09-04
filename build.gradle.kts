@@ -36,7 +36,7 @@ intellijPlatform {
         }
 
         changeNotes = """
-            A slightly improved file-opening feature.
+            Add semi automatic MCP configuration tool.
         """.trimIndent()
     }
     publishing {
