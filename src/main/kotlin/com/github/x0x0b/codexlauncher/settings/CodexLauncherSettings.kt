@@ -51,9 +51,11 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
     }
 
     /**
-     * Builds and returns the command-line arguments for codex based on current settings.
+     * Builds and returns the command-line arguments for codex based on current settings,
+     * including notify command configuration.
      * 
+     * @param port HTTP service port for notify command
      * @return A space-separated string of command-line arguments
      */
-    fun getArgs(): String = CodexArgsBuilder.build(state).joinToString(" ")
+    fun getArgs(port: Int): String = CodexArgsBuilder.build(state, port).joinToString(" ")
 }

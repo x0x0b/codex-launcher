@@ -28,13 +28,14 @@ object CodexArgsBuilder {
      * - Handles custom models with proper validation
      * 
      * @param state The current settings state containing user preferences
+     * @param port Optional HTTP service port for notify command
      * @return A list of command-line arguments to pass to codex
      * 
      * @example
      * For settings with mode=FULL_AUTO and model=GPT_5:
      * Returns: ["--full-auto", "--model", "gpt-5"]
      */
-    fun build(state: CodexLauncherSettings.State): List<String> {
+    fun build(state: CodexLauncherSettings.State, port: Int? = null): List<String> {
         val parts = mutableListOf<String>()
 
         if (state.mode == Mode.FULL_AUTO) {
@@ -56,6 +57,11 @@ object CodexArgsBuilder {
         // Add MCP configuration if specified
         val mcpConfigArgs = buildMcpConfigArgs(state.mcpConfigInput)
         parts += mcpConfigArgs
+
+        // Add notify command if port is provided
+        if (port != null) {
+            parts += listOf("-c", buildNotifyCommand(port))
+        }
 
         return parts
     }
@@ -154,6 +160,21 @@ object CodexArgsBuilder {
             env.entrySet().map { "\"${it.key}\"=\"${it.value.asString}\"" }
         }
         return "{${envEntries.joinToString(",")}}"
+    }
+
+    /**
+     * Builds notify command configuration with proper OS-specific formatting.
+     * 
+     * @param port The HTTP service port for notifications
+     * @return Formatted notify command string
+     */
+    fun buildNotifyCommand(port: Int): String {
+        val isWindows = isWindowsOS()
+        return if (isWindows) {
+            "notify='[\\\"curl\\\", \\\"-s\\\", \\\"-X\\\", \\\"POST\\\", \\\"http://localhost:$port/refresh\\\", \\\"-d\\\"]'"
+        } else {
+            "'notify=[\"curl\", \"-s\", \"-X\", \"POST\", \"http://localhost:$port/refresh\", \"-d\"]'"
+        }
     }
 
     /**
