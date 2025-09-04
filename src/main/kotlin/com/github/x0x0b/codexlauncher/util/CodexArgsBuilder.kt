@@ -87,73 +87,73 @@ object CodexArgsBuilder {
 
             val ideaName = extractIdeNameFromCommand(command)
 
+            val isWindows = isWindowsOS()
+
             // Add command configuration
-            // win: -c mcp_servers.ide.command='C:\Path\To\java.exe'
-            // mac: -c 'mcp_servers.ide.command=/path/to/java'
             if (command.isNotEmpty()) {
-                args += listOf("-c", buildMcpConfigValue("mcp_servers.$ideaName.command", command))
+                args += createConfigArgument("mcp_servers.$ideaName.command", command, isWindows)
             }
 
             // Add args configuration
-            // win: -c mcp_servers.ide.args='[\"-classpath\",\"C:\\path\\to\\foo.jar;C:\\path\\to\\bar.jar\",\"com.intellij.mcpserver.stdio.McpStdioRunnerKt\"]'
-            // mac: -c 'mcp_servers.ide.args=["-classpath","/path/to/foo.jar:/path/to/bar.jar","com.intellij.mcpserver.stdio.McpStdioRunnerKt"]'
             if (argsArray != null && argsArray.size() > 0) {
-                val os = System.getProperty("os.name").lowercase()
-                val argsList = when {
-                    os.contains("win") -> {
-                        // Windows PowerShell compatible
-                        argsArray.joinToString(", ") { "\\\"${StringEscapeUtils.escapeJava(it.asString)}\\\"" }
-                    }
-                    else -> {
-                        // Mac/Linux/Unix compatible
-                        argsArray.joinToString(", ") { "\"${it.asString}\"" }
-                    }
-                }
-                args += listOf("-c", buildMcpConfigValue("mcp_servers.$ideaName.args", "[$argsList]"))
+                val argsList = formatArgsArray(argsArray, isWindows)
+                args += createConfigArgument("mcp_servers.$ideaName.args", "[$argsList]", isWindows)
             }
 
             // Add env configuration
-            // win: -c mcp_servers.ide.env='{\"IJ_MCP_SERVER_PORT\"=\"64343\"}'
-            // mac: -c 'mcp_servers.ide.env={"IJ_MCP_SERVER_PORT"="64343"}'
             if (env != null && env.size() > 0) {
-                val os = System.getProperty("os.name").lowercase()
-                val envEntries = when {
-                    os.contains("win") -> {
-                        // Windows PowerShell compatible
-                        env.entrySet().map { "\\\"${it.key}\\\"=\\\"${it.value.asString}\\\"" }
-                    }
-                    else -> {
-                        // Mac/Linux/Unix compatible
-                        env.entrySet().map { "\"${it.key}\"=\"${it.value.asString}\"" }
-                    }
-                }
-                val envMap = "{${envEntries.joinToString(",")}}"
-                args += listOf("-c", buildMcpConfigValue("mcp_servers.$ideaName.env", envMap))
+                val envMap = formatEnvObject(env, isWindows)
+                args += createConfigArgument("mcp_servers.$ideaName.env", envMap, isWindows)
             }
 
             args
         } catch (e: JsonSyntaxException) {
-            emptyList() // Return empty list if JSON is invalid
+            emptyList()
         } catch (e: Exception) {
-            emptyList() // Return empty list for any other errors
+            emptyList()
         }
     }
 
     /**
-     * Builds MCP configuration value with proper quoting for different OS environments.
+     * Checks if the current OS is Windows.
      */
-    private fun buildMcpConfigValue(key: String, value: String): String {
-        val os = System.getProperty("os.name").lowercase()
-        return when {
-            os.contains("win") -> {
-                // Windows PowerShell compatible
-                "$key='$value'"
-            }
-            else -> {
-                // Mac/Linux/Unix compatible
-                "'$key=$value'"
-            }
+    private fun isWindowsOS(): Boolean {
+        return System.getProperty("os.name").lowercase().contains("win")
+    }
+
+    /**
+     * Creates a configuration argument with proper OS-specific formatting.
+     */
+    private fun createConfigArgument(key: String, value: String, isWindows: Boolean): List<String> {
+        val configValue = if (isWindows) {
+            "$key='$value'"
+        } else {
+            "'$key=$value'"
         }
+        return listOf("-c", configValue)
+    }
+
+    /**
+     * Formats JSON args array for the target OS.
+     */
+    private fun formatArgsArray(argsArray: com.google.gson.JsonArray, isWindows: Boolean): String {
+        return if (isWindows) {
+            argsArray.joinToString(", ") { "\\\"${StringEscapeUtils.escapeJava(it.asString)}\\\"" }
+        } else {
+            argsArray.joinToString(", ") { "\"${it.asString}\"" }
+        }
+    }
+
+    /**
+     * Formats JSON env object for the target OS.
+     */
+    private fun formatEnvObject(env: com.google.gson.JsonObject, isWindows: Boolean): String {
+        val envEntries = if (isWindows) {
+            env.entrySet().map { "\\\"${it.key}\\\"=\\\"${it.value.asString}\\\"" }
+        } else {
+            env.entrySet().map { "\"${it.key}\"=\"${it.value.asString}\"" }
+        }
+        return "{${envEntries.joinToString(",")}}"
     }
 
     /**
