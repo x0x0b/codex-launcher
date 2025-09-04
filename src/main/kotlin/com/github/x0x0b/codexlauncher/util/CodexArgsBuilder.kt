@@ -5,6 +5,7 @@ import com.github.x0x0b.codexlauncher.settings.Model
 import com.github.x0x0b.codexlauncher.settings.Mode
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
+import groovy.json.StringEscapeUtils
 
 /**
  * Utility object for building command-line arguments for codex execution.
@@ -87,21 +88,47 @@ object CodexArgsBuilder {
             val ideaName = extractIdeNameFromCommand(command)
 
             // Add command configuration
+            // win: -c mcp_servers.ide.command='C:\Path\To\java.exe'
+            // mac: -c 'mcp_servers.ide.command=/path/to/java'
             if (command.isNotEmpty()) {
-                args += listOf("-c", "'mcp_servers.$ideaName.command=$command'")
+                args += listOf("-c", buildMcpConfigValue("mcp_servers.$ideaName.command", command))
             }
 
             // Add args configuration
+            // win: -c mcp_servers.ide.args='[\"-classpath\",\"C:\\path\\to\\foo.jar;C:\\path\\to\\bar.jar\",\"com.intellij.mcpserver.stdio.McpStdioRunnerKt\"]'
+            // mac: -c 'mcp_servers.ide.args=["-classpath","/path/to/foo.jar:/path/to/bar.jar","com.intellij.mcpserver.stdio.McpStdioRunnerKt"]'
             if (argsArray != null && argsArray.size() > 0) {
-                val argsList = argsArray.map { "\"${it.asString}\"" }.joinToString(",")
-                args += listOf("-c", "'mcp_servers.$ideaName.args=[$argsList]'")
+                val os = System.getProperty("os.name").lowercase()
+                val argsList = when {
+                    os.contains("win") -> {
+                        // Windows PowerShell compatible
+                        argsArray.joinToString(", ") { "\\\"${StringEscapeUtils.escapeJava(it.asString)}\\\"" }
+                    }
+                    else -> {
+                        // Mac/Linux/Unix compatible
+                        argsArray.joinToString(", ") { "\"${it.asString}\"" }
+                    }
+                }
+                args += listOf("-c", buildMcpConfigValue("mcp_servers.$ideaName.args", "[$argsList]"))
             }
 
             // Add env configuration
+            // win: -c mcp_servers.ide.env='{\"IJ_MCP_SERVER_PORT\"=\"64343\"}'
+            // mac: -c 'mcp_servers.ide.env={"IJ_MCP_SERVER_PORT"="64343"}'
             if (env != null && env.size() > 0) {
-                val envEntries = env.entrySet().map { "\"${it.key}\"=\"${it.value.asString}\"" }
+                val os = System.getProperty("os.name").lowercase()
+                val envEntries = when {
+                    os.contains("win") -> {
+                        // Windows PowerShell compatible
+                        env.entrySet().map { "\\\"${it.key}\\\"=\\\"${it.value.asString}\\\"" }
+                    }
+                    else -> {
+                        // Mac/Linux/Unix compatible
+                        env.entrySet().map { "\"${it.key}\"=\"${it.value.asString}\"" }
+                    }
+                }
                 val envMap = "{${envEntries.joinToString(",")}}"
-                args += listOf("-c", "'mcp_servers.$ideaName.env=$envMap'")
+                args += listOf("-c", buildMcpConfigValue("mcp_servers.$ideaName.env", envMap))
             }
 
             args
@@ -109,6 +136,23 @@ object CodexArgsBuilder {
             emptyList() // Return empty list if JSON is invalid
         } catch (e: Exception) {
             emptyList() // Return empty list for any other errors
+        }
+    }
+
+    /**
+     * Builds MCP configuration value with proper quoting for different OS environments.
+     */
+    private fun buildMcpConfigValue(key: String, value: String): String {
+        val os = System.getProperty("os.name").lowercase()
+        return when {
+            os.contains("win") -> {
+                // Windows PowerShell compatible
+                "$key='$value'"
+            }
+            else -> {
+                // Mac/Linux/Unix compatible
+                "'$key=$value'"
+            }
         }
     }
 
