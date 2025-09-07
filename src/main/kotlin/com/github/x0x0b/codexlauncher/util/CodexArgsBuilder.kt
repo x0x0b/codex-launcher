@@ -8,6 +8,7 @@ import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSyntaxException
 import groovy.json.StringEscapeUtils
+import com.intellij.openapi.application.ApplicationInfo
 
 /**
  * Utility object for building command-line arguments for codex execution.
@@ -92,7 +93,7 @@ object CodexArgsBuilder {
             val argsArray = jsonObject.get("args")?.asJsonArray
             val env = jsonObject.get("env")?.asJsonObject
 
-            val ideaName = extractIdeNameFromCommand(command)
+            val ideaName = getCurrentIdeName()
 
             val isWindows = isWindowsOS()
 
@@ -188,19 +189,22 @@ object CodexArgsBuilder {
     }
 
     /**
-     * Extracts IDE name from the command path for use in MCP configuration.
+     * Gets the current IDE name from ApplicationInfo for use in MCP configuration.
      */
-    private fun extractIdeNameFromCommand(command: String): String {
+    private fun getCurrentIdeName(): String {
+        val appInfo = ApplicationInfo.getInstance()
+        val productName = appInfo.versionName
+        
         return when {
-            command.contains("IntelliJ IDEA") -> "intellij"
-            command.contains("PyCharm") -> "pycharm"
-            command.contains("WebStorm") -> "webstorm"
-            command.contains("CLion") -> "clion"
-            command.contains("PhpStorm") -> "phpstorm"
-            command.contains("RubyMine") -> "rubymine"
-            command.contains("GoLand") -> "goland"
-            command.contains("DataGrip") -> "datagrip"
-            command.contains("Rider") -> "rider"
+            productName.contains("IntelliJ IDEA") -> "intellij"
+            productName.contains("PyCharm") -> "pycharm"
+            productName.contains("WebStorm") -> "webstorm"
+            productName.contains("CLion") -> "clion"
+            productName.contains("PhpStorm") -> "phpstorm"
+            productName.contains("RubyMine") -> "rubymine"
+            productName.contains("GoLand") -> "goland"
+            productName.contains("DataGrip") -> "datagrip"
+            productName.contains("Rider") -> "rider"
             else -> "ide"
         }
     }
