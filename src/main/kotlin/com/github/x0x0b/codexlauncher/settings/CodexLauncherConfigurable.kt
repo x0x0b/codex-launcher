@@ -22,7 +22,6 @@ import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import javax.swing.JButton
 import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.options.ShowSettingsUtil
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 
@@ -58,16 +57,17 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         customModelField.isEnabled = false
         
         // File opening control
-        openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed (experimental)")
+        openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed")
         
         // Notification control
         enableNotificationCheckbox = JBCheckBox("Enable notifications when events are completed by Codex CLI")
         
         // MCP Configuration controls
-        mcpConfigInputArea = JBTextArea(10, 50)
+        mcpConfigInputArea = JBTextArea(5, 50)
         mcpConfigInputArea.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
         mcpConfigInputArea.lineWrap = false
         mcpConfigInputArea.wrapStyleWord = false
+        mcpConfigInputArea.emptyText.text = "Paste MCP stdio config here"
 
         // Block invalid characters at input time
         (customModelField.document as? AbstractDocument)?.documentFilter = object : DocumentFilter() {
@@ -122,7 +122,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(openFileOnChangeCheckbox)
                 }
             }
-            group("Notifications") {
+            group("Notifications (Experimental)") {
                 row {
                     cell(enableNotificationCheckbox)
                 }
@@ -135,25 +135,19 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(link)
                 }
             }
-            group("MCP Configuration") {
+            group("MCP Configuration (Experimental)") {
                 row {
-                    comment("Paste JSON configuration to convert to TOML format")
+                    comment("Click the Tools > MCP Server > Copy Stdio Config button, and then paste it into the input field below.")
                 }
-                row("JSON Input:") {
+                row {
+                    val windowsNote = HyperlinkLabel("Note: It will probably not work in a Windows environment at the moment.")
+                    windowsNote.setHyperlinkTarget("https://youtrack.jetbrains.com/issue/IDEA-378920")
+                    cell(windowsNote)
+                }
+                row("Stdio Config:") {
                     cell(JBScrollPane(mcpConfigInputArea))
                         .resizableColumn()
                 }
-//                FIXME: Link to MCP settings does not work as expected
-//                row {
-//                    val mcpSettingsLink = HyperlinkLabel("Open MCP server settings")
-//                    mcpSettingsLink.addHyperlinkListener {
-//                        ShowSettingsUtil.getInstance().showSettingsDialog(
-//                            null,
-//                            "com.intellij.mcpserver.settings"
-//                        )
-//                    }
-//                    cell(mcpSettingsLink)
-//                }
             }
         }
 
