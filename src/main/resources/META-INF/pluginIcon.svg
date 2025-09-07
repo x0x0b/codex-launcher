@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Codex Launcher">
   <!-- frame: inherits color from parent -->
-  <rect x="2" y="3" width="20" height="18" rx="3.2" fill="none" stroke="#CED0D5" stroke-width="1.8" stroke-linejoin="round"></rect>
+  <rect x="2" y="3" width="20" height="18" rx="3.2" fill="#212121" stroke="#CED0D5" stroke-width="1.8" stroke-linejoin="round"></rect>
   <!-- "C" stroke: fixed to #2cb491 -->
   <path d="M11 9.1 A3 3.3 0 1 0 11 15" fill="none" stroke="#2cb491" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
   <!-- small underscore/prompt: inherits color -->
