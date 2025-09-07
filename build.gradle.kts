@@ -1,7 +1,7 @@
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.2.10"
-    id("org.jetbrains.intellij.platform") version "2.7.2"
+    id("org.jetbrains.intellij.platform") version "2.8.0"
 }
 
 group = "com.github.x0x0b"
@@ -17,8 +17,9 @@ repositories {
 // Configure IntelliJ Platform Gradle Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
+    implementation("com.google.code.gson:gson:2.13.1")
     intellijPlatform {
-        create("IC", "2024.2")
+        create("IC", "2025.2")
         // Use bundled Terminal plugin APIs
         bundledPlugin("org.jetbrains.plugins.terminal")
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
@@ -35,7 +36,7 @@ intellijPlatform {
         }
 
         changeNotes = """
-            A slightly improved file-opening feature.
+            Add semi automatic MCP configuration tool.
         """.trimIndent()
     }
     publishing {

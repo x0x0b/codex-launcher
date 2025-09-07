@@ -7,13 +7,23 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.components.JBTextArea
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.HyperlinkLabel
+import com.intellij.util.ui.JBUI
 import javax.swing.JComponent
 import javax.swing.JComboBox
 import javax.swing.text.AbstractDocument
 import javax.swing.text.AttributeSet
 import javax.swing.text.DocumentFilter
+import java.awt.Font
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
+import javax.swing.JButton
+import com.intellij.openapi.ui.Messages
+import com.google.gson.JsonParser
+import com.google.gson.JsonSyntaxException
 
 class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var root: JComponent
@@ -23,6 +33,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var customModelField: JBTextField
     private lateinit var openFileOnChangeCheckbox: JBCheckBox
     private lateinit var enableNotificationCheckbox: JBCheckBox
+    private lateinit var mcpConfigInputArea: JBTextArea
 
     private val settings by lazy { service<CodexLauncherSettings>() }
 
@@ -46,10 +57,18 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         customModelField.isEnabled = false
         
         // File opening control
-        openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed (experimental)")
+        openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed")
         
         // Notification control
         enableNotificationCheckbox = JBCheckBox("Enable notifications when events are completed by Codex CLI")
+        
+        // MCP Configuration controls
+        mcpConfigInputArea = JBTextArea(5, 50)
+        mcpConfigInputArea.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
+        mcpConfigInputArea.lineWrap = false
+        mcpConfigInputArea.wrapStyleWord = false
+        mcpConfigInputArea.emptyText.text = "Paste MCP stdio config here"
+
         // Block invalid characters at input time
         (customModelField.document as? AbstractDocument)?.documentFilter = object : DocumentFilter() {
 
@@ -103,7 +122,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(openFileOnChangeCheckbox)
                 }
             }
-            group("Notifications") {
+            group("Notifications (Experimental)") {
                 row {
                     cell(enableNotificationCheckbox)
                 }
@@ -113,6 +132,25 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 row {
                     val link = HyperlinkLabel("Learn more about IntelliJ notification settings")
                     link.setHyperlinkTarget("https://www.jetbrains.com/help/idea/notifications.html")
+                    cell(link)
+                }
+            }
+            group("Integrated MCP Server (Experimental)") {
+                row {
+                    comment("In Tools > MCP Server, click the Copy Stdio Config button and paste it into the input field below. (2025.2+)")
+                }
+                row {
+                    val windowsNote = HyperlinkLabel("Note: It will probably not work in a Windows environment at the moment.")
+                    windowsNote.setHyperlinkTarget("https://youtrack.jetbrains.com/issue/IDEA-378920")
+                    cell(windowsNote)
+                }
+                row("Stdio Config:") {
+                    cell(JBScrollPane(mcpConfigInputArea))
+                        .resizableColumn()
+                }
+                row {
+                    val link = HyperlinkLabel("Learn more about integrated MCP Server")
+                    link.setHyperlinkTarget("https://www.jetbrains.com/help/idea/mcp-server.html")
                     cell(link)
                 }
             }
@@ -127,7 +165,8 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 getModel() != s.model ||
                 getCustomModel() != s.customModel ||
                 getOpenFileOnChange() != s.openFileOnChange ||
-                getEnableNotification() != s.enableNotification
+                getEnableNotification() != s.enableNotification ||
+                getMcpConfigInput() != s.mcpConfigInput
     }
 
     override fun apply() {
@@ -143,6 +182,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         s.customModel = getCustomModel()
         s.openFileOnChange = getOpenFileOnChange()
         s.enableNotification = getEnableNotification()
+        s.mcpConfigInput = getMcpConfigInput()
     }
 
     override fun reset() {
@@ -154,6 +194,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         customModelField.isEnabled = (s.model == Model.CUSTOM)
         openFileOnChangeCheckbox.isSelected = s.openFileOnChange
         enableNotificationCheckbox.isSelected = s.enableNotification
+        mcpConfigInputArea.text = s.mcpConfigInput
     }
 
     fun getMode(): Mode {
@@ -178,5 +219,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     
     private fun getEnableNotification(): Boolean {
         return enableNotificationCheckbox.isSelected
+    }
+    
+    private fun getMcpConfigInput(): String {
+        return mcpConfigInputArea.text ?: ""
     }
 }
