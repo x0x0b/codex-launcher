@@ -135,9 +135,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(link)
                 }
             }
-            group("MCP Configuration (Experimental)") {
+            group("Integrated MCP Server (Experimental)") {
                 row {
-                    comment("Click the Tools > MCP Server > Copy Stdio Config button, and then paste it into the input field below.")
+                    comment("In Tools > MCP Server, click the Copy Stdio Config button and paste it into the input field below. (2025.2+)")
                 }
                 row {
                     val windowsNote = HyperlinkLabel("Note: It will probably not work in a Windows environment at the moment.")
@@ -147,6 +147,11 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 row("Stdio Config:") {
                     cell(JBScrollPane(mcpConfigInputArea))
                         .resizableColumn()
+                }
+                row {
+                    val link = HyperlinkLabel("Learn more about integrated MCP Server")
+                    link.setHyperlinkTarget("https://www.jetbrains.com/help/idea/mcp-server.html")
+                    cell(link)
                 }
             }
         }
