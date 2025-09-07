@@ -16,6 +16,7 @@ An **unofficial** IntelliJ IDEA plugin that seamlessly integrates OpenAI Codex C
 - 📁 **Project-aware**: Automatically runs `codex` in the current project root directory
 - ⚙️ **Configurable**: Customizable launch modes, model selection, and auto file opening
 - 🔔 **IDE Notifications**: Optional notifications when Codex processing is completed
+- 🔌 **Integration with the built-in MCP server**: Semi-automatic connection setup for IntelliJ's built-in MCP server (2025.2+)
 
 ## 🛠️ Installation
 
@@ -46,6 +47,9 @@ Access plugin settings via **Preferences** → **Other Settings** → **Codex La
   - Custom model configuration
 - **Auto File Open**: Automatically open files modified by Codex in the editor
 - **IDE Notifications**: Enable notifications
+- **Integration with the built-in MCP server (Experimental)**: Semi-automatic connection setup for IntelliJ's built-in MCP server
+  - Simply copy stdio config from Tools → MCP Server and paste into the plugin settings
+  - The plugin automatically configures the connection parameters for Codex
 
 ## 📝 Development
 

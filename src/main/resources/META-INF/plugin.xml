@@ -27,6 +27,7 @@
           <li><b>Project-aware</b>: Automatically runs <code>codex</code> in the current project root directory</li>
           <li><b>Configurable</b>: Customizable launch modes, model selection, and auto file opening</li>
           <li><b>IDE Notifications</b>: Optional notifications when Codex processing is completed</li>
+          <li><b>Integrated MCP Server</b>: Semi-automatic connection setup for IntelliJ's built-in MCP server (2025.2+)</li>
         </ul>
 
         <h2>Configuration</h2>
@@ -38,6 +39,7 @@
           <li>Model selection (default, preset, or custom models)</li>
           <li>Auto file opening for files modified by Codex</li>
           <li>IDE notification settings</li>
+          <li>Integrated MCP Server with semi-automatic setup (copy stdio config from Tools | MCP Server)</li>
         </ul>
 
         <h2>Requirements</h2>
