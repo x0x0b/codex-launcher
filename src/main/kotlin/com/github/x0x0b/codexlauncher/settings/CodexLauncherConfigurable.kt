@@ -139,11 +139,6 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 row {
                     comment("In Tools > MCP Server, click the Copy Stdio Config button and paste it into the input field below. (2025.2+)")
                 }
-                row {
-                    val windowsNote = HyperlinkLabel("Note: It will probably not work in a Windows environment at the moment.")
-                    windowsNote.setHyperlinkTarget("https://youtrack.jetbrains.com/issue/IDEA-378920")
-                    cell(windowsNote)
-                }
                 row("Stdio Config:") {
                     cell(JBScrollPane(mcpConfigInputArea))
                         .resizableColumn()
