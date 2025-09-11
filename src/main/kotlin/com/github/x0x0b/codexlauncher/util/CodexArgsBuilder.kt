@@ -156,10 +156,19 @@ object CodexArgsBuilder {
      * Formats JSON env object for the target OS.
      */
     private fun formatEnvObject(env: com.google.gson.JsonObject, isWindows: Boolean): String {
+        // Create a mutable copy of the env object to add Windows-specific entries
+        val envMap = env.entrySet().associate { it.key to it.value.asString }.toMutableMap()
+        
+        // Add SystemRoot for Windows if not already present
+        // https://github.com/openai/codex/issues/3311
+        if (isWindows && !envMap.containsKey("SystemRoot")) {
+            envMap["SystemRoot"] = "C:\\\\Windows"
+        }
+        
         val envEntries = if (isWindows) {
-            env.entrySet().map { "\\\"${it.key}\\\"=\\\"${it.value.asString}\\\"" }
+            envMap.map { "\\\"${it.key}\\\"=\\\"${it.value}\\\"" }
         } else {
-            env.entrySet().map { "\"${it.key}\"=\"${it.value.asString}\"" }
+            envMap.map { "\"${it.key}\"=\"${it.value}\"" }
         }
         return "{${envEntries.joinToString(",")}}"
     }
