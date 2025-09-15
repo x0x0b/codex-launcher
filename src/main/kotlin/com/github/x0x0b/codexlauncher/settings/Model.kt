@@ -7,6 +7,7 @@ enum class Model {
     /** Do not pass --model. */
     DEFAULT,
     GPT_5,
+    GPT_5_CODEX,
     CODEX_MINI_LATEST,
     /** Use customModel from settings. */
     CUSTOM;
@@ -14,6 +15,7 @@ enum class Model {
     fun cliName(): String = when (this) {
         DEFAULT -> ""
         GPT_5 -> "gpt-5"
+        GPT_5_CODEX -> "gpt-5-codex"
         CODEX_MINI_LATEST -> "codex-mini-latest"
         CUSTOM -> ""
     }
@@ -21,6 +23,7 @@ enum class Model {
     fun toDisplayName(): String = when (this) {
         DEFAULT -> "Default"
         GPT_5 -> "gpt-5"
+        GPT_5_CODEX -> "gpt-5-codex"
         CODEX_MINI_LATEST -> "codex-mini-latest"
         CUSTOM -> "Custom..."
     }
