@@ -4,6 +4,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.util.SystemInfo
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.components.JBTextField
@@ -33,6 +34,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var customModelField: JBTextField
     private lateinit var openFileOnChangeCheckbox: JBCheckBox
     private lateinit var enableNotificationCheckbox: JBCheckBox
+    private lateinit var isPowerShell73OrOverCheckbox: JBCheckBox
     private lateinit var mcpConfigInputArea: JBTextArea
 
     private val settings by lazy { service<CodexLauncherSettings>() }
@@ -61,6 +63,11 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         
         // Notification control
         enableNotificationCheckbox = JBCheckBox("Enable notifications when events are completed by Codex CLI")
+        
+        // PowerShell 7.3 mode control (Windows only)
+        if (SystemInfo.isWindows) {
+            isPowerShell73OrOverCheckbox = JBCheckBox("Using PowerShell 7.3 or later")
+        }
         
         // MCP Configuration controls
         mcpConfigInputArea = JBTextArea(5, 50)
@@ -97,6 +104,16 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         }
 
         root = panel {
+            if (SystemInfo.isWindows) {
+                group("PowerShell Compatibility") {
+                    row {
+                        cell(isPowerShell73OrOverCheckbox)
+                    }
+                    row {
+                        comment("Check this if you are using PowerShell 7.3 or later to enable compatible command formatting.")
+                    }
+                }
+            }
             group("Mode") {
                 buttonsGroup {
                     row{
@@ -161,6 +178,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 getCustomModel() != s.customModel ||
                 getOpenFileOnChange() != s.openFileOnChange ||
                 getEnableNotification() != s.enableNotification ||
+                (SystemInfo.isWindows && getIsPowerShell73OrOver() != s.isPowerShell73OrOver) ||
                 getMcpConfigInput() != s.mcpConfigInput
     }
 
@@ -177,6 +195,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         s.customModel = getCustomModel()
         s.openFileOnChange = getOpenFileOnChange()
         s.enableNotification = getEnableNotification()
+        if (SystemInfo.isWindows) {
+            s.isPowerShell73OrOver = getIsPowerShell73OrOver()
+        }
         s.mcpConfigInput = getMcpConfigInput()
     }
 
@@ -189,6 +210,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         customModelField.isEnabled = (s.model == Model.CUSTOM)
         openFileOnChangeCheckbox.isSelected = s.openFileOnChange
         enableNotificationCheckbox.isSelected = s.enableNotification
+        if (SystemInfo.isWindows) {
+            isPowerShell73OrOverCheckbox.isSelected = s.isPowerShell73OrOver
+        }
         mcpConfigInputArea.text = s.mcpConfigInput
     }
 
@@ -214,6 +238,14 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     
     private fun getEnableNotification(): Boolean {
         return enableNotificationCheckbox.isSelected
+    }
+    
+    private fun getIsPowerShell73OrOver(): Boolean {
+        return if (SystemInfo.isWindows) {
+            isPowerShell73OrOverCheckbox.isSelected
+        } else {
+            false
+        }
     }
     
     private fun getMcpConfigInput(): String {
