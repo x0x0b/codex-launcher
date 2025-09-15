@@ -98,7 +98,6 @@ class HttpTriggerService : Disposable {
 
                 // Check for specific notification type in JSON
                 if (requestBody.isNotEmpty()) {
-                if (requestBody.isNotEmpty()) {
                     try {
                         val json = Json.parseToJsonElement(requestBody) as JsonObject
                         val type = json["type"]?.jsonPrimitive?.content
@@ -112,8 +111,6 @@ class HttpTriggerService : Disposable {
                         }
                     } catch (e: Exception) {
                         throw e
-                    }
-                }
                     }
                 }
 
