@@ -32,7 +32,8 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
      * @property customModel Custom model identifier when model is set to CUSTOM
      * @property openFileOnChange Whether to automatically open files when they change
      * @property enableNotification Whether to enable notifications
-     * @property isPowerShell73OrOver Whether using PowerShell 7.3 or later (enables compatible command formatting)
+     * @property isPowerShell73OrOver Whether using PowerShell 7.3 or later (legacy; use winShell instead)
+     * @property winShell Preferred Windows shell selection (Windows only)
      */
     data class State(
         var mode: Mode = Mode.DEFAULT,
@@ -41,7 +42,8 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
         var openFileOnChange: Boolean = false,
         var enableNotification: Boolean = false,
         var mcpConfigInput: String = "",
-        var isPowerShell73OrOver: Boolean = false
+        var isPowerShell73OrOver: Boolean = false,
+        var winShell: WinShell = WinShell.POWERSHELL_LT_73
     )
 
     private var state = State()

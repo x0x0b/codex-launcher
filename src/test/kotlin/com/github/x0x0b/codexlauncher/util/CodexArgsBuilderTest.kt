@@ -4,6 +4,7 @@ import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
 import com.github.x0x0b.codexlauncher.settings.Model
 import com.github.x0x0b.codexlauncher.settings.Mode
 import com.intellij.testFramework.LightPlatformTestCase
+import com.github.x0x0b.codexlauncher.settings.WinShell
 
 /**
  * Test OS provider for mocking Windows/non-Windows behavior
@@ -59,7 +60,6 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
     fun testComplexArgsFormattingOnNonWindows() {
         // Test non-Windows formatting
         val osProvider = TestOsProvider(isWindows = false)
-        state.isPowerShell73OrOver = false
         state.mcpConfigInput = mcpNonWindows
 
         val result = CodexArgsBuilder.build(state, 11111, osProvider = osProvider)
@@ -88,7 +88,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
     fun testComplexArgsFormattingOnWindows() {
         // Test Windows formatting
         val osProvider = TestOsProvider(isWindows = true)
-        state.isPowerShell73OrOver = false
+        state.winShell = WinShell.POWERSHELL_LT_73
         state.mcpConfigInput = mcpWindows
 
         val result = CodexArgsBuilder.build(state, 22222, osProvider = osProvider)
@@ -120,9 +120,8 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
     fun testComplexArgsFormattingOnWindowsWithPowerShell73OrOver() {
         // Test Windows formatting with PowerShell 7.3+
         val osProvider = TestOsProvider(isWindows = true)
-        state.isPowerShell73OrOver = true
+        state.winShell = WinShell.POWERSHELL_73_PLUS
         state.mcpConfigInput = mcpWindows
-
         val result = CodexArgsBuilder.build(state, 33333, osProvider = osProvider)
 
         // Verify that complex arguments are properly formatted for Windows with PowerShell 7.3+
@@ -147,5 +146,34 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
             """mcp_servers.intellij.env='{"IJ_MCP_SERVER_PORT"="64342","SystemRoot"="C:\\Windows"}'""",
             result[10]
         )
+    }
+
+    fun testComplexArgsFormattingOnWindowsWithWSL() {
+        // Test Windows host but WSL selected; should format like non-Windows
+        val osProvider = TestOsProvider(isWindows = true)
+        state.winShell = WinShell.WSL
+        state.mcpConfigInput = mcpWindows
+
+        val result = CodexArgsBuilder.build(state, 44444, osProvider = osProvider)
+
+        // Verify non-Windows style quoting and no SystemRoot
+        assertEquals(11, result.size)
+        assertEquals("""--full-auto""", result[0])
+        assertEquals("""--model""", result[1])
+        assertEquals("""'gpt-4o'""", result[2])
+        assertEquals("""-c""", result[3])
+        assertEquals("""'notify=["curl", "-s", "-X", "POST", "http://localhost:44444/refresh", "-d"]'""", result[4])
+        assertEquals("""-c""", result[5])
+        assertEquals(
+            """'mcp_servers.intellij.command='""",
+            result[6]
+        )
+        assertEquals("""-c""", result[7])
+        assertEquals(
+            """'mcp_servers.intellij.args=[]'""",
+            result[8]
+        )
+        assertEquals("""-c""", result[9])
+        assertEquals("""'mcp_servers.intellij.env={"IJ_MCP_SERVER_PORT"="64342"}'""", result[10])
     }
 }
