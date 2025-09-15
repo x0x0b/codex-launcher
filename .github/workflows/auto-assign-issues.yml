@@ -1,11 +1,15 @@
 name: Auto-assign issues
 
+permissions: {}
+
 on:
   issues:
     types: [opened]
 
 jobs:
   auto-assign:
+    permissions:
+      issues: write
     runs-on: ubuntu-latest
     steps:
       - name: Auto-assign issue
