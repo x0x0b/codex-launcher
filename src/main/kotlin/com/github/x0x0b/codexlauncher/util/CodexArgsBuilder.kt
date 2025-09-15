@@ -60,11 +60,11 @@ object CodexArgsBuilder {
 
         // Add notify command if port is provided
         if (port != null) {
-            parts += buildNotifyCommand(port, state.usePowerShell73Mode)
+            parts += buildNotifyCommand(port, state.isPowerShell73OrOver)
         }
 
         // Add MCP configuration if specified
-        parts += buildMcpConfigArgs(state.mcpConfigInput, state.usePowerShell73Mode)
+        parts += buildMcpConfigArgs(state.mcpConfigInput, state.isPowerShell73OrOver)
 
         return parts
     }
@@ -80,7 +80,7 @@ object CodexArgsBuilder {
      * @param mcpConfigInput JSON configuration string
      * @return List of -c arguments
      */
-    private fun buildMcpConfigArgs(mcpConfigInput: String, usePowerShell73Mode: Boolean = false): List<String> {
+    private fun buildMcpConfigArgs(mcpConfigInput: String, isPowerShell73OrOver: Boolean): List<String> {
         if (mcpConfigInput.trim().isEmpty()) {
             return emptyList()
         }
@@ -103,13 +103,13 @@ object CodexArgsBuilder {
 
             // Add args configuration
             if (argsArray != null && argsArray.size() > 0) {
-                val argsList = formatArgsArray(argsArray, usePowerShell73Mode)
+                val argsList = formatArgsArray(argsArray, isPowerShell73OrOver)
                 args += createConfigArgument("mcp_servers.$ideaName.args", "[$argsList]")
             }
 
             // Add env configuration
             if (env != null && env.size() > 0) {
-                val envMap = formatEnvObject(env, usePowerShell73Mode)
+                val envMap = formatEnvObject(env, isPowerShell73OrOver)
                 args += createConfigArgument("mcp_servers.$ideaName.env", envMap)
             }
 
@@ -138,9 +138,9 @@ object CodexArgsBuilder {
     /**
      * Formats JSON args array for the target OS.
      */
-    private fun formatArgsArray(argsArray: JsonArray, usePowerShell73Mode: Boolean = false): String {
+    private fun formatArgsArray(argsArray: JsonArray, isPowerShell73OrOver: Boolean = false): String {
         return if (SystemInfo.isWindows) {
-            if (usePowerShell73Mode) {
+            if (isPowerShell73OrOver) {
                 // PowerShell 7.3+ on Windows
                 argsArray.joinToString(", ") { "\"${StringEscapeUtils.escapeJava(it.asString)}\"" }
             } else {
@@ -156,7 +156,7 @@ object CodexArgsBuilder {
     /**
      * Formats JSON env object for the target OS.
      */
-    private fun formatEnvObject(env: com.google.gson.JsonObject, usePowerShell73Mode: Boolean = false): String {
+    private fun formatEnvObject(env: com.google.gson.JsonObject, isPowerShell73OrOver: Boolean = false): String {
         // Create a mutable copy of the env object to add Windows-specific entries
         val envMap = env.entrySet().associate { it.key to it.value.asString }.toMutableMap()
         
@@ -166,7 +166,7 @@ object CodexArgsBuilder {
             envMap["SystemRoot"] = "C:\\\\Windows"
         }
         
-        val envEntries = if (SystemInfo.isWindows && !usePowerShell73Mode) {
+        val envEntries = if (SystemInfo.isWindows && !isPowerShell73OrOver) {
             // Pre PS 7.3 on Windows
             envMap.map { "\\\"${it.key}\\\"=\\\"${it.value}\\\"" }
         } else {
@@ -182,7 +182,7 @@ object CodexArgsBuilder {
      * @param port The HTTP service port for notifications
      * @return Formatted notify command string
      */
-    fun buildNotifyCommand(port: Int, usePowerShell73Mode: Boolean): String {
+    fun buildNotifyCommand(port: Int, isPowerShell73OrOver: Boolean): String {
         // Create JsonArray for the curl command arguments
         val curlArgs = JsonArray().apply {
             add(JsonPrimitive("curl"))
@@ -193,7 +193,7 @@ object CodexArgsBuilder {
             add(JsonPrimitive("-d"))
         }
         
-        val formattedArgs = formatArgsArray(curlArgs, usePowerShell73Mode)
+        val formattedArgs = formatArgsArray(curlArgs, isPowerShell73OrOver)
         val configArgs = createConfigArgument("notify", "[$formattedArgs]")
         return configArgs.joinToString(" ")
     }

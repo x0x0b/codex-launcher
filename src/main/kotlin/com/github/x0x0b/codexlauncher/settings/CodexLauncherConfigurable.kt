@@ -34,7 +34,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var customModelField: JBTextField
     private lateinit var openFileOnChangeCheckbox: JBCheckBox
     private lateinit var enableNotificationCheckbox: JBCheckBox
-    private lateinit var usePowerShell73ModeCheckbox: JBCheckBox
+    private lateinit var isPowerShell73OrOverCheckbox: JBCheckBox
     private lateinit var mcpConfigInputArea: JBTextArea
 
     private val settings by lazy { service<CodexLauncherSettings>() }
@@ -66,7 +66,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         
         // PowerShell 7.3 mode control (Windows only)
         if (SystemInfo.isWindows) {
-            usePowerShell73ModeCheckbox = JBCheckBox("Use PowerShell 7.3+ compatible command formatting")
+            isPowerShell73OrOverCheckbox = JBCheckBox("Using PowerShell 7.3 or later")
         }
         
         // MCP Configuration controls
@@ -107,10 +107,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             if (SystemInfo.isWindows) {
                 group("PowerShell Compatibility") {
                     row {
-                        cell(usePowerShell73ModeCheckbox)
+                        cell(isPowerShell73OrOverCheckbox)
                     }
                     row {
-                        comment("Enable this for PowerShell 7.3+ to handle command arguments correctly.")
+                        comment("Check this if you are using PowerShell 7.3 or later to enable compatible command formatting.")
                     }
                 }
             }
@@ -178,7 +178,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 getCustomModel() != s.customModel ||
                 getOpenFileOnChange() != s.openFileOnChange ||
                 getEnableNotification() != s.enableNotification ||
-                (SystemInfo.isWindows && getUsePowerShell73Mode() != s.usePowerShell73Mode) ||
+                (SystemInfo.isWindows && getIsPowerShell73OrOver() != s.isPowerShell73OrOver) ||
                 getMcpConfigInput() != s.mcpConfigInput
     }
 
@@ -196,7 +196,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         s.openFileOnChange = getOpenFileOnChange()
         s.enableNotification = getEnableNotification()
         if (SystemInfo.isWindows) {
-            s.usePowerShell73Mode = getUsePowerShell73Mode()
+            s.isPowerShell73OrOver = getIsPowerShell73OrOver()
         }
         s.mcpConfigInput = getMcpConfigInput()
     }
@@ -211,7 +211,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         openFileOnChangeCheckbox.isSelected = s.openFileOnChange
         enableNotificationCheckbox.isSelected = s.enableNotification
         if (SystemInfo.isWindows) {
-            usePowerShell73ModeCheckbox.isSelected = s.usePowerShell73Mode
+            isPowerShell73OrOverCheckbox.isSelected = s.isPowerShell73OrOver
         }
         mcpConfigInputArea.text = s.mcpConfigInput
     }
@@ -240,9 +240,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         return enableNotificationCheckbox.isSelected
     }
     
-    private fun getUsePowerShell73Mode(): Boolean {
+    private fun getIsPowerShell73OrOver(): Boolean {
         return if (SystemInfo.isWindows) {
-            usePowerShell73ModeCheckbox.isSelected
+            isPowerShell73OrOverCheckbox.isSelected
         } else {
             false
         }
