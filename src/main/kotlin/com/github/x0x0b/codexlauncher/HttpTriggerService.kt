@@ -95,9 +95,23 @@ class HttpTriggerService : Disposable {
                     logger.warn("Failed to parse request body as JSON: ${e.message}")
                     "Codex CLI processing completed."
                 }
-                
-                ApplicationManager.getApplication().invokeLater {
-                    processRefreshRequest(notificationMessage)
+
+                // Check for specific notification type in JSON
+                if (requestBody.isNotEmpty()) {
+                    try {
+                        val json = Json.parseToJsonElement(requestBody) as JsonObject
+                        val type = json["type"]?.jsonPrimitive?.content
+                        if (type == "agent-turn-complete") {
+                            // Process refresh in the main thread
+                            ApplicationManager.getApplication().invokeLater {
+                                processRefreshRequest(notificationMessage)
+                            }
+                        } else {
+                            logger.warn("Ignoring notification with unsupported type: $type")
+                        }
+                    } catch (e: Exception) {
+                        throw e
+                    }
                 }
 
                 sendResponse(exchange, HTTP_OK, "")
