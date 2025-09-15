@@ -10,6 +10,7 @@ import com.google.gson.JsonSyntaxException
 import groovy.json.StringEscapeUtils
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.util.SystemInfo
+import java.util.*
 
 /**
  * Interface for providing OS information, allowing for testing
@@ -54,30 +55,29 @@ object CodexArgsBuilder {
      * Returns: ["--full-auto", "--model", "gpt-5"]
      */
     fun build(state: CodexLauncherSettings.State, port: Int? = null, osProvider: OsProvider = DefaultOsProvider): List<String> {
-        val parts = mutableListOf<String>()
+        var parts = mutableListOf<String>()
 
         if (state.mode == Mode.FULL_AUTO) {
             parts += "--full-auto"
         }
 
-        // Determine the model name to use
-        val modelName: String? = when (state.model) {
-            Model.DEFAULT -> null // Use codex default model
-            Model.CUSTOM -> state.customModel.trim().ifBlank { null }
-            else -> state.model.cliName()
+        var modelName: String? = null
+        if (state.model == Model.DEFAULT) {
+            modelName = null
+        } else if (state.model == Model.CUSTOM) {
+            modelName = state.customModel.trim().ifBlank { null }
+        } else {
+            modelName = state.model.cliName()
         }
 
-        // Add model parameter if specified
         if (modelName != null) {
             parts += listOf("--model", "'${modelName}'")
         }
 
-        // Add notify command if port is provided
         if (port != null) {
             parts += buildNotifyCommand(port, state.isPowerShell73OrOver, osProvider)
         }
 
-        // Add MCP configuration if specified
         parts += buildMcpConfigArgs(state.mcpConfigInput, state.isPowerShell73OrOver, osProvider)
 
         return parts
@@ -110,27 +110,26 @@ object CodexArgsBuilder {
 
             val ideaName = getCurrentIdeName()
 
-            // Add command configuration
             if (command.isNotEmpty()) {
                 args += createConfigArgument("mcp_servers.$ideaName.command", command, osProvider)
             }
 
-            // Add args configuration
             if (argsArray != null && argsArray.size() > 0) {
                 val argsList = formatArgsArray(argsArray, isPowerShell73OrOver, osProvider)
                 args += createConfigArgument("mcp_servers.$ideaName.args", "[$argsList]", osProvider)
             }
 
-            // Add env configuration
             if (env != null && env.size() > 0) {
                 val envMap = formatEnvObject(env, isPowerShell73OrOver, osProvider)
-                args += createConfigArgument("mcp_servers.$ideaName.env", envMap, osProvider)
+                args += createConfigArgument("mcp_servers.$ideaName.env", envMap!!, osProvider)
             }
 
             args
-        } catch (e: JsonSyntaxException) {
+        } catch (exception: JsonSyntaxException) {
+            println("JSON syntax error: ${exception.message}")
             emptyList()
-        } catch (e: Exception) {
+        } catch (exception: Exception) {
+            println("Unexpected error: ${exception.message}")
             emptyList()
         }
     }
@@ -170,24 +169,25 @@ object CodexArgsBuilder {
     /**
      * Formats JSON env object for the target OS.
      */
-    private fun formatEnvObject(env: com.google.gson.JsonObject, isPowerShell73OrOver: Boolean = false, osProvider: OsProvider = DefaultOsProvider): String {
-        // Create a mutable copy of the env object to add Windows-specific entries
+    private fun formatEnvObject(env: com.google.gson.JsonObject, isPowerShell73OrOver: Boolean = false, osProvider: OsProvider = DefaultOsProvider): String? {
         val envMap = env.entrySet().associate { it.key to it.value.asString }.toMutableMap()
         
-        // Add SystemRoot for Windows if not already present
-        // https://github.com/openai/codex/issues/3311
         if (osProvider.isWindows && !envMap.containsKey("SystemRoot")) {
             envMap["SystemRoot"] = "C:\\\\Windows"
         }
         
-        val envEntries = if (osProvider.isWindows && !isPowerShell73OrOver) {
-            // Pre PS 7.3 on Windows
-            envMap.map { "\\\"${it.key}\\\"=\\\"${it.value}\\\"" }
-        } else {
-            // PS 7.3+ and non-Windows
-            envMap.map { "\"${it.key}\"=\"${it.value}\"" }
+        var result: String? = null
+        try {
+            val envEntries = if (osProvider.isWindows && !isPowerShell73OrOver) {
+                envMap.map { "\\\"${it.key}\\\"=\\\"${it.value}\\\"" }
+            } else {
+                envMap.map { "\"${it.key}\"=\"${it.value}\"" }
+            }
+            result = "{${envEntries.joinToString(",")}}"
+        } catch (e: Exception) {
+            result = "{}"
         }
-        return "{${envEntries.joinToString(",")}}"
+        return result
     }
 
     /**
@@ -197,15 +197,13 @@ object CodexArgsBuilder {
      * @return Formatted notify command string
      */
     fun buildNotifyCommand(port: Int, isPowerShell73OrOver: Boolean, osProvider: OsProvider = DefaultOsProvider): List<String> {
-        // Create JsonArray for the curl command arguments
-        val curlArgs = JsonArray().apply {
-            add(JsonPrimitive("curl"))
-            add(JsonPrimitive("-s"))
-            add(JsonPrimitive("-X"))
-            add(JsonPrimitive("POST"))
-            add(JsonPrimitive("http://localhost:$port/refresh"))
-            add(JsonPrimitive("-d"))
-        }
+        val curlArgs = JsonArray()
+        curlArgs.add(JsonPrimitive("curl"))
+        curlArgs.add(JsonPrimitive("-s"))
+        curlArgs.add(JsonPrimitive("-X"))
+        curlArgs.add(JsonPrimitive("POST"))
+        curlArgs.add(JsonPrimitive("http://localhost:$port/refresh"))
+        curlArgs.add(JsonPrimitive("-d"))
         
         val formattedArgs = formatArgsArray(curlArgs, isPowerShell73OrOver, osProvider)
         val configArgs = createConfigArgument("notify", "[$formattedArgs]", osProvider)
@@ -219,17 +217,26 @@ object CodexArgsBuilder {
         val appInfo = ApplicationInfo.getInstance()
         val productName = appInfo.versionName
         
-        return when {
-            productName.contains("IntelliJ IDEA") -> "intellij"
-            productName.contains("PyCharm") -> "pycharm"
-            productName.contains("WebStorm") -> "webstorm"
-            productName.contains("CLion") -> "clion"
-            productName.contains("PhpStorm") -> "phpstorm"
-            productName.contains("RubyMine") -> "rubymine"
-            productName.contains("GoLand") -> "goland"
-            productName.contains("DataGrip") -> "datagrip"
-            productName.contains("Rider") -> "rider"
-            else -> "ide"
+        if (productName.contains("IntelliJ IDEA")) {
+            return "intellij"
+        } else if (productName.contains("PyCharm")) {
+            return "pycharm"
+        } else if (productName.contains("WebStorm")) {
+            return "webstorm"
+        } else if (productName.contains("CLion")) {
+            return "clion"
+        } else if (productName.contains("PhpStorm")) {
+            return "phpstorm"
+        } else if (productName.contains("RubyMine")) {
+            return "rubymine"
+        } else if (productName.contains("GoLand")) {
+            return "goland"
+        } else if (productName.contains("DataGrip")) {
+            return "datagrip"
+        } else if (productName.contains("Rider")) {
+            return "rider"
+        } else {
+            return "ide"
         }
     }
 }
