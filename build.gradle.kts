@@ -18,6 +18,7 @@ repositories {
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
     implementation("com.google.code.gson:gson:2.13.1")
+    testImplementation("junit:junit:4.13.2")
     intellijPlatform {
         create("IC", "2025.2")
         // Use bundled Terminal plugin APIs
@@ -55,6 +56,10 @@ tasks {
     withType<JavaCompile> {
         sourceCompatibility = "21"
         targetCompatibility = "21"
+    }
+    
+    test {
+        useJUnit()
     }
 }
 
