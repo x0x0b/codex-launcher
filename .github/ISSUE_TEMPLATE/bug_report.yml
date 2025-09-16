@@ -34,12 +34,18 @@ body:
     id: operating_system
     attributes:
       label: Operating system
+      description: Select the operating system where the issue occurs.
       options:
-        - Windows
-        - macOS
-        - Linux
-    validations:
-      required: true
+        - label: Select operating system…
+          value: ""
+        - label: macOS
+          value: macOS
+        - label: Windows
+          value: windows
+        - label: Windows+WSL
+          value: windows_wsl
+        - label: Linux
+          value: linux
   - type: input
     id: os_details
     attributes:
