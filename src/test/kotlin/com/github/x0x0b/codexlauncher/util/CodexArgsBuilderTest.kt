@@ -165,12 +165,12 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         assertEquals("""'notify=["curl", "-s", "-X", "POST", "http://localhost:44444/refresh", "-d"]'""", result[4])
         assertEquals("""-c""", result[5])
         assertEquals(
-            """'mcp_servers.intellij.command='""",
+            """'mcp_servers.intellij.command=/mnt/c/Program Files/JetBrains/IntelliJ IDEA Community Edition 2025.2.1/jbr/bin/java'""",
             result[6]
         )
         assertEquals("""-c""", result[7])
         assertEquals(
-            """'mcp_servers.intellij.args=[]'""",
+            """'mcp_servers.intellij.args=["-classpath", "/mnt/c/Program Files/JetBrains/IntelliJ IDEA Community Edition 2025.2.1/plugins/mcpserver/lib/mcpserver-frontend.jar:/mnt/c/Program Files/JetBrains/IntelliJ IDEA Community Edition 2025.2.1/lib/util-8.jar", "com.intellij.mcpserver.stdio.McpStdioRunnerKt"]'""",
             result[8]
         )
         assertEquals("""-c""", result[9])
