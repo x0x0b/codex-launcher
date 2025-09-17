@@ -91,8 +91,11 @@ object CodexArgsBuilder {
             parts += buildNotifyCommand(port, osProvider, state.winShell)
         }
 
-        // Add MCP configuration if specified
-        parts += buildMcpConfigArgs(state.mcpConfigInput, osProvider, state.winShell)
+        // Add MCP configuration if specified and not using WSL
+        // TODO: resolve WSL SSEClientException error with MCP
+        if (!osProvider.isWindows || state.winShell != WinShell.WSL) {
+            parts += buildMcpConfigArgs(state.mcpConfigInput, osProvider, state.winShell)
+        }
 
         return parts
     }
