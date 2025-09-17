@@ -20,6 +20,7 @@ import javax.swing.JComboBox
 import javax.swing.text.AbstractDocument
 import javax.swing.text.AttributeSet
 import javax.swing.text.DocumentFilter
+import java.awt.Component
 import java.awt.Font
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
@@ -27,6 +28,8 @@ import javax.swing.JButton
 import com.intellij.openapi.ui.Messages
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
+import javax.swing.DefaultListCellRenderer
+import javax.swing.JList
 
 class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var root: JComponent
@@ -85,7 +88,23 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
         // Windows shell selection (Windows only)
         if (SystemInfo.isWindows) {
-            winShellCombo = ComboBox(WinShell.entries.toTypedArray())
+            winShellCombo = ComboBox(WinShell.entries.toTypedArray()).apply {
+                renderer = object : DefaultListCellRenderer() {
+                    override fun getListCellRendererComponent(
+                        list: JList<*>?,
+                        value: Any?,
+                        index: Int,
+                        isSelected: Boolean,
+                        cellHasFocus: Boolean
+                    ): Component {
+                        val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                        if (value is WinShell) {
+                            text = value.toDisplayName()
+                        }
+                        return component
+                    }
+                }
+            }
             winShellCombo.addActionListener { updateWslDependentAvailability() }
         }
 

@@ -17,6 +17,4 @@ enum class WinShell {
         POWERSHELL_73_PLUS -> "PowerShell (7.3+)"
         WSL -> "WSL"
     }
-
-    override fun toString(): String = toDisplayName()
 }
