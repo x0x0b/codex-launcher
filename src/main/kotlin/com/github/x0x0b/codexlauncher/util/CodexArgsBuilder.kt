@@ -86,14 +86,14 @@ object CodexArgsBuilder {
             parts += createConfigArgument("model_reasoning_effort", reasoningEffort, osProvider, state.winShell)
         }
 
-        // Add notify command if port is provided
-        if (port != null) {
-            parts += buildNotifyCommand(port, osProvider, state.winShell)
-        }
-
-        // Add MCP configuration if specified and not using WSL
-        // TODO: resolve WSL SSEClientException error with MCP
+        // TODO: resolve WSL issue with notify and mcp config
         if (!osProvider.isWindows || state.winShell != WinShell.WSL) {
+            // Add notify command if port is provided and not using WSL
+            if (port != null) {
+                parts += buildNotifyCommand(port, osProvider, state.winShell)
+            }
+
+            // Add MCP configuration if specified and not using WSL
             parts += buildMcpConfigArgs(state.mcpConfigInput, osProvider, state.winShell)
         }
 

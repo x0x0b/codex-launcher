@@ -40,6 +40,8 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var winShellCombo: JComboBox<WinShell>
     private lateinit var mcpConfigInputArea: JBTextArea
     private lateinit var mcpServerWarningLabel: JBLabel
+    private lateinit var fileHandlingWarningLabel: JBLabel
+    private lateinit var notificationsWarningLabel: JBLabel
 
     private val settings by lazy { service<CodexLauncherSettings>() }
 
@@ -67,14 +69,24 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
         // File opening control
         openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed")
+        fileHandlingWarningLabel = JBLabel("File Handling is unavailable when WSL shell is selected.").apply {
+            foreground = UIUtil.getErrorForeground()
+            border = JBUI.Borders.emptyTop(4)
+            isVisible = false
+        }
 
         // Notification control
         enableNotificationCheckbox = JBCheckBox("Enable notifications when events are completed by Codex CLI")
-        
+        notificationsWarningLabel = JBLabel("Notifications are unavailable when WSL shell is selected.").apply {
+            foreground = UIUtil.getErrorForeground()
+            border = JBUI.Borders.emptyTop(4)
+            isVisible = false
+        }
+
         // Windows shell selection (Windows only)
         if (SystemInfo.isWindows) {
             winShellCombo = ComboBox(WinShell.entries.toTypedArray())
-            winShellCombo.addActionListener { updateMcpServerAvailability() }
+            winShellCombo.addActionListener { updateWslDependentAvailability() }
         }
 
         // MCP Configuration controls
@@ -158,10 +170,16 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 row {
                     cell(openFileOnChangeCheckbox)
                 }
+                row {
+                    cell(fileHandlingWarningLabel)
+                }
             }
             group("Notifications (Experimental)") {
                 row {
                     cell(enableNotificationCheckbox)
+                }
+                row {
+                    cell(notificationsWarningLabel)
                 }
                 row {
                     comment("Customize notification sounds and display options in Settings | Appearance & Behavior | Notifications | CodexLauncher.")
@@ -191,7 +209,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             }
         }
 
-        updateMcpServerAvailability()
+        updateWslDependentAvailability()
 
         return root
     }
@@ -244,7 +262,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             winShellCombo.selectedItem = s.winShell
         }
         mcpConfigInputArea.text = s.mcpConfigInput
-        updateMcpServerAvailability()
+        updateWslDependentAvailability()
     }
 
     fun getMode(): Mode {
@@ -283,8 +301,12 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         }
     }
 
-    private fun updateMcpServerAvailability() {
-        if (!::mcpConfigInputArea.isInitialized || !::mcpServerWarningLabel.isInitialized) {
+    private fun updateWslDependentAvailability() {
+        if (!::mcpConfigInputArea.isInitialized ||
+            !::mcpServerWarningLabel.isInitialized ||
+            !::fileHandlingWarningLabel.isInitialized ||
+            !::notificationsWarningLabel.isInitialized
+        ) {
             return
         }
         val isWslSelected = SystemInfo.isWindows &&
@@ -292,9 +314,27 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 (winShellCombo.selectedItem as? WinShell) == WinShell.WSL
 
         mcpServerWarningLabel.isVisible = isWslSelected
+        fileHandlingWarningLabel.isVisible = isWslSelected
+        notificationsWarningLabel.isVisible = isWslSelected
+
         mcpConfigInputArea.isEnabled = !isWslSelected
+        openFileOnChangeCheckbox.isEnabled = !isWslSelected
+        enableNotificationCheckbox.isEnabled = !isWslSelected
+
         mcpConfigInputArea.toolTipText = if (isWslSelected) {
             "Integrated MCP Server is unavailable when WSL shell is selected."
+        } else {
+            null
+        }
+
+        openFileOnChangeCheckbox.toolTipText = if (isWslSelected) {
+            "File Handling is unavailable when WSL shell is selected."
+        } else {
+            null
+        }
+
+        enableNotificationCheckbox.toolTipText = if (isWslSelected) {
+            "Notifications are unavailable when WSL shell is selected."
         } else {
             null
         }
