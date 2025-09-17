@@ -83,12 +83,12 @@ object CodexArgsBuilder {
         }
 
         if (reasoningEffort != null) {
-            parts += createConfigArgument("model_reasoning_effort", reasoningEffort, osProvider)
+            parts += createConfigArgument("model_reasoning_effort", reasoningEffort, osProvider, state.winShell)
         }
 
         // Add notify command if port is provided
         if (port != null) {
-            parts += buildNotifyCommand(port,osProvider, state.winShell)
+            parts += buildNotifyCommand(port, osProvider, state.winShell)
         }
 
         // Add MCP configuration if specified
