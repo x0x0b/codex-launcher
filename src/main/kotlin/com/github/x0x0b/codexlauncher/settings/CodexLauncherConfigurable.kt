@@ -242,8 +242,8 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         s.enableNotification = getEnableNotification()
         if (SystemInfo.isWindows) {
             s.winShell = getWinShell()
-            // Keep legacy field in sync for backward compatibility
-            s.isPowerShell73OrOver = (s.winShell == WinShell.POWERSHELL_73_PLUS)
+            // update legacy field
+            s.isPowerShell73OrOver = false
         }
         s.mcpConfigInput = getMcpConfigInput()
     }
