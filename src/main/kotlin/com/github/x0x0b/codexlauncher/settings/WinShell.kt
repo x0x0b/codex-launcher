@@ -15,7 +15,7 @@ enum class WinShell {
     fun toDisplayName(): String = when (this) {
         POWERSHELL_LT_73 -> "PowerShell (< 7.3)"
         POWERSHELL_73_PLUS -> "PowerShell (7.3+)"
-        WSL -> "WSL (bash/zsh)"
+        WSL -> "WSL"
     }
 
     override fun toString(): String = toDisplayName()
