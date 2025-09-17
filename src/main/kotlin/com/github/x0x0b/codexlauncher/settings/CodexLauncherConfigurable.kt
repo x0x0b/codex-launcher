@@ -7,12 +7,14 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBRadioButton
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.HyperlinkLabel
 import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
 import javax.swing.JComponent
 import javax.swing.JComboBox
 import javax.swing.text.AbstractDocument
@@ -37,6 +39,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var enableNotificationCheckbox: JBCheckBox
     private lateinit var winShellCombo: JComboBox<WinShell>
     private lateinit var mcpConfigInputArea: JBTextArea
+    private lateinit var mcpServerWarningLabel: JBLabel
 
     private val settings by lazy { service<CodexLauncherSettings>() }
 
@@ -71,6 +74,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         // Windows shell selection (Windows only)
         if (SystemInfo.isWindows) {
             winShellCombo = ComboBox(WinShell.entries.toTypedArray())
+            winShellCombo.addActionListener { updateMcpServerAvailability() }
         }
 
         // MCP Configuration controls
@@ -79,6 +83,12 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         mcpConfigInputArea.lineWrap = false
         mcpConfigInputArea.wrapStyleWord = false
         mcpConfigInputArea.emptyText.text = "Paste MCP stdio config here"
+
+        mcpServerWarningLabel = JBLabel("Integrated MCP Server is unavailable when WSL shell is selected.").apply {
+            foreground = UIUtil.getErrorForeground()
+            border = JBUI.Borders.emptyTop(4)
+            isVisible = false
+        }
 
         // Block invalid characters at input time
         (customModelField.document as? AbstractDocument)?.documentFilter = object : DocumentFilter() {
@@ -166,6 +176,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 row {
                     comment("In Tools > MCP Server, click the Copy Stdio Config button and paste it into the input field below. (2025.2+)")
                 }
+                row {
+                    cell(mcpServerWarningLabel)
+                }
                 row("Stdio Config:") {
                     cell(JBScrollPane(mcpConfigInputArea))
                         .resizableColumn()
@@ -177,6 +190,8 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 }
             }
         }
+
+        updateMcpServerAvailability()
 
         return root
     }
@@ -229,6 +244,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             winShellCombo.selectedItem = s.winShell
         }
         mcpConfigInputArea.text = s.mcpConfigInput
+        updateMcpServerAvailability()
     }
 
     fun getMode(): Mode {
@@ -264,6 +280,23 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             (winShellCombo.selectedItem as? WinShell) ?: WinShell.POWERSHELL_LT_73
         } else {
             WinShell.POWERSHELL_LT_73
+        }
+    }
+
+    private fun updateMcpServerAvailability() {
+        if (!::mcpConfigInputArea.isInitialized || !::mcpServerWarningLabel.isInitialized) {
+            return
+        }
+        val isWslSelected = SystemInfo.isWindows &&
+                ::winShellCombo.isInitialized &&
+                (winShellCombo.selectedItem as? WinShell) == WinShell.WSL
+
+        mcpServerWarningLabel.isVisible = isWslSelected
+        mcpConfigInputArea.isEnabled = !isWslSelected
+        mcpConfigInputArea.toolTipText = if (isWslSelected) {
+            "Integrated MCP Server is unavailable when WSL shell is selected."
+        } else {
+            null
         }
     }
 
