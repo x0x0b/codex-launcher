@@ -1,0 +1,79 @@
+name: Bug report
+description: File a bug report to help us improve Codex Launcher.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible so we can reproduce and address the problem quickly.
+  - type: input
+    id: plugin_version
+    attributes:
+      label: Codex Launcher version
+      description: Which Codex Launcher plugin version are you using?
+      placeholder: e.g. 1.0.8
+    validations:
+      required: true
+  - type: input
+    id: codex_cli_version
+    attributes:
+      label: Codex CLI version
+      description: Which Codex CLI version are you using?
+      placeholder: e.g. 0.36.0
+    validations:
+      required: true
+  - type: input
+    id: ide_version
+    attributes:
+      label: IDE version
+      description: Include the full name and build number of your JetBrains IDE.
+      placeholder: e.g. IntelliJ IDEA 2024.2 (Build 242.10180.27)
+  - type: dropdown
+    id: operating_system
+    attributes:
+      label: Operating system
+      description: Select the operating system where the issue occurs.
+      options:
+        - label: Select operating system…
+          value: ""
+        - label: macOS
+          value: macOS
+        - label: Windows
+          value: windows
+        - label: Windows+WSL
+          value: windows_wsl
+        - label: Linux
+          value: linux
+  - type: input
+    id: os_details
+    attributes:
+      label: OS details (if Other or additional context)
+      placeholder: e.g. Ubuntu 24.04, macOS 15.0 beta
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Provide a clear step-by-step guide.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: Actual behavior
+      description: What actually happened? Include error messages if applicable.
+    validations:
+      required: true

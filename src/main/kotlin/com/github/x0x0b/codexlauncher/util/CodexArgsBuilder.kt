@@ -2,6 +2,7 @@ package com.github.x0x0b.codexlauncher.util
 
 import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
 import com.github.x0x0b.codexlauncher.settings.Model
+import com.github.x0x0b.codexlauncher.settings.ModelReasoningEffort
 import com.github.x0x0b.codexlauncher.settings.Mode
 import com.github.x0x0b.codexlauncher.settings.WinShell
 import com.google.gson.JsonArray
@@ -73,6 +74,16 @@ object CodexArgsBuilder {
         // Add model parameter if specified
         if (modelName != null) {
             parts += listOf("--model", "'${modelName}'")
+        }
+
+        // Add reasoning effort parameter if specified
+        val reasoningEffort: String? = when (state.modelReasoningEffort) {
+            ModelReasoningEffort.DEFAULT -> null // Use codex default
+            else -> state.modelReasoningEffort.cliName()
+        }
+
+        if (reasoningEffort != null) {
+            parts += createConfigArgument("model_reasoning_effort", reasoningEffort, osProvider)
         }
 
         // Add notify command if port is provided

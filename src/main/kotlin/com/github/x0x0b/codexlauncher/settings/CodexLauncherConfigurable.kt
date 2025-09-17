@@ -32,6 +32,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var modeFullAutoRadio: JBRadioButton
     private lateinit var modelCombo: JComboBox<Model>
     private lateinit var customModelField: JBTextField
+    private lateinit var modelReasoningEffortCombo: JComboBox<ModelReasoningEffort>
     private lateinit var openFileOnChangeCheckbox: JBCheckBox
     private lateinit var enableNotificationCheckbox: JBCheckBox
     private lateinit var winShellCombo: JComboBox<WinShell>
@@ -57,10 +58,13 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         customModelField = JBTextField()
         customModelField.emptyText.text = "e.g. gpt-5"
         customModelField.isEnabled = false
-        
+
+        // Model reasoning effort controls
+        modelReasoningEffortCombo = ComboBox(ModelReasoningEffort.entries.toTypedArray())
+
         // File opening control
         openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed")
-        
+
         // Notification control
         enableNotificationCheckbox = JBCheckBox("Enable notifications when events are completed by Codex CLI")
         
@@ -68,7 +72,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         if (SystemInfo.isWindows) {
             winShellCombo = ComboBox(WinShell.entries.toTypedArray())
         }
-        
+
         // MCP Configuration controls
         mcpConfigInputArea = JBTextArea(5, 50)
         mcpConfigInputArea.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
@@ -133,6 +137,12 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                         .resizableColumn()
                         .applyToComponent { columns = 50 }
                 }
+                row {
+                    comment("Some models may not support all reasoning effort levels.")
+                }
+                row("Model reasoning effort") {
+                    cell(modelReasoningEffortCombo)
+                }
             }
             group("File Handling") {
                 row {
@@ -176,6 +186,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         return getMode() != s.mode ||
                 getModel() != s.model ||
                 getCustomModel() != s.customModel ||
+                getModelReasoningEffort() != s.modelReasoningEffort ||
                 getOpenFileOnChange() != s.openFileOnChange ||
                 getEnableNotification() != s.enableNotification ||
                 (SystemInfo.isWindows && getWinShell() != s.winShell) ||
@@ -193,6 +204,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         s.mode = getMode()
         s.model = getModel()
         s.customModel = getCustomModel()
+        s.modelReasoningEffort = getModelReasoningEffort()
         s.openFileOnChange = getOpenFileOnChange()
         s.enableNotification = getEnableNotification()
         if (SystemInfo.isWindows) {
@@ -210,6 +222,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         modelCombo.selectedItem = s.model
         customModelField.text = s.customModel
         customModelField.isEnabled = (s.model == Model.CUSTOM)
+        modelReasoningEffortCombo.selectedItem = s.modelReasoningEffort
         openFileOnChangeCheckbox.isSelected = s.openFileOnChange
         enableNotificationCheckbox.isSelected = s.enableNotification
         if (SystemInfo.isWindows) {
@@ -233,15 +246,19 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private fun getCustomModel(): String {
         return customModelField.text?.trim() ?: ""
     }
-    
+
+    private fun getModelReasoningEffort(): ModelReasoningEffort {
+        return (modelReasoningEffortCombo.selectedItem as? ModelReasoningEffort) ?: ModelReasoningEffort.DEFAULT
+    }
+
     private fun getOpenFileOnChange(): Boolean {
         return openFileOnChangeCheckbox.isSelected
     }
-    
+
     private fun getEnableNotification(): Boolean {
         return enableNotificationCheckbox.isSelected
     }
-    
+
     private fun getWinShell(): WinShell {
         return if (SystemInfo.isWindows) {
             (winShellCombo.selectedItem as? WinShell) ?: WinShell.POWERSHELL_LT_73
@@ -249,7 +266,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             WinShell.POWERSHELL_LT_73
         }
     }
-    
+
     private fun getMcpConfigInput(): String {
         return mcpConfigInputArea.text ?: ""
     }

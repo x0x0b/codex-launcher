@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.github.x0x0b"
-version = "1.0.7"
+version = "1.0.8"
 
 repositories {
     mavenCentral()
@@ -37,7 +37,7 @@ intellijPlatform {
         }
 
         changeNotes = """
-            Add semi automatic MCP configuration tool.
+            Added support for the new gpt-5-codex model.
         """.trimIndent()
     }
     publishing {
