@@ -1,11 +1,13 @@
 package com.github.x0x0b.codexlauncher.settings
 
+import com.intellij.ide.DataManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.openapi.options.ex.Settings
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.components.JBTextField
@@ -284,6 +286,16 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     }
 
     private fun openApplicationConfigurable(configurableId: String) {
+        val dataContext = DataManager.getInstance().getDataContext(root)
+        val settings = Settings.KEY.getData(dataContext)
+        if (settings != null) {
+            val target = settings.find(configurableId)
+            if (target != null) {
+                settings.select(target)
+                return
+            }
+        }
+
         val predicate = Predicate<com.intellij.openapi.options.Configurable> { configurable ->
             configurable is SearchableConfigurable && configurable.id == configurableId
         }
