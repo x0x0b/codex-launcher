@@ -23,6 +23,8 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
         private const val CODEX_COMMAND = "codex"
         private const val NOTIFICATION_TITLE = "Codex Launcher"
         private val CODEX_TERMINAL_KEY = Key.create<Boolean>("codex.launcher.codexTerminal")
+        private val CODEX_TERMINAL_RUNNING_KEY = Key.create<Boolean>("codex.launcher.codexTerminal.running")
+        private val CODEX_TERMINAL_CALLBACK_KEY = Key.create<Boolean>("codex.launcher.codexTerminal.callbackRegistered")
     }
     
     private val logger = logger<LaunchCodexAction>()
@@ -39,12 +41,7 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
         logger.info("Launching Codex in directory: $baseDir")
 
         val terminalManager = TerminalToolWindowManager.getInstance(project)
-
-        locateCodexTerminal(terminalManager)?.let { codexTerminal ->
-            logger.info("Found running Codex terminal; focusing existing tab instead of launching a new one")
-            focusExistingCodexTerminal(project, terminalManager, codexTerminal)
-            return
-        }
+        var existingTerminal = locateCodexTerminal(terminalManager)
 
         try {
             val httpService = ApplicationManager.getApplication().service<HttpTriggerService>()
@@ -60,11 +57,35 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
             val args = settings.getArgs(port)
             
             val command = buildCommand(args)
+
+            existingTerminal?.let { terminal ->
+                ensureTerminationCallback(terminal.widget, terminal.content)
+                if (isCodexRunning(terminal)) {
+                    logger.info("Focusing active Codex terminal")
+                    focusCodexTerminal(project, terminalManager, terminal)
+                    return
+                }
+
+                if (reuseCodexTerminal(terminal, command)) {
+                    logger.info("Reused existing Codex terminal for new Codex run")
+                    focusCodexTerminal(project, terminalManager, terminal)
+                    return
+                } else {
+                    clearCodexMetadata(terminalManager, terminal.widget)
+                    existingTerminal = null
+                }
+            }
+
             var widget: TerminalWidget? = null
             try {
                 widget = terminalManager.createShellWidget(baseDir, "Codex", true, true)
-                markCodexTerminal(terminalManager, widget)
-                widget.sendCommandToExecute(command)
+                val content = markCodexTerminal(terminalManager, widget)
+                if (!sendCommandToTerminal(widget, content, command)) {
+                    throw IllegalStateException("Failed to execute Codex command")
+                }
+                if (content != null) {
+                    focusCodexTerminal(project, terminalManager, CodexTerminal(widget, content))
+                }
             } catch (sendError: Throwable) {
                 widget?.let { clearCodexMetadata(terminalManager, it) }
                 throw sendError
@@ -88,28 +109,21 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
         }
     }
 
-    private fun locateCodexTerminal(manager: TerminalToolWindowManager): CodexTerminal? {
-        return try {
-            manager.terminalWidgets.asSequence().mapNotNull { widget ->
-                val content = manager.getContainer(widget)?.content ?: return@mapNotNull null
-                if (content.getUserData(CODEX_TERMINAL_KEY) != true) {
-                    return@mapNotNull null
-                }
-
-                if (!widget.isCommandRunning()) {
-                    clearCodexMetadata(content)
-                    return@mapNotNull null
-                }
-
-                CodexTerminal(widget, content)
-            }.firstOrNull()
-        } catch (t: Throwable) {
-            logger.warn("Failed to inspect existing terminal widgets", t)
-            null
-        }
+    private fun locateCodexTerminal(manager: TerminalToolWindowManager): CodexTerminal? = try {
+        manager.terminalWidgets.asSequence().mapNotNull { widget ->
+            val content = manager.getContainer(widget)?.content ?: return@mapNotNull null
+            val isCodex = content.getUserData(CODEX_TERMINAL_KEY) == true || content.displayName == "Codex"
+            if (!isCodex) {
+                return@mapNotNull null
+            }
+            CodexTerminal(widget, content)
+        }.firstOrNull()
+    } catch (t: Throwable) {
+        logger.warn("Failed to inspect existing terminal widgets", t)
+        null
     }
 
-    private fun focusExistingCodexTerminal(
+    private fun focusCodexTerminal(
         project: Project,
         manager: TerminalToolWindowManager,
         terminal: CodexTerminal
@@ -151,16 +165,17 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
         ?: ToolWindowManager.getInstance(project)
             .getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID)
 
-    private fun markCodexTerminal(
-        manager: TerminalToolWindowManager,
-        widget: TerminalWidget
-    ) {
-        try {
-            manager.getContainer(widget)?.content?.let { content ->
+    private fun markCodexTerminal(manager: TerminalToolWindowManager, widget: TerminalWidget): Content? {
+        return try {
+            manager.getContainer(widget)?.content?.also { content ->
                 content.putUserData(CODEX_TERMINAL_KEY, true)
+                setCodexRunning(content, false)
+                ensureTerminationCallback(widget, content)
+                content.displayName = "Codex"
             }
         } catch (t: Throwable) {
             logger.warn("Failed to tag Codex terminal metadata", t)
+            null
         }
     }
 
@@ -176,6 +191,63 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
 
     private fun clearCodexMetadata(content: Content) {
         content.putUserData(CODEX_TERMINAL_KEY, null)
+        content.putUserData(CODEX_TERMINAL_RUNNING_KEY, null)
+        content.putUserData(CODEX_TERMINAL_CALLBACK_KEY, null)
+    }
+
+    private fun reuseCodexTerminal(
+        terminal: CodexTerminal,
+        command: String
+    ): Boolean {
+        ensureTerminationCallback(terminal.widget, terminal.content)
+        return sendCommandToTerminal(terminal.widget, terminal.content, command)
+    }
+
+    private fun sendCommandToTerminal(
+        widget: TerminalWidget,
+        content: Content?,
+        command: String
+    ): Boolean {
+        return try {
+            widget.sendCommandToExecute(command)
+            setCodexRunning(content, true)
+            true
+        } catch (t: Throwable) {
+            logger.warn("Failed to execute Codex command", t)
+            setCodexRunning(content, false)
+            false
+        }
+    }
+
+    private fun isCodexRunning(terminal: CodexTerminal): Boolean {
+        val liveState = invokeIsCommandRunning(terminal.widget)
+        if (liveState != null) {
+            setCodexRunning(terminal.content, liveState)
+            return liveState
+        }
+        return terminal.content.getUserData(CODEX_TERMINAL_RUNNING_KEY) ?: false
+    }
+
+    private fun setCodexRunning(content: Content?, running: Boolean) {
+        content?.putUserData(CODEX_TERMINAL_RUNNING_KEY, running)
+    }
+
+    private fun ensureTerminationCallback(widget: TerminalWidget, content: Content?) {
+        if (content == null) return
+        if (content.getUserData(CODEX_TERMINAL_CALLBACK_KEY) == true) return
+        try {
+            widget.addTerminationCallback({ setCodexRunning(content, false) }, content)
+            content.putUserData(CODEX_TERMINAL_CALLBACK_KEY, true)
+        } catch (t: Throwable) {
+            logger.warn("Failed to register termination callback", t)
+        }
+    }
+
+    private fun invokeIsCommandRunning(widget: TerminalWidget): Boolean? {
+        return runCatching {
+            val method = widget.javaClass.methods.firstOrNull { it.name == "isCommandRunning" && it.parameterCount == 0 }
+            method?.apply { isAccessible = true }?.invoke(widget) as? Boolean
+        }.getOrNull()
     }
 
     private fun notify(project: Project, content: String, type: NotificationType) {
