@@ -13,6 +13,7 @@ import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.dsl.builder.HyperlinkEventAction
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.HyperlinkLabel
 import com.intellij.util.ui.JBUI
@@ -160,12 +161,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(enableNotificationCheckbox)
                 }
                 row {
-                    comment("Customize notification sounds and display options in Settings | Appearance & Behavior | Notifications | CodexLauncher.")
-                }
-                row {
-                    link("Open Notifications settings") {
-                        openApplicationConfigurable(NOTIFICATIONS_CONFIGURABLE_ID)
-                    }
+                    comment(
+                        "Customize notification sounds and display options in <a href='notifications'>Settings &gt; Appearance &amp; Behavior &gt; Notifications &gt; CodexLauncher</a>.",
+                        action = HyperlinkEventAction { openApplicationConfigurable(NOTIFICATIONS_CONFIGURABLE_ID) }
+                    )
                 }
                 row {
                     val link = HyperlinkLabel("Learn more about IntelliJ notification settings")
@@ -175,12 +174,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             }
             group("Integrated MCP Server (Experimental)") {
                 row {
-                    comment("In Tools > MCP Server, click the Copy Stdio Config button and paste it into the input field below. (2025.2+)")
-                }
-                row {
-                    link("Open MCP Server settings") {
-                        openApplicationConfigurable(MCP_SERVER_CONFIGURABLE_ID)
-                    }
+                    comment(
+                        "In <a href='mcp'>Tools &gt; MCP Server</a>, click the Copy Stdio Config button and paste it into the input field below. (2025.2+)",
+                        action = HyperlinkEventAction { openApplicationConfigurable(MCP_SERVER_CONFIGURABLE_ID) }
+                    )
                 }
                 row("Stdio Config:") {
                     cell(JBScrollPane(mcpConfigInputArea))
