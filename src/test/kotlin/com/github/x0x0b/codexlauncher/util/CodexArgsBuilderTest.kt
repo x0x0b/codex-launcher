@@ -128,6 +128,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         val osProvider = TestOsProvider(isWindows = true)
         state.winShell = WinShell.POWERSHELL_73_PLUS
         state.mcpConfigInput = mcpWindows
+
         val result = CodexArgsBuilder.build(state, 33333, osProvider = osProvider)
 
         // Verify that complex arguments are properly formatted for Windows with PowerShell 7.3+
