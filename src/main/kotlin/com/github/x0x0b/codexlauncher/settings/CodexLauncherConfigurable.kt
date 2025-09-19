@@ -1,8 +1,9 @@
 package com.github.x0x0b.codexlauncher.settings
 
 import com.intellij.openapi.components.service
-import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.options.ConfigurationException
+import com.intellij.openapi.options.SearchableConfigurable
+import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.ui.components.JBCheckBox
@@ -21,8 +22,9 @@ import javax.swing.text.DocumentFilter
 import java.awt.Font
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
+import java.util.function.Consumer
+import java.util.function.Predicate
 import javax.swing.JButton
-import com.intellij.openapi.ui.Messages
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 
@@ -42,6 +44,8 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
     companion object {
         private val ALLOWED_CUSTOM_MODEL_REGEX = Regex("^[A-Za-z0-9._-]*$")
+        private const val MCP_SERVER_CONFIGURABLE_ID = "com.intellij.mcpserver.settings"
+        private const val NOTIFICATIONS_CONFIGURABLE_ID = "reference.settings.ide.settings.notifications"
     }
 
     override fun getId(): String = "com.github.x0x0b.codexlauncher.settings"
@@ -157,6 +161,11 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     comment("Customize notification sounds and display options in Settings | Appearance & Behavior | Notifications | CodexLauncher.")
                 }
                 row {
+                    link("Open Notifications settings") {
+                        openApplicationConfigurable(NOTIFICATIONS_CONFIGURABLE_ID)
+                    }
+                }
+                row {
                     val link = HyperlinkLabel("Learn more about IntelliJ notification settings")
                     link.setHyperlinkTarget("https://www.jetbrains.com/help/idea/notifications.html")
                     cell(link)
@@ -165,6 +174,11 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             group("Integrated MCP Server (Experimental)") {
                 row {
                     comment("In Tools > MCP Server, click the Copy Stdio Config button and paste it into the input field below. (2025.2+)")
+                }
+                row {
+                    link("Open MCP Server settings") {
+                        openApplicationConfigurable(MCP_SERVER_CONFIGURABLE_ID)
+                    }
                 }
                 row("Stdio Config:") {
                     cell(JBScrollPane(mcpConfigInputArea))
@@ -268,4 +282,15 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private fun getMcpConfigInput(): String {
         return mcpConfigInputArea.text ?: ""
     }
+
+    private fun openApplicationConfigurable(configurableId: String) {
+        val predicate = Predicate<com.intellij.openapi.options.Configurable> { configurable ->
+            configurable is SearchableConfigurable && configurable.id == configurableId
+        }
+        val noopConsumer = Consumer<com.intellij.openapi.options.Configurable> { }
+        runCatching {
+            ShowSettingsUtil.getInstance().showSettingsDialog(null, predicate, noopConsumer)
+        }
+    }
+
 }
