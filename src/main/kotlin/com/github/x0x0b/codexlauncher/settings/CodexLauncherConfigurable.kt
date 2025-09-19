@@ -157,7 +157,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                         cell(winShellCombo)
                     }
                     row {
-                        comment("WSL will be treated the same as Mac/Linux for command formatting.")
+                        comment("Please choose the option that matches your environment, such as the PowerShell version or whether you are using WSL.")
                     }
                 }
             }
