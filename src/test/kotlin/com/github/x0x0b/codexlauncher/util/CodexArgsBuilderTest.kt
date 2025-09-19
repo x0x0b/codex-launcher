@@ -186,20 +186,5 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         assertEquals("""'gpt-4o'""", result[2])
         assertEquals("""-c""", result[3])
         assertEquals("""'model_reasoning_effort=high'""", result[4])
-        // TODO: Enable these after fixing the errors
-//        assertEquals("""-c""", result[5])
-//        assertEquals("""'notify=["curl", "-s", "-X", "POST", "http://localhost:44444/refresh", "-d"]'""", result[6])
-//        assertEquals("""-c""", result[7])
-//        assertEquals(
-//            """'mcp_servers.intellij.command=/mnt/c/Program Files/JetBrains/IntelliJ IDEA Community Edition 2025.2.1/jbr/bin/java'""",
-//            result[8]
-//        )
-//        assertEquals("""-c""", result[9])
-//        assertEquals(
-//            """'mcp_servers.intellij.args=["-classpath", "/mnt/c/Program Files/JetBrains/IntelliJ IDEA Community Edition 2025.2.1/plugins/mcpserver/lib/mcpserver-frontend.jar:/mnt/c/Program Files/JetBrains/IntelliJ IDEA Community Edition 2025.2.1/lib/util-8.jar", "com.intellij.mcpserver.stdio.McpStdioRunnerKt"]'""",
-//            result[10]
-//        )
-//        assertEquals("""-c""", result[11])
-//        assertEquals("""'mcp_servers.intellij.env={"IJ_MCP_SERVER_PORT"="64342"}'""", result[12])
     }
 }

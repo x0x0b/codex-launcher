@@ -86,7 +86,7 @@ object CodexArgsBuilder {
             parts += createConfigArgument("model_reasoning_effort", reasoningEffort, osProvider, state.winShell)
         }
 
-        // TODO: resolve WSL issue with notify and mcp config
+        // Windows/WSL ignores notify and MCP config
         if (!osProvider.isWindows || state.winShell != WinShell.WSL) {
             // Add notify command if port is provided and not using WSL
             if (port != null) {
@@ -122,21 +122,19 @@ object CodexArgsBuilder {
             val args = mutableListOf<String>()
 
             val command = jsonObject.get("command")?.asString ?: ""
-            val normalizedCommand = convertPathForWsl(command, osProvider, winShell)
             val argsArray = jsonObject.get("args")?.asJsonArray
-            val normalizedArgsArray = argsArray?.let { convertArgsArrayForWsl(it, osProvider, winShell) }
             val env = jsonObject.get("env")?.asJsonObject
 
             val ideaName = getCurrentIdeName()
 
             // Add command configuration
-            if (normalizedCommand.isNotEmpty()) {
-                args += createConfigArgument("mcp_servers.$ideaName.command", normalizedCommand, osProvider, winShell)
+            if (command.isNotEmpty()) {
+                args += createConfigArgument("mcp_servers.$ideaName.command", command, osProvider, winShell)
             }
 
             // Add args configuration
-            if (normalizedArgsArray != null && normalizedArgsArray.size() > 0) {
-                val argsList = formatArgsArray(normalizedArgsArray, osProvider, winShell)
+            if (argsArray != null && argsArray.size() > 0) {
+                val argsList = formatArgsArray(argsArray, osProvider, winShell)
                 args += createConfigArgument("mcp_servers.$ideaName.args", "[$argsList]", osProvider, winShell)
             }
 
@@ -229,106 +227,6 @@ object CodexArgsBuilder {
         val formattedArgs = formatArgsArray(curlArgs, osProvider, winShell)
         val configArgs = createConfigArgument("notify", "[$formattedArgs]", osProvider, winShell)
         return configArgs
-    }
-
-    private fun convertPathForWsl(value: String, osProvider: OsProvider, winShell: WinShell): String {
-        if (!osProvider.isWindows || winShell != WinShell.WSL) {
-            return value
-        }
-        return convertWindowsValueForWsl(value)
-    }
-
-    private fun convertArgsArrayForWsl(argsArray: JsonArray, osProvider: OsProvider, winShell: WinShell): JsonArray {
-        if (!osProvider.isWindows || winShell != WinShell.WSL) {
-            return argsArray
-        }
-        val converted = JsonArray()
-        argsArray.forEach { element ->
-            if (element.isJsonPrimitive && element.asJsonPrimitive.isString) {
-                val convertedValue = convertWindowsValueForWsl(element.asString)
-                converted.add(JsonPrimitive(convertedValue))
-            } else {
-                converted.add(element)
-            }
-        }
-        return converted
-    }
-
-    private fun convertWindowsValueForWsl(value: String): String {
-        if (value.isEmpty()) {
-            return value
-        }
-        val trimmed = value.trim()
-        if (trimmed.isEmpty()) {
-            return value
-        }
-
-        val listConversion = convertWindowsPathListToWsl(trimmed)
-        if (listConversion != null) {
-            return restoreWhitespace(value, listConversion)
-        }
-
-        return if (WINDOWS_DRIVE_REGEX.matches(trimmed)) {
-            val converted = convertWindowsPathSegmentToWsl(trimmed)
-            restoreWhitespace(value, converted)
-        } else {
-            value
-        }
-    }
-
-    private fun convertWindowsPathListToWsl(value: String): String? {
-        if (!value.contains(';')) {
-            return null
-        }
-        val segments = value.split(';')
-        if (segments.isEmpty()) {
-            return null
-        }
-        val convertedSegments = mutableListOf<String>()
-        for (segment in segments) {
-            val trimmedSegment = segment.trim()
-            if (!WINDOWS_DRIVE_REGEX.matches(trimmedSegment)) {
-                return null
-            }
-            convertedSegments += convertWindowsPathSegmentToWsl(trimmedSegment)
-        }
-        return convertedSegments.joinToString(separator = ":")
-    }
-
-    private fun convertWindowsPathSegmentToWsl(segment: String): String {
-        if (segment.isEmpty()) {
-            return segment
-        }
-        val driveLetter = segment[0].lowercaseChar()
-        val remainder = segment.substring(2)
-        val normalizedRemainder = remainder.replace("\\", "/").trimStart('/')
-        return buildString {
-            append("/mnt/")
-            append(driveLetter)
-            if (normalizedRemainder.isNotEmpty()) {
-                append('/')
-                append(normalizedRemainder)
-            }
-        }
-    }
-
-    private fun restoreWhitespace(original: String, newValue: String): String {
-        val leading = leadingWhitespace(original)
-        val trailing = trailingWhitespace(original)
-        return leading + newValue + trailing
-    }
-
-    private fun leadingWhitespace(value: String): String {
-        val firstNonWhitespace = value.indexOfFirst { !it.isWhitespace() }
-        return if (firstNonWhitespace == -1) value else value.substring(0, firstNonWhitespace)
-    }
-
-    private fun trailingWhitespace(value: String): String {
-        var index = value.length - 1
-        while (index >= 0 && value[index].isWhitespace()) {
-            index--
-        }
-        return if (index == value.length - 1) "" else value.substring(index + 1)
     }
 
     /**
