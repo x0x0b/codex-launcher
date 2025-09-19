@@ -39,8 +39,6 @@ object DefaultOsProvider : OsProvider {
  * @since 1.0.0
  */
 object CodexArgsBuilder {
-    private val WINDOWS_DRIVE_REGEX = Regex("""^[A-Za-z]:\\.*""")
-
     /**
      * Builds the command-line argument list for codex based on the provided settings state.
      * 
