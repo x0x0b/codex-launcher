@@ -16,20 +16,14 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.HyperlinkEventAction
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.HyperlinkLabel
-import com.intellij.util.ui.JBUI
 import javax.swing.JComponent
 import javax.swing.JComboBox
 import javax.swing.text.AbstractDocument
 import javax.swing.text.AttributeSet
 import javax.swing.text.DocumentFilter
 import java.awt.Font
-import java.awt.Toolkit
-import java.awt.datatransfer.StringSelection
 import java.util.function.Consumer
 import java.util.function.Predicate
-import javax.swing.JButton
-import com.google.gson.JsonParser
-import com.google.gson.JsonSyntaxException
 
 class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var root: JComponent
