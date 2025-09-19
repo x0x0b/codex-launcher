@@ -1,15 +1,19 @@
 package com.github.x0x0b.codexlauncher.settings
 
+import com.intellij.ide.DataManager
 import com.intellij.openapi.components.service
-import com.intellij.openapi.options.SearchableConfigurable
 import com.intellij.openapi.options.ConfigurationException
+import com.intellij.openapi.options.SearchableConfigurable
+import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.openapi.options.ex.Settings
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.dsl.builder.HyperlinkEventAction
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.HyperlinkLabel
 import com.intellij.util.ui.JBUI
@@ -21,8 +25,9 @@ import javax.swing.text.DocumentFilter
 import java.awt.Font
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
+import java.util.function.Consumer
+import java.util.function.Predicate
 import javax.swing.JButton
-import com.intellij.openapi.ui.Messages
 import com.google.gson.JsonParser
 import com.google.gson.JsonSyntaxException
 
@@ -42,6 +47,8 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
     companion object {
         private val ALLOWED_CUSTOM_MODEL_REGEX = Regex("^[A-Za-z0-9._-]*$")
+        private const val MCP_SERVER_CONFIGURABLE_ID = "com.intellij.mcpserver.settings"
+        private const val NOTIFICATIONS_CONFIGURABLE_ID = "reference.settings.ide.settings.notifications"
     }
 
     override fun getId(): String = "com.github.x0x0b.codexlauncher.settings"
@@ -154,7 +161,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(enableNotificationCheckbox)
                 }
                 row {
-                    comment("Customize notification sounds and display options in Settings | Appearance & Behavior | Notifications | CodexLauncher.")
+                    comment(
+                        "Customize notification sounds and display options in <a href='notifications'>Settings &gt; Appearance &amp; Behavior &gt; Notifications &gt; CodexLauncher</a>.",
+                        action = HyperlinkEventAction { openApplicationConfigurable(NOTIFICATIONS_CONFIGURABLE_ID) }
+                    )
                 }
                 row {
                     val link = HyperlinkLabel("Learn more about IntelliJ notification settings")
@@ -164,7 +174,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             }
             group("Integrated MCP Server (Experimental)") {
                 row {
-                    comment("In Tools > MCP Server, click the Copy Stdio Config button and paste it into the input field below. (2025.2+)")
+                    comment(
+                        "In <a href='mcp'>Tools &gt; MCP Server</a>, click the Copy Stdio Config button and paste it into the input field below. (2025.2+)",
+                        action = HyperlinkEventAction { openApplicationConfigurable(MCP_SERVER_CONFIGURABLE_ID) }
+                    )
                 }
                 row("Stdio Config:") {
                     cell(JBScrollPane(mcpConfigInputArea))
@@ -268,4 +281,25 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private fun getMcpConfigInput(): String {
         return mcpConfigInputArea.text ?: ""
     }
+
+    private fun openApplicationConfigurable(configurableId: String) {
+        val dataContext = DataManager.getInstance().getDataContext(root)
+        val settings = Settings.KEY.getData(dataContext)
+        if (settings != null) {
+            val target = settings.find(configurableId)
+            if (target != null) {
+                settings.select(target)
+                return
+            }
+        }
+
+        val predicate = Predicate<com.intellij.openapi.options.Configurable> { configurable ->
+            configurable is SearchableConfigurable && configurable.id == configurableId
+        }
+        val noopConsumer = Consumer<com.intellij.openapi.options.Configurable> { }
+        runCatching {
+            ShowSettingsUtil.getInstance().showSettingsDialog(null, predicate, noopConsumer)
+        }
+    }
+
 }
