@@ -4,6 +4,7 @@ import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
 import com.github.x0x0b.codexlauncher.settings.Model
 import com.github.x0x0b.codexlauncher.settings.ModelReasoningEffort
 import com.github.x0x0b.codexlauncher.settings.Mode
+import com.github.x0x0b.codexlauncher.settings.WinShell
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
@@ -80,16 +81,19 @@ object CodexArgsBuilder {
         }
 
         if (reasoningEffort != null) {
-            parts += createConfigArgument("model_reasoning_effort", reasoningEffort, osProvider)
+            parts += createConfigArgument("model_reasoning_effort", reasoningEffort, osProvider, state.winShell)
         }
 
-        // Add notify command if port is provided
-        if (port != null) {
-            parts += buildNotifyCommand(port, state.isPowerShell73OrOver, osProvider)
-        }
+        // Windows/WSL ignores notify and MCP config
+        if (!(osProvider.isWindows && state.winShell == WinShell.WSL)) {
+            // Add notify command if port is provided and not using WSL
+            if (port != null) {
+                parts += buildNotifyCommand(port, osProvider, state.winShell)
+            }
 
-        // Add MCP configuration if specified
-        parts += buildMcpConfigArgs(state.mcpConfigInput, state.isPowerShell73OrOver, osProvider)
+            // Add MCP configuration if specified and not using WSL
+            parts += buildMcpConfigArgs(state.mcpConfigInput, osProvider, state.winShell)
+        }
 
         return parts
     }
@@ -105,7 +109,7 @@ object CodexArgsBuilder {
      * @param mcpConfigInput JSON configuration string
      * @return List of -c arguments
      */
-    private fun buildMcpConfigArgs(mcpConfigInput: String, isPowerShell73OrOver: Boolean, osProvider: OsProvider = DefaultOsProvider): List<String> {
+    private fun buildMcpConfigArgs(mcpConfigInput: String, osProvider: OsProvider = DefaultOsProvider, winShell: WinShell): List<String> {
         if (mcpConfigInput.trim().isEmpty()) {
             return emptyList()
         }
@@ -123,19 +127,19 @@ object CodexArgsBuilder {
 
             // Add command configuration
             if (command.isNotEmpty()) {
-                args += createConfigArgument("mcp_servers.$ideaName.command", command, osProvider)
+                args += createConfigArgument("mcp_servers.$ideaName.command", command, osProvider, winShell)
             }
 
             // Add args configuration
             if (argsArray != null && argsArray.size() > 0) {
-                val argsList = formatArgsArray(argsArray, isPowerShell73OrOver, osProvider)
-                args += createConfigArgument("mcp_servers.$ideaName.args", "[$argsList]", osProvider)
+                val argsList = formatArgsArray(argsArray, osProvider, winShell)
+                args += createConfigArgument("mcp_servers.$ideaName.args", "[$argsList]", osProvider, winShell)
             }
 
             // Add env configuration
             if (env != null && env.size() > 0) {
-                val envMap = formatEnvObject(env, isPowerShell73OrOver, osProvider)
-                args += createConfigArgument("mcp_servers.$ideaName.env", envMap, osProvider)
+                val envMap = formatEnvObject(env, osProvider, winShell)
+                args += createConfigArgument("mcp_servers.$ideaName.env", envMap, osProvider, winShell)
             }
 
             args
@@ -149,12 +153,12 @@ object CodexArgsBuilder {
     /**
      * Creates a configuration argument with proper OS-specific formatting.
      */
-    private fun createConfigArgument(key: String, value: String, osProvider: OsProvider = DefaultOsProvider): List<String> {
-        val configValue = if (osProvider.isWindows) {
-            // Windows
+    private fun createConfigArgument(key: String, value: String, osProvider: OsProvider = DefaultOsProvider, winShell: WinShell): List<String> {
+        val configValue = if (osProvider.isWindows && winShell != WinShell.WSL) {
+            // Windows/PowerShell
             "$key='$value'"
         } else {
-            // Non-Windows
+            // Non-Windows or Windows/WSL
             "'$key=$value'"
         }
         return listOf("-c", configValue)
@@ -163,9 +167,9 @@ object CodexArgsBuilder {
     /**
      * Formats JSON args array for the target OS.
      */
-    private fun formatArgsArray(argsArray: JsonArray, isPowerShell73OrOver: Boolean = false, osProvider: OsProvider = DefaultOsProvider): String {
-        return if (osProvider.isWindows) {
-            if (isPowerShell73OrOver) {
+    private fun formatArgsArray(argsArray: JsonArray, osProvider: OsProvider = DefaultOsProvider, winShell: WinShell): String {
+        return if (osProvider.isWindows && winShell != WinShell.WSL) {
+            if (winShell == WinShell.POWERSHELL_73_PLUS) {
                 // PowerShell 7.3+ on Windows
                 argsArray.joinToString(", ") { "\"${StringEscapeUtils.escapeJava(it.asString)}\"" }
             } else {
@@ -173,7 +177,7 @@ object CodexArgsBuilder {
                 argsArray.joinToString(", ") { "\\\"${StringEscapeUtils.escapeJava(it.asString)}\\\"" }
             }
         } else {
-            // Non-Windows OS
+            // Non-Windows OS or Windows/WSL
             argsArray.joinToString(", ") { "\"${it.asString}\"" }
         }
     }
@@ -181,21 +185,21 @@ object CodexArgsBuilder {
     /**
      * Formats JSON env object for the target OS.
      */
-    private fun formatEnvObject(env: com.google.gson.JsonObject, isPowerShell73OrOver: Boolean = false, osProvider: OsProvider = DefaultOsProvider): String {
+    private fun formatEnvObject(env: com.google.gson.JsonObject, osProvider: OsProvider = DefaultOsProvider, winShell: WinShell): String {
         // Create a mutable copy of the env object to add Windows-specific entries
         val envMap = env.entrySet().associate { it.key to it.value.asString }.toMutableMap()
         
         // Add SystemRoot for Windows if not already present
         // https://github.com/openai/codex/issues/3311
-        if (osProvider.isWindows && !envMap.containsKey("SystemRoot")) {
+        if (osProvider.isWindows && winShell != WinShell.WSL && !envMap.containsKey("SystemRoot")) {
             envMap["SystemRoot"] = "C:\\\\Windows"
         }
         
-        val envEntries = if (osProvider.isWindows && !isPowerShell73OrOver) {
+        val envEntries = if (osProvider.isWindows && winShell == WinShell.POWERSHELL_LT_73) {
             // Pre PS 7.3 on Windows
             envMap.map { "\\\"${it.key}\\\"=\\\"${it.value}\\\"" }
         } else {
-            // PS 7.3+ and non-Windows
+            // Non-Windows or PS 7.3+ on Windows
             envMap.map { "\"${it.key}\"=\"${it.value}\"" }
         }
         return "{${envEntries.joinToString(",")}}"
@@ -207,7 +211,7 @@ object CodexArgsBuilder {
      * @param port The HTTP service port for notifications
      * @return Formatted notify command string
      */
-    fun buildNotifyCommand(port: Int, isPowerShell73OrOver: Boolean, osProvider: OsProvider = DefaultOsProvider): List<String> {
+    fun buildNotifyCommand(port: Int, osProvider: OsProvider = DefaultOsProvider, winShell: WinShell): List<String> {
         // Create JsonArray for the curl command arguments
         val curlArgs = JsonArray().apply {
             add(JsonPrimitive("curl"))
@@ -218,8 +222,8 @@ object CodexArgsBuilder {
             add(JsonPrimitive("-d"))
         }
         
-        val formattedArgs = formatArgsArray(curlArgs, isPowerShell73OrOver, osProvider)
-        val configArgs = createConfigArgument("notify", "[$formattedArgs]", osProvider)
+        val formattedArgs = formatArgsArray(curlArgs, osProvider, winShell)
+        val configArgs = createConfigArgument("notify", "[$formattedArgs]", osProvider, winShell)
         return configArgs
     }
 

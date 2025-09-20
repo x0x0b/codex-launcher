@@ -10,18 +10,24 @@ import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.options.ex.Settings
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBRadioButton
+import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.HyperlinkEventAction
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.HyperlinkLabel
+import com.intellij.util.ui.JBUI
+import com.intellij.util.ui.UIUtil
 import javax.swing.JComponent
 import javax.swing.JComboBox
 import javax.swing.text.AbstractDocument
 import javax.swing.text.AttributeSet
 import javax.swing.text.DocumentFilter
+import java.awt.Component
 import java.awt.Font
+import javax.swing.DefaultListCellRenderer
+import javax.swing.JList
 import java.util.function.Consumer
 import java.util.function.Predicate
 
@@ -34,8 +40,11 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var modelReasoningEffortCombo: JComboBox<ModelReasoningEffort>
     private lateinit var openFileOnChangeCheckbox: JBCheckBox
     private lateinit var enableNotificationCheckbox: JBCheckBox
-    private lateinit var isPowerShell73OrOverCheckbox: JBCheckBox
+    private lateinit var winShellCombo: JComboBox<WinShell>
     private lateinit var mcpConfigInputArea: JBTextArea
+    private lateinit var mcpServerWarningLabel: JBLabel
+    private lateinit var fileHandlingWarningLabel: JBLabel
+    private lateinit var notificationsWarningLabel: JBLabel
 
     private val settings by lazy { service<CodexLauncherSettings>() }
 
@@ -65,13 +74,40 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
         // File opening control
         openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed")
+        fileHandlingWarningLabel = JBLabel("File Handling is unavailable when WSL shell is selected.").apply {
+            foreground = UIUtil.getErrorForeground()
+            border = JBUI.Borders.emptyTop(4)
+            isVisible = false
+        }
 
         // Notification control
         enableNotificationCheckbox = JBCheckBox("Enable notifications when events are completed by Codex CLI")
+        notificationsWarningLabel = JBLabel("Notifications are unavailable when WSL shell is selected.").apply {
+            foreground = UIUtil.getErrorForeground()
+            border = JBUI.Borders.emptyTop(4)
+            isVisible = false
+        }
 
-        // PowerShell 7.3 mode control (Windows only)
+        // Windows shell selection (Windows only)
         if (SystemInfo.isWindows) {
-            isPowerShell73OrOverCheckbox = JBCheckBox("Using PowerShell 7.3 or later")
+            winShellCombo = ComboBox(WinShell.entries.toTypedArray()).apply {
+                renderer = object : DefaultListCellRenderer() {
+                    override fun getListCellRendererComponent(
+                        list: JList<*>?,
+                        value: Any?,
+                        index: Int,
+                        isSelected: Boolean,
+                        cellHasFocus: Boolean
+                    ): Component {
+                        val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                        if (value is WinShell) {
+                            text = value.toDisplayName()
+                        }
+                        return component
+                    }
+                }
+            }
+            winShellCombo.addActionListener { updateWslDependentAvailability() }
         }
 
         // MCP Configuration controls
@@ -80,6 +116,12 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         mcpConfigInputArea.lineWrap = false
         mcpConfigInputArea.wrapStyleWord = false
         mcpConfigInputArea.emptyText.text = "Paste MCP stdio config here"
+
+        mcpServerWarningLabel = JBLabel("Integrated MCP Server is unavailable when WSL shell is selected.").apply {
+            foreground = UIUtil.getErrorForeground()
+            border = JBUI.Borders.emptyTop(4)
+            isVisible = false
+        }
 
         // Block invalid characters at input time
         (customModelField.document as? AbstractDocument)?.documentFilter = object : DocumentFilter() {
@@ -110,12 +152,12 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
         root = panel {
             if (SystemInfo.isWindows) {
-                group("PowerShell Compatibility") {
-                    row {
-                        cell(isPowerShell73OrOverCheckbox)
+                group("Windows Shell") {
+                    row("Shell") {
+                        cell(winShellCombo)
                     }
                     row {
-                        comment("Check this if you are using PowerShell 7.3 or later to enable compatible command formatting.")
+                        comment("Please choose the option that matches your environment, such as the PowerShell version or whether you are using WSL.")
                     }
                 }
             }
@@ -147,10 +189,16 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             }
             group("File Handling") {
                 row {
+                    cell(fileHandlingWarningLabel)
+                }
+                row {
                     cell(openFileOnChangeCheckbox)
                 }
             }
             group("Notifications (Experimental)") {
+                row {
+                    cell(notificationsWarningLabel)
+                }
                 row {
                     cell(enableNotificationCheckbox)
                 }
@@ -167,6 +215,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 }
             }
             group("Integrated MCP Server (Experimental)") {
+                row {
+                    cell(mcpServerWarningLabel)
+                }
                 row {
                     comment(
                         "In <a href='mcp'>Tools &gt; MCP Server</a>, click the Copy Stdio Config button and paste it into the input field below. (2025.2+)",
@@ -185,6 +236,8 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             }
         }
 
+        updateWslDependentAvailability()
+
         return root
     }
 
@@ -196,7 +249,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 getModelReasoningEffort() != s.modelReasoningEffort ||
                 getOpenFileOnChange() != s.openFileOnChange ||
                 getEnableNotification() != s.enableNotification ||
-                (SystemInfo.isWindows && getIsPowerShell73OrOver() != s.isPowerShell73OrOver) ||
+                (SystemInfo.isWindows && getWinShell() != s.winShell) ||
                 getMcpConfigInput() != s.mcpConfigInput
     }
 
@@ -215,7 +268,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         s.openFileOnChange = getOpenFileOnChange()
         s.enableNotification = getEnableNotification()
         if (SystemInfo.isWindows) {
-            s.isPowerShell73OrOver = getIsPowerShell73OrOver()
+            s.winShell = getWinShell()
+            // update legacy field
+            s.isPowerShell73OrOver = false
         }
         s.mcpConfigInput = getMcpConfigInput()
     }
@@ -231,9 +286,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         openFileOnChangeCheckbox.isSelected = s.openFileOnChange
         enableNotificationCheckbox.isSelected = s.enableNotification
         if (SystemInfo.isWindows) {
-            isPowerShell73OrOverCheckbox.isSelected = s.isPowerShell73OrOver
+            winShellCombo.selectedItem = s.winShell
         }
         mcpConfigInputArea.text = s.mcpConfigInput
+        updateWslDependentAvailability()
     }
 
     fun getMode(): Mode {
@@ -264,11 +320,50 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         return enableNotificationCheckbox.isSelected
     }
 
-    private fun getIsPowerShell73OrOver(): Boolean {
+    private fun getWinShell(): WinShell {
         return if (SystemInfo.isWindows) {
-            isPowerShell73OrOverCheckbox.isSelected
+            (winShellCombo.selectedItem as? WinShell) ?: WinShell.POWERSHELL_LT_73
         } else {
-            false
+            WinShell.POWERSHELL_LT_73
+        }
+    }
+
+    private fun updateWslDependentAvailability() {
+        if (!::mcpConfigInputArea.isInitialized ||
+            !::mcpServerWarningLabel.isInitialized ||
+            !::fileHandlingWarningLabel.isInitialized ||
+            !::notificationsWarningLabel.isInitialized
+        ) {
+            return
+        }
+        val isWslSelected = SystemInfo.isWindows &&
+                ::winShellCombo.isInitialized &&
+                (winShellCombo.selectedItem as? WinShell) == WinShell.WSL
+
+        mcpServerWarningLabel.isVisible = isWslSelected
+        fileHandlingWarningLabel.isVisible = isWslSelected
+        notificationsWarningLabel.isVisible = isWslSelected
+
+        mcpConfigInputArea.isEnabled = !isWslSelected
+        openFileOnChangeCheckbox.isEnabled = !isWslSelected
+        enableNotificationCheckbox.isEnabled = !isWslSelected
+
+        mcpConfigInputArea.toolTipText = if (isWslSelected) {
+            "Integrated MCP Server is unavailable when WSL shell is selected."
+        } else {
+            null
+        }
+
+        openFileOnChangeCheckbox.toolTipText = if (isWslSelected) {
+            "File Handling is unavailable when WSL shell is selected."
+        } else {
+            null
+        }
+
+        enableNotificationCheckbox.toolTipText = if (isWslSelected) {
+            "Notifications are unavailable when WSL shell is selected."
+        } else {
+            null
         }
     }
 
