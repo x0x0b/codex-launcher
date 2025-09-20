@@ -1,4 +1,4 @@
-package com.github.x0x0b.codexlauncher
+package com.github.x0x0b.codexlauncher.notifications
 
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType

@@ -1,5 +1,6 @@
-package com.github.x0x0b.codexlauncher
+package com.github.x0x0b.codexlauncher.actions
 
+import com.github.x0x0b.codexlauncher.http.HttpTriggerService
 import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType

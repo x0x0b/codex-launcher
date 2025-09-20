@@ -59,12 +59,12 @@
   <extensions defaultExtensionNs="com.intellij">
     <notificationGroup id="CodexLauncher" displayType="BALLOON" isLogByDefault="true"/>
     <applicationConfigurable instance="com.github.x0x0b.codexlauncher.settings.CodexLauncherConfigurable" id="com.github.x0x0b.codexlauncher.settings" displayName="Codex Launcher"/>
-    <postStartupActivity implementation="com.github.x0x0b.codexlauncher.CodexStartupActivity"/>
+    <postStartupActivity implementation="com.github.x0x0b.codexlauncher.startup.CodexStartupActivity"/>
   </extensions>
 
   <actions>
     <action id="com.github.x0x0b.codexlauncher.launch"
-      class="com.github.x0x0b.codexlauncher.LaunchCodexAction"
+      class="com.github.x0x0b.codexlauncher.actions.LaunchCodexAction"
       text="Launch Codex" description="Open a Codex terminal" icon="icons/codex.svg">
       <!-- New UI toolbar (2022.3+) -->
       <add-to-group group-id="MainToolbarRight" anchor="last"/>

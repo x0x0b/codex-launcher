@@ -1,4 +1,4 @@
-package com.github.x0x0b.codexlauncher
+package com.github.x0x0b.codexlauncher.files
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service

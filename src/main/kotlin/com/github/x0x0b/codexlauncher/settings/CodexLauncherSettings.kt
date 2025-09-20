@@ -1,6 +1,6 @@
 package com.github.x0x0b.codexlauncher.settings
 
-import com.github.x0x0b.codexlauncher.util.CodexArgsBuilder
+import com.github.x0x0b.codexlauncher.cli.CodexArgsBuilder
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State

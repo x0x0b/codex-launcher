@@ -1,4 +1,4 @@
-package com.github.x0x0b.codexlauncher.util
+package com.github.x0x0b.codexlauncher.cli
 
 import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
 import com.github.x0x0b.codexlauncher.settings.Model
