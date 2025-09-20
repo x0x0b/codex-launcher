@@ -189,18 +189,18 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             }
             group("File Handling") {
                 row {
-                    cell(openFileOnChangeCheckbox)
+                    cell(fileHandlingWarningLabel)
                 }
                 row {
-                    cell(fileHandlingWarningLabel)
+                    cell(openFileOnChangeCheckbox)
                 }
             }
             group("Notifications (Experimental)") {
                 row {
-                    cell(enableNotificationCheckbox)
+                    cell(notificationsWarningLabel)
                 }
                 row {
-                    cell(notificationsWarningLabel)
+                    cell(enableNotificationCheckbox)
                 }
                 row {
                     comment(
@@ -216,13 +216,13 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             }
             group("Integrated MCP Server (Experimental)") {
                 row {
+                    cell(mcpServerWarningLabel)
+                }
+                row {
                     comment(
                         "In <a href='mcp'>Tools &gt; MCP Server</a>, click the Copy Stdio Config button and paste it into the input field below. (2025.2+)",
                         action = HyperlinkEventAction { openApplicationConfigurable(MCP_SERVER_CONFIGURABLE_ID) }
                     )
-                }
-                row {
-                    cell(mcpServerWarningLabel)
                 }
                 row("Stdio Config:") {
                     cell(JBScrollPane(mcpConfigInputArea))
