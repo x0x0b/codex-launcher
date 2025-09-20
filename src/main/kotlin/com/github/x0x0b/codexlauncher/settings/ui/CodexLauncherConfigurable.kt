@@ -1,5 +1,10 @@
-package com.github.x0x0b.codexlauncher.settings
+package com.github.x0x0b.codexlauncher.settings.ui
 
+import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
+import com.github.x0x0b.codexlauncher.settings.options.Model
+import com.github.x0x0b.codexlauncher.settings.options.ModelReasoningEffort
+import com.github.x0x0b.codexlauncher.settings.options.Mode
+import com.github.x0x0b.codexlauncher.settings.options.WinShell
 import com.intellij.ide.DataManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.ConfigurationException

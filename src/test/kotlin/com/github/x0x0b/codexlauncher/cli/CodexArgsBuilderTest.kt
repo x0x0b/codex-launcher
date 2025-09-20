@@ -1,11 +1,11 @@
 package com.github.x0x0b.codexlauncher.cli
 
 import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
-import com.github.x0x0b.codexlauncher.settings.Model
-import com.github.x0x0b.codexlauncher.settings.Mode
-import com.github.x0x0b.codexlauncher.settings.ModelReasoningEffort
+import com.github.x0x0b.codexlauncher.settings.options.Model
+import com.github.x0x0b.codexlauncher.settings.options.Mode
+import com.github.x0x0b.codexlauncher.settings.options.ModelReasoningEffort
 import com.intellij.testFramework.LightPlatformTestCase
-import com.github.x0x0b.codexlauncher.settings.WinShell
+import com.github.x0x0b.codexlauncher.settings.options.WinShell
 
 /**
  * Test OS provider for mocking Windows/non-Windows behavior
@@ -54,7 +54,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         state.mode = Mode.FULL_AUTO
         state.model = Model.CUSTOM
         state.customModel = "gpt-4o"
-        state.modelReasoningEffort = com.github.x0x0b.codexlauncher.settings.ModelReasoningEffort.HIGH
+        state.modelReasoningEffort = ModelReasoningEffort.HIGH
     }
 
     // === Complex arguments formatting tests ===
