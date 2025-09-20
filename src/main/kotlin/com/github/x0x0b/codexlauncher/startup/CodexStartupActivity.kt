@@ -1,5 +1,7 @@
-package com.github.x0x0b.codexlauncher
+package com.github.x0x0b.codexlauncher.startup
 
+import com.github.x0x0b.codexlauncher.files.FileOpenService
+import com.github.x0x0b.codexlauncher.http.HttpTriggerService
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.application.ApplicationManager

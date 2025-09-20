@@ -1,4 +1,4 @@
-package com.github.x0x0b.codexlauncher.settings
+package com.github.x0x0b.codexlauncher.settings.options
 
 /**
  * Launch mode for `codex`.

@@ -1,10 +1,10 @@
-package com.github.x0x0b.codexlauncher.util
+package com.github.x0x0b.codexlauncher.cli
 
 import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
-import com.github.x0x0b.codexlauncher.settings.Model
-import com.github.x0x0b.codexlauncher.settings.ModelReasoningEffort
-import com.github.x0x0b.codexlauncher.settings.Mode
-import com.github.x0x0b.codexlauncher.settings.WinShell
+import com.github.x0x0b.codexlauncher.settings.options.Model
+import com.github.x0x0b.codexlauncher.settings.options.ModelReasoningEffort
+import com.github.x0x0b.codexlauncher.settings.options.Mode
+import com.github.x0x0b.codexlauncher.settings.options.WinShell
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive

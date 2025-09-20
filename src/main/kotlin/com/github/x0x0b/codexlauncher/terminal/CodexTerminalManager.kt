@@ -1,14 +1,8 @@
-package com.github.x0x0b.codexlauncher
+package com.github.x0x0b.codexlauncher.terminal
 
-import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
-import com.intellij.notification.NotificationGroupManager
-import com.intellij.notification.NotificationType
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.service
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.wm.ToolWindowManager
@@ -17,95 +11,62 @@ import com.intellij.ui.content.Content
 import org.jetbrains.plugins.terminal.TerminalToolWindowManager
 import org.jetbrains.plugins.terminal.TerminalToolWindowFactory
 
-class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null), DumbAware {
-    
+/**
+ * Project-level service responsible for managing Codex terminals.
+ * Encapsulates lookup, reuse, focus, and command execution logic so actions stay thin.
+ */
+@Service(Service.Level.PROJECT)
+class CodexTerminalManager(private val project: Project) {
+
     companion object {
-        private const val CODEX_COMMAND = "codex"
-        private const val NOTIFICATION_TITLE = "Codex Launcher"
         private val CODEX_TERMINAL_KEY = Key.create<Boolean>("codex.launcher.codexTerminal")
         private val CODEX_TERMINAL_RUNNING_KEY = Key.create<Boolean>("codex.launcher.codexTerminal.running")
         private val CODEX_TERMINAL_CALLBACK_KEY = Key.create<Boolean>("codex.launcher.codexTerminal.callbackRegistered")
     }
-    
-    private val logger = logger<LaunchCodexAction>()
+
+    private val logger = logger<CodexTerminalManager>()
 
     private data class CodexTerminal(val widget: TerminalWidget, val content: Content)
-    override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project
-        if (project == null) {
-            logger.warn("No project context available for Codex launch")
-            return
-        }
-        
-        val baseDir = project.basePath ?: System.getProperty("user.home")
-        logger.info("Launching Codex in directory: $baseDir")
 
+    /**
+     * Launches or reuses the Codex terminal for the given command.
+     * @throws Throwable when terminal creation or command execution fails.
+     */
+    fun launch(baseDir: String, command: String) {
         val terminalManager = TerminalToolWindowManager.getInstance(project)
         var existingTerminal = locateCodexTerminal(terminalManager)
 
-        try {
-            val httpService = ApplicationManager.getApplication().service<HttpTriggerService>()
-            val port = httpService.getActualPort()
-            
-            if (port == 0) {
-                logger.warn("HTTP service port is not available")
-                notify(project, "HTTP service is not properly initialized", NotificationType.WARNING)
+        existingTerminal?.let { terminal ->
+            ensureTerminationCallback(terminal.widget, terminal.content)
+            if (isCodexRunning(terminal)) {
+                logger.info("Focusing active Codex terminal")
+                focusCodexTerminal(terminalManager, terminal)
                 return
             }
 
-            val settings = service<CodexLauncherSettings>()
-            val args = settings.getArgs(port)
-            
-            val command = buildCommand(args)
-
-            existingTerminal?.let { terminal ->
-                ensureTerminationCallback(terminal.widget, terminal.content)
-                if (isCodexRunning(terminal)) {
-                    logger.info("Focusing active Codex terminal")
-                    focusCodexTerminal(project, terminalManager, terminal)
-                    return
-                }
-
-                if (reuseCodexTerminal(terminal, command)) {
-                    logger.info("Reused existing Codex terminal for new Codex run")
-                    focusCodexTerminal(project, terminalManager, terminal)
-                    return
-                } else {
-                    clearCodexMetadata(terminalManager, terminal.widget)
-                    existingTerminal = null
-                }
+            if (reuseCodexTerminal(terminal, command)) {
+                logger.info("Reused existing Codex terminal for new Codex run")
+                focusCodexTerminal(terminalManager, terminal)
+                return
+            } else {
+                clearCodexMetadata(terminalManager, terminal.widget)
+                existingTerminal = null
             }
-
-            var widget: TerminalWidget? = null
-            try {
-                widget = terminalManager.createShellWidget(baseDir, "Codex", true, true)
-                val content = markCodexTerminal(terminalManager, widget)
-                if (!sendCommandToTerminal(widget, content, command)) {
-                    throw IllegalStateException("Failed to execute Codex command")
-                }
-                if (content != null) {
-                    focusCodexTerminal(project, terminalManager, CodexTerminal(widget, content))
-                }
-            } catch (sendError: Throwable) {
-                widget?.let { clearCodexMetadata(terminalManager, it) }
-                throw sendError
-            }
-            
-            logger.info("Codex command executed successfully: $command")
-            
-        } catch (t: Throwable) {
-            logger.error("Failed to launch Codex", t)
-            notify(project, "Failed to launch Codex: ${t.message}", NotificationType.ERROR)
         }
-    }
 
-    private fun buildCommand(args: String): String {
-        return buildString {
-            append(CODEX_COMMAND)
-            if (args.isNotBlank()) {
-                append(" ")
-                append(args)
+        var widget: TerminalWidget? = null
+        try {
+            widget = terminalManager.createShellWidget(baseDir, "Codex", true, true)
+            val content = markCodexTerminal(terminalManager, widget)
+            if (!sendCommandToTerminal(widget, content, command)) {
+                throw IllegalStateException("Failed to execute Codex command")
             }
+            if (content != null) {
+                focusCodexTerminal(terminalManager, CodexTerminal(widget, content))
+            }
+        } catch (sendError: Throwable) {
+            widget?.let { clearCodexMetadata(terminalManager, it) }
+            throw sendError
         }
     }
 
@@ -124,7 +85,6 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
     }
 
     private fun focusCodexTerminal(
-        project: Project,
         manager: TerminalToolWindowManager,
         terminal: CodexTerminal
     ) {
@@ -134,7 +94,7 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
             }
 
             try {
-                val toolWindow = resolveTerminalToolWindow(project, manager)
+                val toolWindow = resolveTerminalToolWindow(manager)
                 if (toolWindow == null) {
                     logger.warn("Terminal tool window is not available for focusing Codex")
                     return@invokeLater
@@ -159,7 +119,6 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
     }
 
     private fun resolveTerminalToolWindow(
-        project: Project,
         manager: TerminalToolWindowManager
     ) = manager.getToolWindow()
         ?: ToolWindowManager.getInstance(project)
@@ -248,14 +207,5 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
             val method = widget.javaClass.methods.firstOrNull { it.name == "isCommandRunning" && it.parameterCount == 0 }
             method?.apply { isAccessible = true }?.invoke(widget) as? Boolean
         }.getOrNull()
-    }
-
-    private fun notify(project: Project, content: String, type: NotificationType) {
-        try {
-            val group = NotificationGroupManager.getInstance().getNotificationGroup("CodexLauncher")
-            group.createNotification(NOTIFICATION_TITLE, content, type).notify(project)
-        } catch (e: Exception) {
-            logger.error("Failed to show notification: $content", e)
-        }
     }
 }

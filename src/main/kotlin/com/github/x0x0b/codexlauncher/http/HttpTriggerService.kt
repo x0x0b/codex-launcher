@@ -1,5 +1,7 @@
-package com.github.x0x0b.codexlauncher
+package com.github.x0x0b.codexlauncher.http
 
+import com.github.x0x0b.codexlauncher.files.FileOpenService
+import com.github.x0x0b.codexlauncher.notifications.NotificationService
 import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
