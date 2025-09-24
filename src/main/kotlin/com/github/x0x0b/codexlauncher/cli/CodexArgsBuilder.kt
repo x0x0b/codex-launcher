@@ -12,6 +12,7 @@ import com.google.gson.JsonSyntaxException
 import groovy.json.StringEscapeUtils
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.util.SystemInfo
+import com.intellij.util.EnvironmentUtil
 
 /**
  * Interface for providing OS information, allowing for testing
@@ -39,6 +40,8 @@ object DefaultOsProvider : OsProvider {
  * @since 1.0.0
  */
 object CodexArgsBuilder {
+
+    private const val OPENAI_API_KEY_ENV_NAME = "OPENAI_API_KEY"
     /**
      * Builds the command-line argument list for codex based on the provided settings state.
      * 
@@ -55,7 +58,12 @@ object CodexArgsBuilder {
      * For settings with mode=FULL_AUTO and model=GPT_5:
      * Returns: ["--full-auto", "--model", "gpt-5"]
      */
-    fun build(state: CodexLauncherSettings.State, port: Int? = null, osProvider: OsProvider = DefaultOsProvider): List<String> {
+    fun build(
+        state: CodexLauncherSettings.State,
+        port: Int? = null,
+        osProvider: OsProvider = DefaultOsProvider,
+        openAiApiKey: String? = EnvironmentUtil.getValue(OPENAI_API_KEY_ENV_NAME) //FIXME: This won't work
+    ): List<String> {
         val parts = mutableListOf<String>()
 
         if (state.mode == Mode.FULL_AUTO) {
@@ -72,6 +80,11 @@ object CodexArgsBuilder {
         // Add model parameter if specified
         if (modelName != null) {
             parts += listOf("--model", "'${modelName}'")
+        }
+
+        // Add API key parameter if provided
+        if (!openAiApiKey.isNullOrBlank()) {
+            parts += listOf("--api-key", buildOpenAiApiKeyReference(osProvider, state.winShell))
         }
 
         // Add reasoning effort parameter if specified
@@ -96,6 +109,23 @@ object CodexArgsBuilder {
         }
 
         return parts
+    }
+
+    private fun buildOpenAiApiKeyReference(osProvider: OsProvider = DefaultOsProvider, winShell: WinShell): String {
+        return if (osProvider.isWindows && winShell != WinShell.WSL) {
+            buildString {
+                append('$')
+                append("env:")
+                append(OPENAI_API_KEY_ENV_NAME)
+            }
+        } else {
+            buildString {
+                append('$')
+                append('{')
+                append(OPENAI_API_KEY_ENV_NAME)
+                append('}')
+            }
+        }
     }
 
     /**
