@@ -33,13 +33,33 @@ body:
       label: Codex CLI version
       description: Which Codex CLI version are you using?
       placeholder: e.g. 0.36.0
+  - type: dropdown
+    id: shell
+    attributes:
+      label: Shell
+      description: Select the shell you are using, if relevant. If you choose Other, add details in the description above.
+      options:
+        - label: Select shell…
+          value: ""
+        - label: zsh
+          value: zsh
+        - label: bash
+          value: bash
+        - label: fish
+          value: fish
+        - label: PowerShell 7.3+
+          value: powershell_73_plus
+        - label: PowerShell (< 7.3)
+          value: powershell_lt_73
+        - label: Other
+          value: other
   - type: input
     id: plugin_version
     attributes:
-      label: Codex Launcher version (optional)
+      label: Codex Launcher version
       placeholder: e.g. 1.0.12
   - type: input
     id: ide_version
     attributes:
-      label: IDE version (optional)
+      label: IDE version
       placeholder: e.g. IntelliJ IDEA 2024.2 (Build 242.10180.27)

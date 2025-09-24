@@ -51,6 +51,28 @@ body:
     attributes:
       label: OS details (if Other or additional context)
       placeholder: e.g. Ubuntu 24.04, macOS 15.0 beta
+  - type: dropdown
+    id: shell
+    attributes:
+      label: Shell
+      description: Select the shell you were using when the issue occurred. If you choose Other, describe the shell in the Details section.
+      options:
+        - label: Select shell…
+          value: ""
+        - label: zsh
+          value: zsh
+        - label: bash
+          value: bash
+        - label: fish
+          value: fish
+        - label: PowerShell 7.3+
+          value: powershell_73_plus
+        - label: PowerShell (< 7.3)
+          value: powershell_lt_73
+        - label: Other
+          value: other
+    validations:
+      required: true
   - type: textarea
     id: steps_to_reproduce
     attributes:
