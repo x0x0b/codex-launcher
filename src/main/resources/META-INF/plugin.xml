@@ -13,33 +13,34 @@
   <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
        Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
   <description><![CDATA[
-        <blockquote><b>IMPORTANT</b>: This plugin requires <a href="https://github.com/openai/codex/blob/main/README.md">OpenAI Codex CLI</a> to be installed separately.</blockquote>
+        <blockquote><b>Important:</b> Install the <a href="https://github.com/openai/codex">OpenAI Codex CLI</a> separately before using this plugin.</blockquote>
 
-        <p><b>Windows users:</b> Select your terminal shell in the plugin settings (<em>Settings (→ Other Settings) → Codex Launcher</em>) to ensure proper functionality.</p>
+        <blockquote><b>For Windows users:</b> Please select your terminal shell in the plugin settings (<em>Settings (→ Other Settings) → Codex Launcher</em>) to ensure proper functionality.</blockquote>
 
         <h2>Overview</h2>
         <p>
-          An <b>unofficial</b> IntelliJ IDEA plugin that seamlessly integrates OpenAI Codex CLI into your development workflow by launching it directly from the IDE.
+          Codex Launcher is an <b>unofficial</b> IntelliJ IDEA plugin that keeps the OpenAI Codex CLI one click away inside the IDE.
         </p>
 
         <h2>Features</h2>
         <ul>
-          <li><b>One-click launch</b>: Toolbar button and Tools menu action for instant access</li>
-          <li><b>IDE notifications</b>: Optional notifications when Codex processing is completed</li>
-          <li><b>Auto file opening</b>: Automatically opens files modified by Codex in the editor</li>
-          <li><b>Integration with the built-in MCP server</b>: Semi-automatic connection setup for IntelliJ's built-in MCP server (2025.2+)</li>
-          <li><b>Configurable</b>: Customizable launch modes, model selection, and more</li>
+          <li><b>One-click launch</b> from the toolbar or Tools menu</li>
+          <li><b>Integrated terminal</b> that opens a dedicated "Codex" tab in the project root</li>
+          <li><b>Completion notifications</b> when Codex finishes running</li>
+          <li><b>Automatic file opening</b> for files updated by Codex</li>
+          <li><b>Built-in MCP server pairing</b> with guided setup for IntelliJ's MCP server (2025.2+)</li>
+          <li><b>Flexible configuration</b> for launch modes, models, and notifications</li>
         </ul>
 
         <h2>Usage</h2>
         <ol>
           <li>Click the <b>Launch Codex</b> button in the main toolbar</li>
-          <li>Or navigate to <b>Tools</b> → <b>Launch Codex</b></li>
-          <li>The integrated Terminal opens with a new "Codex" tab and runs <code>codex</code> automatically</li>
+          <li>Or choose <b>Tools</b> → <b>Launch Codex</b></li>
+          <li>The integrated terminal opens a new "Codex" tab and runs <code>codex</code> automatically</li>
         </ol>
 
         <h2>Configuration</h2>
-        <p>Access plugin settings via <em>Settings (→ Other Settings) → Codex Launcher</em>.</p>
+        <p>Open <em>Settings (→ Other Settings) → Codex Launcher</em> to pick the launch mode, model, notification behavior, and auto-open options.</p>
 
         <h2>Requirements</h2>
         <ul>
