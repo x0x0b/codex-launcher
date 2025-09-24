@@ -27,24 +27,6 @@ body:
         - Any error messages or unexpected behavior?
     validations:
       required: true
-  - type: dropdown
-    id: topic
-    attributes:
-      label: Topic (optional)
-      description: Select the area your question relates to.
-      options:
-        - label: Select topic…
-          value: ""
-        - label: Getting started / setup
-          value: setup
-        - label: Configuration & settings
-          value: configuration
-        - label: Codex CLI integration
-          value: cli
-        - label: IDE workflow
-          value: ide
-        - label: Other
-          value: other
   - type: input
     id: codex_cli_version
     attributes:
