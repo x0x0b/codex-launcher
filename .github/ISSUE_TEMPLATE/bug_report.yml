@@ -36,16 +36,11 @@ body:
       label: Operating system
       description: Select the operating system where the issue occurs.
       options:
-        - label: Select operating system…
-          value: ""
-        - label: macOS
-          value: macOS
-        - label: Windows
-          value: windows
-        - label: Windows+WSL
-          value: windows_wsl
-        - label: Linux
-          value: linux
+        - macOS
+        - Windows
+        - Windows+WSL
+        - Linux
+        - Other
   - type: input
     id: os_details
     attributes:
@@ -57,20 +52,12 @@ body:
       label: Shell
       description: Select the shell you were using when the issue occurred. If you choose Other, describe the shell in the Details section.
       options:
-        - label: Select shell…
-          value: ""
-        - label: zsh
-          value: zsh
-        - label: bash
-          value: bash
-        - label: fish
-          value: fish
-        - label: PowerShell 7.3+
-          value: powershell_73_plus
-        - label: PowerShell (< 7.3)
-          value: powershell_lt_73
-        - label: Other
-          value: other
+        - zsh
+        - bash
+        - fish
+        - PowerShell 7.3+
+        - PowerShell (< 7.3)
+        - Other
     validations:
       required: true
   - type: textarea

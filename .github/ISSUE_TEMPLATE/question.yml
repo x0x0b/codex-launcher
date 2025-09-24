@@ -31,20 +31,12 @@ body:
       label: Shell
       description: Select the shell you are using, if relevant. If you choose Other, add details in the description above.
       options:
-        - label: Select shell…
-          value: ""
-        - label: zsh
-          value: zsh
-        - label: bash
-          value: bash
-        - label: fish
-          value: fish
-        - label: PowerShell 7.3+
-          value: powershell_73_plus
-        - label: PowerShell (< 7.3)
-          value: powershell_lt_73
-        - label: Other
-          value: other
+        - zsh
+        - bash
+        - fish
+        - PowerShell 7.3+
+        - PowerShell (< 7.3)
+        - Other
   - type: input
     id: plugin_version
     attributes:
