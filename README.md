@@ -9,7 +9,7 @@ Codex Launcher is an **unofficial** IntelliJ IDEA plugin that keeps the OpenAI C
 
 > **Important:** Install the [OpenAI Codex CLI](https://github.com/openai/codex) separately before using this plugin.
 
-> **For Windows users:** Please select your terminal shell in the plugin settings to ensure proper functionality via _Settings (→ Other Settings) → Codex Launcher_.
+> **For Windows users:** Please select your terminal shell in the plugin settings to ensure proper functionality. Go to _Settings (→ Other Settings) → Codex Launcher_.
 
 ## ✨ Features
 
