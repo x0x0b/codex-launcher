@@ -1,0 +1,65 @@
+name: Question
+description: Ask a question about using or configuring Codex Launcher.
+title: "[Question]: "
+labels:
+  - question
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reaching out! Share details so the community can help quickly.
+  - type: input
+    id: summary
+    attributes:
+      label: Question summary
+      description: Provide a short headline for your question.
+      placeholder: e.g. How do I point Codex Launcher to a custom Codex CLI binary?
+    validations:
+      required: true
+  - type: textarea
+    id: question_details
+    attributes:
+      label: Details
+      description: Include the full question, context, and what you've tried so far.
+      placeholder: |
+        - What are you trying to achieve?
+        - What steps have you taken?
+        - Any error messages or unexpected behavior?
+    validations:
+      required: true
+  - type: input
+    id: codex_cli_version
+    attributes:
+      label: Codex CLI version
+      description: Which Codex CLI version are you using?
+      placeholder: e.g. 0.36.0
+  - type: dropdown
+    id: shell
+    attributes:
+      label: Shell
+      description: Select the shell you are using, if relevant. If you choose Other, add details in the description above.
+      options:
+        - label: Select shell…
+          value: ""
+        - label: zsh
+          value: zsh
+        - label: bash
+          value: bash
+        - label: fish
+          value: fish
+        - label: PowerShell 7.3+
+          value: powershell_73_plus
+        - label: PowerShell (< 7.3)
+          value: powershell_lt_73
+        - label: Other
+          value: other
+  - type: input
+    id: plugin_version
+    attributes:
+      label: Codex Launcher version
+      placeholder: e.g. 1.0.12
+  - type: input
+    id: ide_version
+    attributes:
+      label: IDE version
+      placeholder: e.g. IntelliJ IDEA 2024.2 (Build 242.10180.27)
