@@ -9,14 +9,15 @@ An **unofficial** IntelliJ IDEA plugin that seamlessly integrates OpenAI Codex C
 
 > **This plugin requires the OpenAI Codex CLI to be installed separately.** Visit the [OpenAI Codex GitHub repository](https://github.com/openai/codex) for installation instructions.
 
+> **For Windows users: Please select your terminal shell in the plugin settings to ensure proper functionality via _Settings (→ Other Settings) → Codex Launcher_.**
+
 ## ✨ Features
 
 - 🚀 **One-click launch**: Toolbar button and Tools menu action for instant access
-- 🖥️ **Integrated Terminal**: Opens a dedicated "Codex" terminal tab in your IDE
-- 📁 **Project-aware**: Automatically runs `codex` in the current project root directory
-- ⚙️ **Configurable**: Customizable launch modes, model selection, and auto file opening
 - 🔔 **IDE Notifications**: Optional notifications when Codex processing is completed
+- 📄 **Auto file opening**: Automatically opens files modified by Codex in the editor
 - 🔌 **Integration with the built-in MCP server**: Semi-automatic connection setup for IntelliJ's built-in MCP server (2025.2+)
+- ⚙️ **Configurable**: Customizable launch modes, model selection, and more
 
 ## 🛠️ Installation
 
@@ -35,21 +36,7 @@ An **unofficial** IntelliJ IDEA plugin that seamlessly integrates OpenAI Codex C
 3. The integrated Terminal opens with a new "Codex" tab and runs `codex` automatically
 
 ### Configuration
-Access plugin settings via **Preferences** → **Other Settings** → **Codex Launcher**
-
-#### Available Options
-- **Launch Mode**: 
-  - `default` - Standard Codex behavior
-  - `--full-auto` - Fully automated mode
-- **Model Selection**: 
-  - Default model
-  - Preset models
-  - Custom model configuration
-- **Auto File Open**: Automatically open files modified by Codex in the editor
-- **IDE Notifications**: Enable notifications
-- **Integration with the built-in MCP server (Experimental)**: Semi-automatic connection setup for IntelliJ's built-in MCP server
-  - Simply copy stdio config from Tools → MCP Server and paste into the plugin settings
-  - The plugin automatically configures the connection parameters for Codex
+Access plugin settings via **Settings** (→ **Other Settings**) → **Codex Launcher**
 
 ## 📝 Development
 
