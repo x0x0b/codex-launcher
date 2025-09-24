@@ -8,14 +8,6 @@ body:
     attributes:
       value: |
         Thanks for reaching out! Share details so the community can help quickly.
-  - type: input
-    id: summary
-    attributes:
-      label: Question summary
-      description: Provide a short headline for your question.
-      placeholder: e.g. How do I point Codex Launcher to a custom Codex CLI binary?
-    validations:
-      required: true
   - type: textarea
     id: question_details
     attributes:

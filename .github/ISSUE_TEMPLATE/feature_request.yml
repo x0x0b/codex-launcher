@@ -8,14 +8,6 @@ body:
     attributes:
       value: |
         Thanks for contributing ideas to make Codex Launcher better! Share as much detail as you can so we can evaluate and prioritize the request.
-  - type: input
-    id: summary
-    attributes:
-      label: Summary
-      description: Provide a concise description of your idea.
-      placeholder: e.g. Add support for multiple Codex profiles
-    validations:
-      required: true
   - type: textarea
     id: problem
     attributes:
