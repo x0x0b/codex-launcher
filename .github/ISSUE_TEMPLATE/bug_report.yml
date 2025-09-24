@@ -52,12 +52,12 @@ body:
       label: Shell
       description: Select the shell you were using when the issue occurred. If you choose Other, describe the shell in the Details section.
       options:
+        - Other
         - zsh
         - bash
         - fish
         - PowerShell 7.3+
         - PowerShell (< 7.3)
-        - Other
     validations:
       required: true
   - type: textarea
