@@ -13,7 +13,7 @@
   <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
        Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
   <description><![CDATA[
-        <blockquote><b>Important:</b> Install the <a href="https://github.com/openai/codex">OpenAI Codex CLI</a> separately before using this plugin.</blockquote>
+        <blockquote><b>Important:</b> Install the <a href="https://github.com/openai/codex/blob/main/README.md">OpenAI Codex CLI</a> separately before using this plugin.</blockquote>
 
         <blockquote><b>For Windows users:</b> Please select your terminal shell in the plugin settings (<em>Settings (→ Other Settings) → Codex Launcher</em>) to ensure proper functionality.</blockquote>
 
