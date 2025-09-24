@@ -26,7 +26,7 @@
         <ul>
           <li><b>One-click launch</b> from the toolbar or Tools menu</li>
           <li><b>Integrated terminal</b> that opens a dedicated "Codex" tab in the project root</li>
-          <li><b>Completion notifications</b> when Codex finishes running</li>
+          <li><b>Completion notifications</b> after Codex CLI finishes processing the current run</li>
           <li><b>Automatic file opening</b> for files updated by Codex</li>
           <li><b>Built-in MCP server pairing</b> with guided setup for IntelliJ's MCP server (2025.2+)</li>
           <li><b>Flexible configuration</b> for launch modes, models, and notifications</li>

@@ -15,7 +15,7 @@ Codex Launcher is an **unofficial** IntelliJ IDEA plugin that keeps the OpenAI C
 
 - **One-click launch** from the toolbar or Tools menu
 - **Integrated terminal** that opens a dedicated "Codex" tab in the project root
-- **Completion notifications** when Codex finishes running
+- **Completion notifications** after Codex CLI finishes processing the current run
 - **Automatic file opening** for files updated by Codex
 - **Built-in MCP server pairing** with guided setup for IntelliJ's MCP server (2025.2+)
 - **Flexible configuration** for launch modes, models, and notifications
