@@ -19,13 +19,16 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.dsl.builder.Cell
 import com.intellij.ui.dsl.builder.HyperlinkEventAction
+import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.HyperlinkLabel
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.UIUtil
 import javax.swing.JComponent
 import javax.swing.JComboBox
+import javax.swing.JEditorPane
 import javax.swing.text.AbstractDocument
 import javax.swing.text.AttributeSet
 import javax.swing.text.DocumentFilter
@@ -57,6 +60,8 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         private val ALLOWED_CUSTOM_MODEL_REGEX = Regex("^[A-Za-z0-9._-]*$")
         private const val MCP_SERVER_CONFIGURABLE_ID = "com.intellij.mcpserver.settings"
         private const val NOTIFICATIONS_CONFIGURABLE_ID = "reference.settings.ide.settings.notifications"
+        private const val TERMINAL_CONFIGURABLE_ID = "terminal"
+        private const val COMMENT_FONT_SIZE_DELTA = 0.8f
     }
 
     override fun getId(): String = "com.github.x0x0b.codexlauncher.settings"
@@ -162,7 +167,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                         cell(winShellCombo)
                     }
                     row {
-                        comment("Please choose the option that matches your environment, such as the PowerShell version or whether you are using WSL.")
+                        this.largeComment(
+                            "<span style='color:#ef454a;'>Please select the option according to the setting specified in </span><a href='terminal'>Settings &gt; Tools &gt; Terminal &gt; Application Settings &gt; Shell Path</a>.",
+                            action = HyperlinkEventAction { openApplicationConfigurable(TERMINAL_CONFIGURABLE_ID) }
+                        )
                     }
                 }
             }
@@ -186,7 +194,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                         .applyToComponent { columns = 50 }
                 }
                 row {
-                    comment("Some models may not support all reasoning effort levels.")
+                    this.largeComment("Some models may not support all reasoning effort levels.")
                 }
                 row("Model reasoning effort") {
                     cell(modelReasoningEffortCombo)
@@ -208,7 +216,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(enableNotificationCheckbox)
                 }
                 row {
-                    comment(
+                    this.largeComment(
                         "Customize notification sounds and display options in <a href='notifications'>Settings &gt; Appearance &amp; Behavior &gt; Notifications &gt; CodexLauncher</a>.",
                         action = HyperlinkEventAction { openApplicationConfigurable(NOTIFICATIONS_CONFIGURABLE_ID) }
                     )
@@ -224,7 +232,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(mcpServerWarningLabel)
                 }
                 row {
-                    comment(
+                    this.largeComment(
                         "In <a href='mcp'>Tools &gt; MCP Server</a>, click the Copy Stdio Config button and paste it into the input field below. (2025.2+)",
                         action = HyperlinkEventAction { openApplicationConfigurable(MCP_SERVER_CONFIGURABLE_ID) }
                     )
@@ -375,6 +383,18 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private fun getMcpConfigInput(): String {
         return mcpConfigInputArea.text ?: ""
     }
+
+    private fun Row.largeComment(text: String, action: HyperlinkEventAction? = null): Cell<JEditorPane> {
+        val commentCell = if (action != null) {
+            comment(text, action = action)
+        } else {
+            comment(text)
+        }
+        return commentCell.applyToComponent {
+            font = font.deriveFont(font.size2D + COMMENT_FONT_SIZE_DELTA)
+        }
+    }
+
 
     private fun openApplicationConfigurable(configurableId: String) {
         val dataContext = DataManager.getInstance().getDataContext(root)
