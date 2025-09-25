@@ -63,6 +63,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         // Test non-Windows formatting
         val osProvider = TestOsProvider(isWindows = false)
         state.mcpConfigInput = mcpNonWindows
+        state.enableNotification = true
 
         val result = CodexArgsBuilder.build(state, 11111, osProvider = osProvider)
 
@@ -94,6 +95,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         val osProvider = TestOsProvider(isWindows = true)
         state.winShell = WinShell.POWERSHELL_LT_73
         state.mcpConfigInput = mcpWindows
+        state.openFileOnChange = true
 
         val result = CodexArgsBuilder.build(state, 22222, osProvider = osProvider)
 
@@ -128,6 +130,8 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         val osProvider = TestOsProvider(isWindows = true)
         state.winShell = WinShell.POWERSHELL_73_PLUS
         state.mcpConfigInput = mcpWindows
+        state.enableNotification = true
+        state.openFileOnChange = true
 
         val result = CodexArgsBuilder.build(state, 33333, osProvider = osProvider)
 
@@ -165,8 +169,10 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         state.modelReasoningEffort = ModelReasoningEffort.DEFAULT
         state.isPowerShell73OrOver = false
         state.mcpConfigInput = ""
+        state.openFileOnChange = false
+        state.enableNotification = false
 
-        val result = CodexArgsBuilder.build(state, null, osProvider = osProvider)
+        val result = CodexArgsBuilder.build(state, 5555, osProvider = osProvider)
 
         // Verify that only necessary arguments are included
         assertEquals(0, result.size)
@@ -177,6 +183,8 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         val osProvider = TestOsProvider(isWindows = true)
         state.winShell = WinShell.WSL
         state.mcpConfigInput = mcpWindows
+        state.openFileOnChange = true
+        state.enableNotification = true
 
         val result = CodexArgsBuilder.build(state, 44444, osProvider = osProvider)
 
