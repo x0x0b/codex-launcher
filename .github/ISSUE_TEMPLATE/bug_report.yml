@@ -56,7 +56,7 @@ body:
         - zsh
         - bash
         - fish
-        - PowerShell 7.3+
+        - PowerShell (>= 7.3)
         - PowerShell (< 7.3)
     validations:
       required: true
