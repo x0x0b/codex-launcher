@@ -49,8 +49,8 @@ body:
   - type: dropdown
     id: shell
     attributes:
-      label: Shell
-      description: Select the shell you were using when the issue occurred. If you choose Other, describe the shell in the Details section.
+      label: Shell configured in JetBrains IDE
+      description: Choose the same shell configured in your JetBrains IDE terminal (Settings > Tools > Terminal > Application Settings > Shell Path). If you pick Other, add details in the description above.
       options:
         - Other
         - zsh

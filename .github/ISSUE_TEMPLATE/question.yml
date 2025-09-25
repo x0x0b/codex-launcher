@@ -28,8 +28,8 @@ body:
   - type: dropdown
     id: shell
     attributes:
-      label: Shell
-      description: Select the shell you are using, if relevant. If you choose Other, add details in the description above.
+      label: Shell configured in JetBrains IDE
+      description: Choose the same shell configured in your JetBrains IDE terminal (Settings > Tools > Terminal > Application Settings > Shell Path). If you pick Other, add details in the description above.
       options:
         - zsh
         - bash
