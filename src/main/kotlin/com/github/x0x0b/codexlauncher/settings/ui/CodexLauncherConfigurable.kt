@@ -207,8 +207,11 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 row {
                     cell(openFileOnChangeCheckbox)
                 }
+                row {
+                    this.largeComment("Changes will take effect after restarting Codex.")
+                }
             }
-            group("Notifications (Experimental)") {
+            group("Notifications") {
                 row {
                     cell(notificationsWarningLabel)
                 }
@@ -220,6 +223,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                         "Customize notification sounds and display options in <a href='notifications'>Settings &gt; Appearance &amp; Behavior &gt; Notifications &gt; CodexLauncher</a>.",
                         action = HyperlinkEventAction { openApplicationConfigurable(NOTIFICATIONS_CONFIGURABLE_ID) }
                     )
+                }
+                row {
+                    this.largeComment("Changes will take effect after restarting Codex.")
                 }
                 row {
                     val link = HyperlinkLabel("Learn more about IntelliJ notification settings")
