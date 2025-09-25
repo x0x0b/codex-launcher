@@ -57,6 +57,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         private val ALLOWED_CUSTOM_MODEL_REGEX = Regex("^[A-Za-z0-9._-]*$")
         private const val MCP_SERVER_CONFIGURABLE_ID = "com.intellij.mcpserver.settings"
         private const val NOTIFICATIONS_CONFIGURABLE_ID = "reference.settings.ide.settings.notifications"
+        private const val TERMINAL_CONFIGURABLE_ID = "terminal"
     }
 
     override fun getId(): String = "com.github.x0x0b.codexlauncher.settings"
@@ -162,7 +163,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                         cell(winShellCombo)
                     }
                     row {
-                        comment("Please choose the option that matches your environment, such as the PowerShell version or whether you are using WSL.")
+                        comment(
+                            "<span style='color:#ef454a;'>Please select the option according to the setting specified in </span><a href='terminal'>Settings &gt; Tools &gt; Terminal &gt; Application Settings &gt; Shell Path</a>.",
+                            action = HyperlinkEventAction { openApplicationConfigurable(TERMINAL_CONFIGURABLE_ID) }
+                        )
                     }
                 }
             }
