@@ -118,9 +118,12 @@ class CodexTerminalManager(private val project: Project) {
             return null
         }
 
-        val toolWindowManager = ToolWindowManager.getInstance(project)
-        val isActive = toolWindow.isVisible && (toolWindow.isActive || toolWindowManager.activeToolWindowId == toolWindow.id)
-        return if (isActive) terminal else null
+        val isDisplayed = toolWindow.isVisible
+        if (!isDisplayed) {
+            return null
+        }
+
+        return terminal
     }
 
     private fun focusCodexTerminal(
