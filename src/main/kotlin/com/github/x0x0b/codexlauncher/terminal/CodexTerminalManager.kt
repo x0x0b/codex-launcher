@@ -70,6 +70,30 @@ class CodexTerminalManager(private val project: Project) {
         }
     }
 
+    /**
+     * Returns true when the Codex terminal tab is currently selected in the terminal tool window.
+     */
+    fun isCodexTerminalActive(): Boolean {
+        return try {
+            val terminalManager = TerminalToolWindowManager.getInstance(project)
+            findDisplayedCodexTerminal(terminalManager) != null
+        } catch (t: Throwable) {
+            logger.warn("Failed to inspect Codex terminal active state", t)
+            false
+        }
+    }
+
+    fun typeIntoActiveCodexTerminal(text: String): Boolean {
+        return try {
+            val terminalManager = TerminalToolWindowManager.getInstance(project)
+            val terminal = findDisplayedCodexTerminal(terminalManager) ?: return false
+            typeText(terminal.widget, text)
+        } catch (t: Throwable) {
+            logger.warn("Failed to type into Codex terminal", t)
+            false
+        }
+    }
+
     private fun locateCodexTerminal(manager: TerminalToolWindowManager): CodexTerminal? = try {
         manager.terminalWidgets.asSequence().mapNotNull { widget ->
             val content = manager.getContainer(widget)?.content ?: return@mapNotNull null
@@ -82,6 +106,24 @@ class CodexTerminalManager(private val project: Project) {
     } catch (t: Throwable) {
         logger.warn("Failed to inspect existing terminal widgets", t)
         null
+    }
+
+    private fun findDisplayedCodexTerminal(
+        manager: TerminalToolWindowManager
+    ): CodexTerminal? {
+        val terminal = locateCodexTerminal(manager) ?: return null
+        val toolWindow = resolveTerminalToolWindow(manager) ?: return null
+        val selectedContent = toolWindow.contentManager.selectedContent ?: return null
+        if (selectedContent != terminal.content) {
+            return null
+        }
+
+        val isDisplayed = toolWindow.isVisible
+        if (!isDisplayed) {
+            return null
+        }
+
+        return terminal
     }
 
     private fun focusCodexTerminal(
@@ -207,5 +249,45 @@ class CodexTerminalManager(private val project: Project) {
             val method = widget.javaClass.methods.firstOrNull { it.name == "isCommandRunning" && it.parameterCount == 0 }
             method?.apply { isAccessible = true }?.invoke(widget) as? Boolean
         }.getOrNull()
+    }
+
+    private fun typeText(widget: TerminalWidget, text: String): Boolean {
+        val connector = runCatching { widget.ttyConnector }.getOrNull()
+        if (connector != null) {
+            return runCatching {
+                connector.write(text)
+                true
+            }.getOrElse {
+                logger.warn("Failed to write to Codex terminal connector", it)
+                false
+            }
+        }
+
+        val methods = widget.javaClass.methods
+        val typeMethod = methods.firstOrNull { it.name == "typeText" && it.parameterCount == 1 && it.parameterTypes[0] == String::class.java }
+        if (typeMethod != null) {
+            return runCatching {
+                typeMethod.isAccessible = true
+                typeMethod.invoke(widget, text)
+                true
+            }.getOrElse {
+                logger.warn("Failed to invoke typeText on Codex terminal", it)
+                false
+            }
+        }
+
+        val pasteMethod = methods.firstOrNull { it.name == "pasteText" && it.parameterCount == 1 && it.parameterTypes[0] == String::class.java }
+        if (pasteMethod != null) {
+            return runCatching {
+                pasteMethod.isAccessible = true
+                pasteMethod.invoke(widget, text)
+                true
+            }.getOrElse {
+                logger.warn("Failed to invoke pasteText on Codex terminal", it)
+                false
+            }
+        }
+
+        return false
     }
 }
