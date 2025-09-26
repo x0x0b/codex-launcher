@@ -76,7 +76,8 @@ class CodexTerminalManager(private val project: Project) {
     fun isCodexTerminalActive(): Boolean {
         return try {
             val terminalManager = TerminalToolWindowManager.getInstance(project)
-            findDisplayedCodexTerminal(terminalManager) != null
+            val terminal = findDisplayedCodexTerminal(terminalManager) ?: return false
+            isCodexRunning(terminal)
         } catch (t: Throwable) {
             logger.warn("Failed to inspect Codex terminal active state", t)
             false
