@@ -142,8 +142,57 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
             rawPath
         }
 
+        val lineRange = resolveSelectedLineRange(editorManager)
+
         return buildString {
             append(resolvedPath)
+            if (lineRange != null) {
+                append(':')
+                append(lineRange.start)
+                if (lineRange.end != null && lineRange.end != lineRange.start) {
+                    append('-')
+                    append(lineRange.end)
+                }
+            }
         }
     }
+
+    private fun resolveSelectedLineRange(editorManager: FileEditorManager): LineRange? {
+        val editor = editorManager.selectedTextEditor ?: return null
+        val selectionModel = editor.selectionModel
+        if (!selectionModel.hasSelection()) {
+            return null
+        }
+        val selectedText = selectionModel.selectedText
+        if (selectedText.isNullOrEmpty()) {
+            return null
+        }
+
+        val document = editor.document
+        val startOffset = selectionModel.selectionStart
+        val endOffset = selectionModel.selectionEnd
+        val startLine = runCatching { document.getLineNumber(startOffset) }.getOrElse {
+            logger.warn("Failed to resolve start line number", it)
+            return null
+        }
+        if (startLine < 0) {
+            return null
+        }
+        val endLine = runCatching {
+            val adjustedEnd = if (endOffset > 0 && endOffset > startOffset && endOffset == document.textLength) endOffset else endOffset - 1
+            document.getLineNumber(adjustedEnd.coerceAtLeast(startOffset))
+        }.getOrElse {
+            logger.warn("Failed to resolve end line number", it)
+            startLine
+        }
+        if (endLine < 0) {
+            return LineRange(startLine + 1, null)
+        }
+
+        val start = startLine + 1
+        val end = endLine + 1
+        return if (end > start) LineRange(start, end) else LineRange(start, null)
+    }
+
+    private data class LineRange(val start: Int, val end: Int?)
 }
