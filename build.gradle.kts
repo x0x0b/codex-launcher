@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.github.x0x0b"
-version = "1.1.0"
+version = "1.1.1"
 
 repositories {
     mavenCentral()
@@ -37,7 +37,7 @@ intellijPlatform {
         }
 
         changeNotes = """
-            Added support for the new gpt-5-codex model.
+            Added feature to insert current file path and line number into Codex terminal.
         """.trimIndent()
     }
     publishing {
