@@ -145,6 +145,7 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
         val lineRange = resolveSelectedLineRange(editorManager)
 
         return buildString {
+            append(' ')
             append(resolvedPath)
             if (lineRange != null) {
                 append(':')
@@ -154,6 +155,7 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
                     append(lineRange.end)
                 }
             }
+            append(' ')
         }
     }
 
