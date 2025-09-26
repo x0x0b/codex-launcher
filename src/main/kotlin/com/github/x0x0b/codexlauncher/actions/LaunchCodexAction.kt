@@ -10,14 +10,19 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.IconLoader
+import java.nio.file.Path
 
 class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null), DumbAware {
 
     companion object {
         private const val CODEX_COMMAND = "codex"
         private const val NOTIFICATION_TITLE = "Codex Launcher"
+        private val DEFAULT_ICON = IconLoader.getIcon("/icons/codex.svg", LaunchCodexAction::class.java)
+        private val ACTIVE_ICON = IconLoader.getIcon("/icons/codex_active.svg", LaunchCodexAction::class.java)
     }
 
     private val logger = logger<LaunchCodexAction>()
@@ -26,6 +31,23 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
         val project = e.project
         if (project == null) {
             logger.warn("No project context available for Codex launch")
+            return
+        }
+
+        val terminalManager = project.service<CodexTerminalManager>()
+        if (terminalManager.isCodexTerminalActive()) {
+            val filePath = resolveSelectedFilePath(project)
+            if (filePath == null) {
+                notify(project, "No active file to send to Codex", NotificationType.INFORMATION)
+                return
+            }
+
+            val sent = terminalManager.typeIntoActiveCodexTerminal(filePath)
+            if (!sent) {
+                notify(project, "Failed to send file path to Codex terminal", NotificationType.WARNING)
+            } else {
+                logger.info("Sent active file path to Codex terminal: $filePath")
+            }
             return
         }
 
@@ -45,8 +67,6 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
             val settings = service<CodexLauncherSettings>()
             val args = settings.getArgs(port)
             val command = buildCommand(args)
-
-            val terminalManager = project.service<CodexTerminalManager>()
             terminalManager.launch(baseDir, command)
 
             logger.info("Codex command executed successfully: $command")
@@ -55,6 +75,20 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
             logger.error("Failed to launch Codex", t)
             notify(project, "Failed to launch Codex: ${t.message}", NotificationType.ERROR)
         }
+    }
+
+    override fun update(e: AnActionEvent) {
+        super.update(e)
+
+        val project = e.project
+        if (project == null) {
+            e.presentation.icon = DEFAULT_ICON
+            return
+        }
+
+        val manager = project.service<CodexTerminalManager>()
+        val isActive = manager.isCodexTerminalActive()
+        e.presentation.icon = if (isActive) ACTIVE_ICON else DEFAULT_ICON
     }
 
     private fun buildCommand(args: String): String {
@@ -73,6 +107,29 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
             group.createNotification(NOTIFICATION_TITLE, content, type).notify(project)
         } catch (e: Exception) {
             logger.error("Failed to show notification: $content", e)
+        }
+    }
+
+    private fun resolveSelectedFilePath(project: Project): String? {
+        val editorManager = FileEditorManager.getInstance(project)
+        val file = editorManager.selectedFiles.firstOrNull() ?: return null
+        val rawPath = file.canonicalPath ?: file.presentableUrl ?: file.path
+        if (rawPath.isNullOrBlank()) {
+            return null
+        }
+        val projectBase = project.basePath
+        val resolvedPath = if (!projectBase.isNullOrBlank()) {
+            runCatching {
+                val base = Path.of(projectBase).normalize()
+                val target = Path.of(rawPath).normalize()
+                if (target.startsWith(base)) base.relativize(target).toString() else rawPath
+            }.getOrElse { rawPath }
+        } else {
+            rawPath
+        }
+
+        return buildString {
+            append(resolvedPath)
         }
     }
 }
