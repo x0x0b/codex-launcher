@@ -21,6 +21,10 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
     companion object {
         private const val CODEX_COMMAND = "codex"
         private const val NOTIFICATION_TITLE = "Codex Launcher"
+        private const val DEFAULT_TEXT = "Launch Codex"
+        private const val DEFAULT_DESCRIPTION = "Open a Codex terminal"
+        private const val ACTIVE_TEXT = "Insert File Path"
+        private const val ACTIVE_DESCRIPTION = "Send the current file path to the Codex terminal"
         private val DEFAULT_ICON = IconLoader.getIcon("/icons/codex.svg", LaunchCodexAction::class.java)
         private val ACTIVE_ICON = IconLoader.getIcon("/icons/codex_active.svg", LaunchCodexAction::class.java)
     }
@@ -83,12 +87,22 @@ class LaunchCodexAction : AnAction("Launch Codex", "Open a Codex terminal", null
         val project = e.project
         if (project == null) {
             e.presentation.icon = DEFAULT_ICON
+            e.presentation.text = DEFAULT_TEXT
+            e.presentation.description = DEFAULT_DESCRIPTION
             return
         }
 
         val manager = project.service<CodexTerminalManager>()
         val isActive = manager.isCodexTerminalActive()
-        e.presentation.icon = if (isActive) ACTIVE_ICON else DEFAULT_ICON
+        if (isActive) {
+            e.presentation.icon = ACTIVE_ICON
+            e.presentation.text = ACTIVE_TEXT
+            e.presentation.description = ACTIVE_DESCRIPTION
+        } else {
+            e.presentation.icon = DEFAULT_ICON
+            e.presentation.text = DEFAULT_TEXT
+            e.presentation.description = DEFAULT_DESCRIPTION
+        }
     }
 
     private fun buildCommand(args: String): String {
