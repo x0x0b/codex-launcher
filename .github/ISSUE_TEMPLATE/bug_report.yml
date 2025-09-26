@@ -21,7 +21,7 @@ body:
     attributes:
       label: Codex CLI version
       description: Which Codex CLI version are you using?
-      placeholder: e.g. 0.36.0
+      placeholder: e.g. 0.41.0
     validations:
       required: true
   - type: input
