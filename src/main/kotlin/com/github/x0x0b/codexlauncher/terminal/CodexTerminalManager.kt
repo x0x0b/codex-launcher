@@ -76,7 +76,7 @@ class CodexTerminalManager(private val project: Project) {
     fun isCodexTerminalActive(): Boolean {
         return try {
             val terminalManager = TerminalToolWindowManager.getInstance(project)
-            getActiveCodexTerminal(terminalManager) != null
+            findDisplayedCodexTerminal(terminalManager) != null
         } catch (t: Throwable) {
             logger.warn("Failed to inspect Codex terminal active state", t)
             false
@@ -86,7 +86,7 @@ class CodexTerminalManager(private val project: Project) {
     fun typeIntoActiveCodexTerminal(text: String): Boolean {
         return try {
             val terminalManager = TerminalToolWindowManager.getInstance(project)
-            val terminal = getActiveCodexTerminal(terminalManager) ?: return false
+            val terminal = findDisplayedCodexTerminal(terminalManager) ?: return false
             typeText(terminal.widget, text)
         } catch (t: Throwable) {
             logger.warn("Failed to type into Codex terminal", t)
@@ -108,7 +108,7 @@ class CodexTerminalManager(private val project: Project) {
         null
     }
 
-    private fun getActiveCodexTerminal(
+    private fun findDisplayedCodexTerminal(
         manager: TerminalToolWindowManager
     ): CodexTerminal? {
         val terminal = locateCodexTerminal(manager) ?: return null
