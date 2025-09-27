@@ -8,7 +8,7 @@ messages:
       4. When determining the overall completeness rating DO NOT include the Screenshots or relevant visual proof section. This section is more of a "nice to have" versus "hard requirement" and it should be ignored. 
   - role: user
     content: '{{input}}'
-model: openai/gpt-5-mini
+model: openai/gpt-4o-mini
 modelParameters:
   max_tokens: 2000
 testData: []
