@@ -3,6 +3,7 @@ description: Ask a question about using or configuring Codex Launcher.
 title: "[Question]: "
 labels:
   - question
+  - request ai review
 body:
   - type: markdown
     attributes:
