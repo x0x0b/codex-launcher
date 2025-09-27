@@ -11,6 +11,7 @@ messages:
       4. After the heading, provide a short paragraph (1-2 sentences) explaining the overall judgment.
       5. Add a markdown list titled `**Element Ratings**` with one bullet per key element showing the rating and justification.
       6. If the status is not `Ready for Response`, add a `**Next Steps for Reporter**` list with 2-3 concrete requests that would unblock support.
+      7. Always add a `**Initial Guidance**` list with 1-2 bullets that reference relevant existing Codex Launcher GitHub issues (e.g., "Issue #123") or, when specific precedents are unknown, suggest broadly applicable troubleshooting approaches; tailor each suggestion to the reporter's context so they have a starting point before support replies.
   - role: user
     content: '{{input}}'
 model: openai/gpt-4o-mini
