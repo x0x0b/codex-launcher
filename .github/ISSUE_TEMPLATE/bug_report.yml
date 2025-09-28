@@ -14,7 +14,7 @@ body:
     attributes:
       label: Codex Launcher version
       description: Which Codex Launcher plugin version are you using?
-      placeholder: e.g. 1.1.1
+      placeholder: e.g. 1.x.y
     validations:
       required: true
   - type: input
@@ -22,7 +22,7 @@ body:
     attributes:
       label: Codex CLI version
       description: Which Codex CLI version are you using?
-      placeholder: e.g. 0.41.0
+      placeholder: e.g. 0.4x.y
     validations:
       required: true
   - type: input
