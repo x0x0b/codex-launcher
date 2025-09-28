@@ -12,10 +12,10 @@ jobs:
     steps:
       - uses: actions/stale@3a9db7e6a41a89f618792c92c0e97cc736e1b13f # ratchet:actions/stale@v10
         with:
-          days-before-issue-stale: 7
+          days-before-issue-stale: 5
           days-before-issue-close: 7
           stale-issue-label: "stale"
-          stale-issue-message: "This issue is stale because it has been open for 7 days with no activity."
+          stale-issue-message: "This issue is stale because it has been open for 5 days with no activity."
           close-issue-message: "This issue was closed because it has been inactive for 7 days since being marked as stale."
           days-before-pr-stale: -1
           days-before-pr-close: -1
