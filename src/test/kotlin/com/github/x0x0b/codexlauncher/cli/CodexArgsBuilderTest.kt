@@ -64,13 +64,23 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         val osProvider = TestOsProvider(isWindows = false)
         state.mcpConfigInput = mcpNonWindows
         state.enableNotification = true
+        state.enableSearch = true
+        state.enableCdProjectRoot = true
 
-        val result = CodexArgsBuilder.build(state, 11111, osProvider = osProvider)
+        val result = CodexArgsBuilder.build(
+            state,
+            11111,
+            osProvider = osProvider,
+            projectBasePath = "/home/user/project"
+        )
 
         // Verify that complex arguments are properly formatted for non-Windows
         assertEquals(
             listOf(
                 """--full-auto""",
+                """--search""",
+                """--cd""",
+                """'/home/user/project'""",
                 """--model""",
                 """'gpt-4o'""",
                 """-c""",
@@ -94,13 +104,23 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         state.winShell = WinShell.POWERSHELL_LT_73
         state.mcpConfigInput = mcpWindows
         state.openFileOnChange = true
+        state.enableSearch = true
+        state.enableCdProjectRoot = true
 
-        val result = CodexArgsBuilder.build(state, 22222, osProvider = osProvider)
+        val result = CodexArgsBuilder.build(
+            state,
+            22222,
+            osProvider = osProvider,
+            projectBasePath = "C:\\Projects\\Demo"
+        )
 
         // Verify that complex arguments are properly formatted for Windows
         assertEquals(
             listOf(
                 """--full-auto""",
+                """--search""",
+                """--cd""",
+                """'C:\Projects\Demo'""",
                 """--model""",
                 """'gpt-4o'""",
                 """-c""",
@@ -125,13 +145,23 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         state.mcpConfigInput = mcpWindows
         state.enableNotification = true
         state.openFileOnChange = true
+        state.enableSearch = true
+        state.enableCdProjectRoot = true
 
-        val result = CodexArgsBuilder.build(state, 33333, osProvider = osProvider)
+        val result = CodexArgsBuilder.build(
+            state,
+            33333,
+            osProvider = osProvider,
+            projectBasePath = "C:\\Projects\\Demo"
+        )
 
         // Verify that complex arguments are properly formatted for Windows with PowerShell 7.3+
         assertEquals(
             listOf(
                 """--full-auto""",
+                """--search""",
+                """--cd""",
+                """'C:\Projects\Demo'""",
                 """--model""",
                 """'gpt-4o'""",
                 """-c""",
@@ -164,62 +194,6 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
 
         // Verify that only necessary arguments are included
         assertEquals(0, result.size)
-    }
-
-    fun testSearchFlagIncludedWhenEnabled() {
-        val osProvider = TestOsProvider(isWindows = false)
-        state.mode = Mode.DEFAULT
-        state.model = Model.DEFAULT
-        state.modelReasoningEffort = ModelReasoningEffort.DEFAULT
-        state.mcpConfigInput = ""
-        state.openFileOnChange = false
-        state.enableNotification = false
-        state.enableSearch = true
-
-        val result = CodexArgsBuilder.build(state, 6000, osProvider = osProvider)
-
-        assertEquals(listOf("--search"), result)
-    }
-
-    fun testCdFlagIncludedWhenEnabled() {
-        val osProvider = TestOsProvider(isWindows = false)
-        state.mode = Mode.DEFAULT
-        state.model = Model.DEFAULT
-        state.modelReasoningEffort = ModelReasoningEffort.DEFAULT
-        state.mcpConfigInput = ""
-        state.openFileOnChange = false
-        state.enableNotification = false
-        state.enableCdProjectRoot = true
-
-        val result = CodexArgsBuilder.build(
-            state,
-            6100,
-            osProvider = osProvider,
-            projectBasePath = "/home/user/project"
-        )
-
-        assertEquals(listOf("--cd", "'/home/user/project'"), result)
-    }
-
-    fun testCdFlagIncludedOnWindows() {
-        val osProvider = TestOsProvider(isWindows = true)
-        state.mode = Mode.DEFAULT
-        state.model = Model.DEFAULT
-        state.modelReasoningEffort = ModelReasoningEffort.DEFAULT
-        state.mcpConfigInput = ""
-        state.openFileOnChange = false
-        state.enableNotification = false
-        state.winShell = WinShell.POWERSHELL_LT_73
-        state.enableCdProjectRoot = true
-
-        val result = CodexArgsBuilder.build(
-            state,
-            6200,
-            osProvider = osProvider,
-            projectBasePath = "C:\\Projects\\Demo"
-        )
-
-        assertEquals(listOf("--cd", "'C:\\Projects\\Demo'"), result)
     }
 
     fun testComplexArgsFormattingOnWindowsWithWSL() {
