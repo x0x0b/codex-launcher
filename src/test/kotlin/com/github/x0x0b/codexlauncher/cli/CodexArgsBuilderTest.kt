@@ -68,26 +68,24 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         val result = CodexArgsBuilder.build(state, 11111, osProvider = osProvider)
 
         // Verify that complex arguments are properly formatted for non-Windows
-        assertEquals(13, result.size)
-        assertEquals("""--full-auto""", result[0])
-        assertEquals("""--model""", result[1])
-        assertEquals("""'gpt-4o'""", result[2])
-        assertEquals("""-c""", result[3])
-        assertEquals("""'model_reasoning_effort=high'""", result[4])
-        assertEquals("""-c""", result[5])
-        assertEquals("""'notify=["curl", "-s", "-X", "POST", "http://localhost:11111/refresh", "-d"]'""", result[6])
-        assertEquals("""-c""", result[7])
         assertEquals(
-            """'mcp_servers.intellij.command=/Applications/IntelliJ IDEA.app/Contents/jbr/Contents/Home/bin/java'""",
-            result[8]
+            listOf(
+                """--full-auto""",
+                """--model""",
+                """'gpt-4o'""",
+                """-c""",
+                """'model_reasoning_effort=high'""",
+                """-c""",
+                """'notify=["curl", "-s", "-X", "POST", "http://localhost:11111/refresh", "-d"]'""",
+                """-c""",
+                """'mcp_servers.intellij.command=/Applications/IntelliJ IDEA.app/Contents/jbr/Contents/Home/bin/java'""",
+                """-c""",
+                """'mcp_servers.intellij.args=["-classpath", "/Applications/IntelliJ IDEA.app/Contents/plugins/mcpserver/lib/mcpserver-frontend.jar:/Applications/IntelliJ IDEA.app/Contents/lib/util-8.jar", "com.intellij.mcpserver.stdio.McpStdioRunnerKt"]'""",
+                """-c""",
+                """'mcp_servers.intellij.env={"IJ_MCP_SERVER_PORT"="64342"}'"""
+            ),
+            result
         )
-        assertEquals("""-c""", result[9])
-        assertEquals(
-            """'mcp_servers.intellij.args=["-classpath", "/Applications/IntelliJ IDEA.app/Contents/plugins/mcpserver/lib/mcpserver-frontend.jar:/Applications/IntelliJ IDEA.app/Contents/lib/util-8.jar", "com.intellij.mcpserver.stdio.McpStdioRunnerKt"]'""",
-            result[10]
-        )
-        assertEquals("""-c""", result[11])
-        assertEquals("""'mcp_servers.intellij.env={"IJ_MCP_SERVER_PORT"="64342"}'""", result[12])
     }
 
     fun testComplexArgsFormattingOnWindows() {
@@ -100,28 +98,23 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         val result = CodexArgsBuilder.build(state, 22222, osProvider = osProvider)
 
         // Verify that complex arguments are properly formatted for Windows
-        assertEquals(13, result.size)
-        assertEquals("""--full-auto""", result[0])
-        assertEquals("""--model""", result[1])
-        assertEquals("""'gpt-4o'""", result[2])
-        assertEquals("""-c""", result[3])
-        assertEquals("""model_reasoning_effort='high'""", result[4])
-        assertEquals("""-c""", result[5])
-        assertEquals("""notify='[\"curl\", \"-s\", \"-X\", \"POST\", \"http://localhost:22222/refresh\", \"-d\"]'""", result[6])
-        assertEquals("""-c""", result[7])
         assertEquals(
-            """mcp_servers.intellij.command='C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2025.2.1\jbr\bin\java'""",
-            result[8]
-        )
-        assertEquals("""-c""", result[9])
-        assertEquals(
-            """mcp_servers.intellij.args='[\"-classpath\", \"C:\\Program Files\\JetBrains\\IntelliJ IDEA Community Edition 2025.2.1\\plugins\\mcpserver\\lib\\mcpserver-frontend.jar;C:\\Program Files\\JetBrains\\IntelliJ IDEA Community Edition 2025.2.1\\lib\\util-8.jar\", \"com.intellij.mcpserver.stdio.McpStdioRunnerKt\"]'""",
-            result[10]
-        )
-        assertEquals("""-c""", result[11])
-        assertEquals(
-            """mcp_servers.intellij.env='{\"IJ_MCP_SERVER_PORT\"=\"64342\",\"SystemRoot\"=\"C:\\Windows\"}'""",
-            result[12]
+            listOf(
+                """--full-auto""",
+                """--model""",
+                """'gpt-4o'""",
+                """-c""",
+                """model_reasoning_effort='high'""",
+                """-c""",
+                """notify='[\"curl\", \"-s\", \"-X\", \"POST\", \"http://localhost:22222/refresh\", \"-d\"]'""",
+                """-c""",
+                """mcp_servers.intellij.command='C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2025.2.1\jbr\bin\java'""",
+                """-c""",
+                """mcp_servers.intellij.args='[\"-classpath\", \"C:\\Program Files\\JetBrains\\IntelliJ IDEA Community Edition 2025.2.1\\plugins\\mcpserver\\lib\\mcpserver-frontend.jar;C:\\Program Files\\JetBrains\\IntelliJ IDEA Community Edition 2025.2.1\\lib\\util-8.jar\", \"com.intellij.mcpserver.stdio.McpStdioRunnerKt\"]'""",
+                """-c""",
+                """mcp_servers.intellij.env='{\"IJ_MCP_SERVER_PORT\"=\"64342\",\"SystemRoot\"=\"C:\\Windows\"}'"""
+            ),
+            result
         )
     }
 
@@ -136,28 +129,23 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         val result = CodexArgsBuilder.build(state, 33333, osProvider = osProvider)
 
         // Verify that complex arguments are properly formatted for Windows with PowerShell 7.3+
-        assertEquals(13, result.size)
-        assertEquals("""--full-auto""", result[0])
-        assertEquals("""--model""", result[1])
-        assertEquals("""'gpt-4o'""", result[2])
-        assertEquals("""-c""", result[3])
-        assertEquals("""model_reasoning_effort='high'""", result[4])
-        assertEquals("""-c""", result[5])
-        assertEquals("""notify='["curl", "-s", "-X", "POST", "http://localhost:33333/refresh", "-d"]'""", result[6])
-        assertEquals("""-c""", result[7])
         assertEquals(
-            """mcp_servers.intellij.command='C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2025.2.1\jbr\bin\java'""",
-            result[8]
-        )
-        assertEquals("""-c""", result[9])
-        assertEquals(
-            """mcp_servers.intellij.args='["-classpath", "C:\\Program Files\\JetBrains\\IntelliJ IDEA Community Edition 2025.2.1\\plugins\\mcpserver\\lib\\mcpserver-frontend.jar;C:\\Program Files\\JetBrains\\IntelliJ IDEA Community Edition 2025.2.1\\lib\\util-8.jar", "com.intellij.mcpserver.stdio.McpStdioRunnerKt"]'""",
-            result[10]
-        )
-        assertEquals("""-c""", result[11])
-        assertEquals(
-            """mcp_servers.intellij.env='{"IJ_MCP_SERVER_PORT"="64342","SystemRoot"="C:\\Windows"}'""",
-            result[12]
+            listOf(
+                """--full-auto""",
+                """--model""",
+                """'gpt-4o'""",
+                """-c""",
+                """model_reasoning_effort='high'""",
+                """-c""",
+                """notify='["curl", "-s", "-X", "POST", "http://localhost:33333/refresh", "-d"]'""",
+                """-c""",
+                """mcp_servers.intellij.command='C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2025.2.1\jbr\bin\java'""",
+                """-c""",
+                """mcp_servers.intellij.args='["-classpath", "C:\\Program Files\\JetBrains\\IntelliJ IDEA Community Edition 2025.2.1\\plugins\\mcpserver\\lib\\mcpserver-frontend.jar;C:\\Program Files\\JetBrains\\IntelliJ IDEA Community Edition 2025.2.1\\lib\\util-8.jar", "com.intellij.mcpserver.stdio.McpStdioRunnerKt"]'""",
+                """-c""",
+                """mcp_servers.intellij.env='{"IJ_MCP_SERVER_PORT"="64342","SystemRoot"="C:\\Windows"}'"""
+            ),
+            result
         )
     }
 
@@ -190,8 +178,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
 
         val result = CodexArgsBuilder.build(state, 6000, osProvider = osProvider)
 
-        assertEquals(1, result.size)
-        assertEquals("--search", result.first())
+        assertEquals(listOf("--search"), result)
     }
 
     fun testCdFlagIncludedWhenEnabled() {
@@ -211,9 +198,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
             projectBasePath = "/home/user/project"
         )
 
-        assertEquals(2, result.size)
-        assertEquals("--cd", result[0])
-        assertEquals("'/home/user/project'", result[1])
+        assertEquals(listOf("--cd", "'/home/user/project'"), result)
     }
 
     fun testCdFlagIncludedOnWindows() {
@@ -234,9 +219,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
             projectBasePath = "C:\\Projects\\Demo"
         )
 
-        assertEquals(2, result.size)
-        assertEquals("--cd", result[0])
-        assertEquals("'C:\\Projects\\Demo'", result[1])
+        assertEquals(listOf("--cd", "'C:\\Projects\\Demo'"), result)
     }
 
     fun testComplexArgsFormattingOnWindowsWithWSL() {
@@ -250,11 +233,15 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         val result = CodexArgsBuilder.build(state, 44444, osProvider = osProvider)
 
         // Verify non-Windows style quoting and no SystemRoot
-        assertEquals(5, result.size)
-        assertEquals("""--full-auto""", result[0])
-        assertEquals("""--model""", result[1])
-        assertEquals("""'gpt-4o'""", result[2])
-        assertEquals("""-c""", result[3])
-        assertEquals("""'model_reasoning_effort=high'""", result[4])
+        assertEquals(
+            listOf(
+                """--full-auto""",
+                """--model""",
+                """'gpt-4o'""",
+                """-c""",
+                """'model_reasoning_effort=high'"""
+            ),
+            result
+        )
     }
 }
