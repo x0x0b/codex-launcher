@@ -48,6 +48,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var modelReasoningEffortCombo: JComboBox<ModelReasoningEffort>
     private lateinit var openFileOnChangeCheckbox: JBCheckBox
     private lateinit var enableNotificationCheckbox: JBCheckBox
+    private lateinit var enableSearchCheckbox: JBCheckBox
     private lateinit var winShellCombo: JComboBox<WinShell>
     private lateinit var mcpConfigInputArea: JBTextArea
     private lateinit var mcpServerWarningLabel: JBLabel
@@ -97,6 +98,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             border = JBUI.Borders.emptyTop(4)
             isVisible = false
         }
+
+        // Search control
+        enableSearchCheckbox = JBCheckBox("Enable web search for Codex CLI (--search)")
 
         // Windows shell selection (Windows only)
         if (SystemInfo.isWindows) {
@@ -200,6 +204,14 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(modelReasoningEffortCombo)
                 }
             }
+            group("Search") {
+                row {
+                    cell(enableSearchCheckbox)
+                }
+                row {
+                    this.largeComment("Adds the --search flag so Codex can use web results when available.")
+                }
+            }
             group("File Handling") {
                 row {
                     cell(fileHandlingWarningLabel)
@@ -268,6 +280,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 getModelReasoningEffort() != s.modelReasoningEffort ||
                 getOpenFileOnChange() != s.openFileOnChange ||
                 getEnableNotification() != s.enableNotification ||
+                getEnableSearch() != s.enableSearch ||
                 (SystemInfo.isWindows && getWinShell() != s.winShell) ||
                 getMcpConfigInput() != s.mcpConfigInput
     }
@@ -286,6 +299,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         s.modelReasoningEffort = getModelReasoningEffort()
         s.openFileOnChange = getOpenFileOnChange()
         s.enableNotification = getEnableNotification()
+        s.enableSearch = getEnableSearch()
         if (SystemInfo.isWindows) {
             s.winShell = getWinShell()
             // update legacy field
@@ -304,6 +318,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         modelReasoningEffortCombo.selectedItem = s.modelReasoningEffort
         openFileOnChangeCheckbox.isSelected = s.openFileOnChange
         enableNotificationCheckbox.isSelected = s.enableNotification
+        enableSearchCheckbox.isSelected = s.enableSearch
         if (SystemInfo.isWindows) {
             winShellCombo.selectedItem = s.winShell
         }
@@ -337,6 +352,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
     private fun getEnableNotification(): Boolean {
         return enableNotificationCheckbox.isSelected
+    }
+
+    private fun getEnableSearch(): Boolean {
+        return enableSearchCheckbox.isSelected
     }
 
     private fun getWinShell(): WinShell {
