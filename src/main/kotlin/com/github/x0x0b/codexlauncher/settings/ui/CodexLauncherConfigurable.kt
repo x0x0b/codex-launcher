@@ -82,7 +82,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         // Options controls
         modeFullAutoCheckbox = JBCheckBox("--full-auto (Low-friction sandboxed automatic execution)")
         enableSearchCheckbox = JBCheckBox("--search (Enable web search)")
-        enableCdProjectRootCheckbox = JBCheckBox("--cd <project root> (Turn on only when you explicitly need to set the working directory.)")
+        enableCdProjectRootCheckbox = JBCheckBox("--cd <project root> (Turn this on only when you explicitly need to set the working directory.)")
 
         // File opening control
         openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed")
