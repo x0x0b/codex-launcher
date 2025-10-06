@@ -14,7 +14,6 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.options.ex.Settings
 import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.JBTextArea
@@ -41,8 +40,7 @@ import java.util.function.Predicate
 
 class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var root: JComponent
-    private lateinit var modeDefaultRadio: JBRadioButton
-    private lateinit var modeFullAutoRadio: JBRadioButton
+    private lateinit var modeFullAutoCheckbox: JBCheckBox
     private lateinit var modelCombo: JComboBox<Model>
     private lateinit var customModelField: JBTextField
     private lateinit var modelReasoningEffortCombo: JComboBox<ModelReasoningEffort>
@@ -70,9 +68,6 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     override fun getDisplayName(): String = "Codex Launcher"
 
     override fun createComponent(): JComponent {
-        // Mode controls
-        modeDefaultRadio = JBRadioButton(Mode.DEFAULT.toDisplayName())
-        modeFullAutoRadio = JBRadioButton(Mode.FULL_AUTO.toDisplayName())
 
         // Model controls
         modelCombo = ComboBox(Model.entries.toTypedArray())
@@ -82,6 +77,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
         // Model reasoning effort controls
         modelReasoningEffortCombo = ComboBox(ModelReasoningEffort.entries.toTypedArray())
+
+        // Options controls
+        modeFullAutoCheckbox = JBCheckBox("--full-auto (Low-friction sandboxed automatic execution)")
+        enableSearchCheckbox = JBCheckBox("--search (Enable web search)")
 
         // File opening control
         openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed")
@@ -100,7 +99,6 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         }
 
         // Search control
-        enableSearchCheckbox = JBCheckBox("Enable web search for Codex CLI (--search)")
 
         // Windows shell selection (Windows only)
         if (SystemInfo.isWindows) {
@@ -178,16 +176,6 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     }
                 }
             }
-            group("Mode") {
-                buttonsGroup {
-                    row{
-                        cell(modeDefaultRadio)
-                    }
-                    row{
-                        cell(modeFullAutoRadio)
-                    }
-                }
-            }
             group("Model") {
                 row("Model") {
                     cell(modelCombo)
@@ -204,12 +192,15 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(modelReasoningEffortCombo)
                 }
             }
-            group("Search") {
+            group("Options") {
+                row {
+                    cell(modeFullAutoCheckbox)
+                }
                 row {
                     cell(enableSearchCheckbox)
                 }
                 row {
-                    this.largeComment("Adds the --search flag so Codex can use web results when available.")
+                    this.largeComment("For more information, run codex --help")
                 }
             }
             group("File Handling") {
@@ -310,8 +301,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
     override fun reset() {
         val s = settings.state
-        modeDefaultRadio.isSelected = (s.mode == Mode.DEFAULT)
-        modeFullAutoRadio.isSelected = (s.mode == Mode.FULL_AUTO)
+        modeFullAutoCheckbox.isSelected = (s.mode == Mode.FULL_AUTO)
         modelCombo.selectedItem = s.model
         customModelField.text = s.customModel
         customModelField.isEnabled = (s.model == Model.CUSTOM)
@@ -327,11 +317,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     }
 
     fun getMode(): Mode {
-        return when {
-            modeDefaultRadio.isSelected -> Mode.DEFAULT
-            modeFullAutoRadio.isSelected -> Mode.FULL_AUTO
-            else -> Mode.DEFAULT // Fallback
-        }
+        return if (modeFullAutoCheckbox.isSelected) Mode.FULL_AUTO else Mode.DEFAULT
     }
 
     private fun getModel(): Model {
