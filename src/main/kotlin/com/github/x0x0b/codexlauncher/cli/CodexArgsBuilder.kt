@@ -33,6 +33,8 @@ object DefaultOsProvider : OsProvider {
  * This builder translates the plugin's settings into appropriate command-line arguments
  * that can be passed to the codex CLI tool. It handles:
  * - Mode selection (--full-auto flag)
+ * - Optional project search flag (--search)
+ * - Optional working directory selection (--cd)
  * - Model specification (--model parameter)
  * - Custom model handling with proper validation
  * 
@@ -49,13 +51,19 @@ object CodexArgsBuilder {
      * 
      * @param state The current settings state containing user preferences
      * @param port Optional HTTP service port for notify command
+     * @param projectBasePath Optional project base path for --cd handling
      * @return A list of command-line arguments to pass to codex
      * 
      * @example
      * For settings with mode=FULL_AUTO and model=GPT_5:
      * Returns: ["--full-auto", "--model", "gpt-5"]
      */
-    fun build(state: CodexLauncherSettings.State, port: Int? = null, osProvider: OsProvider = DefaultOsProvider): List<String> {
+    fun build(
+        state: CodexLauncherSettings.State,
+        port: Int? = null,
+        osProvider: OsProvider = DefaultOsProvider,
+        projectBasePath: String? = null
+    ): List<String> {
         val parts = mutableListOf<String>()
 
         if (state.mode == Mode.FULL_AUTO) {
@@ -64,6 +72,10 @@ object CodexArgsBuilder {
 
         if (state.enableSearch) {
             parts += "--search"
+        }
+
+        if (state.enableCdProjectRoot && !projectBasePath.isNullOrBlank()) {
+            parts += listOf("--cd", "'${projectBasePath}'")
         }
 
         // Determine the model name to use

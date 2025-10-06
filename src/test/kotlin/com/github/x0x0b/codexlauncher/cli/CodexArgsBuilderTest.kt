@@ -178,6 +178,67 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         assertEquals(0, result.size)
     }
 
+    fun testSearchFlagIncludedWhenEnabled() {
+        val osProvider = TestOsProvider(isWindows = false)
+        state.mode = Mode.DEFAULT
+        state.model = Model.DEFAULT
+        state.modelReasoningEffort = ModelReasoningEffort.DEFAULT
+        state.mcpConfigInput = ""
+        state.openFileOnChange = false
+        state.enableNotification = false
+        state.enableSearch = true
+
+        val result = CodexArgsBuilder.build(state, 6000, osProvider = osProvider)
+
+        assertEquals(1, result.size)
+        assertEquals("--search", result.first())
+    }
+
+    fun testCdFlagIncludedWhenEnabled() {
+        val osProvider = TestOsProvider(isWindows = false)
+        state.mode = Mode.DEFAULT
+        state.model = Model.DEFAULT
+        state.modelReasoningEffort = ModelReasoningEffort.DEFAULT
+        state.mcpConfigInput = ""
+        state.openFileOnChange = false
+        state.enableNotification = false
+        state.enableCdProjectRoot = true
+
+        val result = CodexArgsBuilder.build(
+            state,
+            6100,
+            osProvider = osProvider,
+            projectBasePath = "/home/user/project"
+        )
+
+        assertEquals(2, result.size)
+        assertEquals("--cd", result[0])
+        assertEquals("'/home/user/project'", result[1])
+    }
+
+    fun testCdFlagIncludedOnWindows() {
+        val osProvider = TestOsProvider(isWindows = true)
+        state.mode = Mode.DEFAULT
+        state.model = Model.DEFAULT
+        state.modelReasoningEffort = ModelReasoningEffort.DEFAULT
+        state.mcpConfigInput = ""
+        state.openFileOnChange = false
+        state.enableNotification = false
+        state.winShell = WinShell.POWERSHELL_LT_73
+        state.enableCdProjectRoot = true
+
+        val result = CodexArgsBuilder.build(
+            state,
+            6200,
+            osProvider = osProvider,
+            projectBasePath = "C:\\Projects\\Demo"
+        )
+
+        assertEquals(2, result.size)
+        assertEquals("--cd", result[0])
+        assertEquals("'C:\\Projects\\Demo'", result[1])
+    }
+
     fun testComplexArgsFormattingOnWindowsWithWSL() {
         // Test Windows host but WSL selected; should format like non-Windows
         val osProvider = TestOsProvider(isWindows = true)
