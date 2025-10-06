@@ -36,6 +36,7 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
      * @property customModel Custom model identifier when model is set to CUSTOM
      * @property openFileOnChange Whether to automatically open files when they change
      * @property enableNotification Whether to enable notifications
+     * @property enableSearch Whether to launch Codex CLI with --search flag
      * @property isPowerShell73OrOver Whether using PowerShell 7.3 or later (legacy; use winShell instead)
      * @property winShell Preferred Windows shell selection (Windows only)
      */
@@ -46,6 +47,7 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
         var modelReasoningEffort: ModelReasoningEffort = ModelReasoningEffort.DEFAULT,
         var openFileOnChange: Boolean = false,
         var enableNotification: Boolean = false,
+        var enableSearch: Boolean = false,
         var mcpConfigInput: String = "",
         var isPowerShell73OrOver: Boolean = false, // Legacy flag, use winShell instead
         var winShell: WinShell = WinShell.POWERSHELL_LT_73

@@ -62,6 +62,10 @@ object CodexArgsBuilder {
             parts += "--full-auto"
         }
 
+        if (state.enableSearch) {
+            parts += "--search"
+        }
+
         // Determine the model name to use
         val modelName: String? = when (state.model) {
             Model.DEFAULT -> null // Use codex default model
