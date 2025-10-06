@@ -37,6 +37,7 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
      * @property openFileOnChange Whether to automatically open files when they change
      * @property enableNotification Whether to enable notifications
      * @property enableSearch Whether to launch Codex CLI with --search flag
+     * @property enableCdProjectRoot Whether to pass the project root via --cd
      * @property isPowerShell73OrOver Whether using PowerShell 7.3 or later (legacy; use winShell instead)
      * @property winShell Preferred Windows shell selection (Windows only)
      */
@@ -48,6 +49,7 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
         var openFileOnChange: Boolean = false,
         var enableNotification: Boolean = false,
         var enableSearch: Boolean = false,
+        var enableCdProjectRoot: Boolean = false,
         var mcpConfigInput: String = "",
         var isPowerShell73OrOver: Boolean = false, // Legacy flag, use winShell instead
         var winShell: WinShell = WinShell.POWERSHELL_LT_73
@@ -72,7 +74,9 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
      * including notify command configuration.
      * 
      * @param port HTTP service port for notify command
+     * @param projectBasePath Optional project root to pass through --cd
      * @return A space-separated string of command-line arguments
      */
-    fun getArgs(port: Int): String = CodexArgsBuilder.build(state, port).joinToString(" ")
+    fun getArgs(port: Int, projectBasePath: String? = null): String =
+        CodexArgsBuilder.build(state, port, projectBasePath = projectBasePath).joinToString(" ")
 }

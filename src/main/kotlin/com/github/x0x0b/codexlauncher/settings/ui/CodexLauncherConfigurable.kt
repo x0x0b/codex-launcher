@@ -47,6 +47,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var openFileOnChangeCheckbox: JBCheckBox
     private lateinit var enableNotificationCheckbox: JBCheckBox
     private lateinit var enableSearchCheckbox: JBCheckBox
+    private lateinit var enableCdProjectRootCheckbox: JBCheckBox
     private lateinit var winShellCombo: JComboBox<WinShell>
     private lateinit var mcpConfigInputArea: JBTextArea
     private lateinit var mcpServerWarningLabel: JBLabel
@@ -81,6 +82,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         // Options controls
         modeFullAutoCheckbox = JBCheckBox("--full-auto (Low-friction sandboxed automatic execution)")
         enableSearchCheckbox = JBCheckBox("--search (Enable web search)")
+        enableCdProjectRootCheckbox = JBCheckBox("--cd <project root> (Turn this on only when you explicitly need to set the working directory.)")
 
         // File opening control
         openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed")
@@ -97,9 +99,6 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             border = JBUI.Borders.emptyTop(4)
             isVisible = false
         }
-
-        // Search control
-
         // Windows shell selection (Windows only)
         if (SystemInfo.isWindows) {
             winShellCombo = ComboBox(WinShell.entries.toTypedArray()).apply {
@@ -200,6 +199,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(enableSearchCheckbox)
                 }
                 row {
+                    cell(enableCdProjectRootCheckbox)
+                }
+                row {
                     this.largeComment("For more information, run codex --help")
                 }
             }
@@ -272,6 +274,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 getOpenFileOnChange() != s.openFileOnChange ||
                 getEnableNotification() != s.enableNotification ||
                 getEnableSearch() != s.enableSearch ||
+                getEnableCdProjectRoot() != s.enableCdProjectRoot ||
                 (SystemInfo.isWindows && getWinShell() != s.winShell) ||
                 getMcpConfigInput() != s.mcpConfigInput
     }
@@ -291,6 +294,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         s.openFileOnChange = getOpenFileOnChange()
         s.enableNotification = getEnableNotification()
         s.enableSearch = getEnableSearch()
+        s.enableCdProjectRoot = getEnableCdProjectRoot()
         if (SystemInfo.isWindows) {
             s.winShell = getWinShell()
             // update legacy field
@@ -309,6 +313,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         openFileOnChangeCheckbox.isSelected = s.openFileOnChange
         enableNotificationCheckbox.isSelected = s.enableNotification
         enableSearchCheckbox.isSelected = s.enableSearch
+        enableCdProjectRootCheckbox.isSelected = s.enableCdProjectRoot
         if (SystemInfo.isWindows) {
             winShellCombo.selectedItem = s.winShell
         }
@@ -342,6 +347,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
     private fun getEnableSearch(): Boolean {
         return enableSearchCheckbox.isSelected
+    }
+
+    private fun getEnableCdProjectRoot(): Boolean {
+        return enableCdProjectRootCheckbox.isSelected
     }
 
     private fun getWinShell(): WinShell {
