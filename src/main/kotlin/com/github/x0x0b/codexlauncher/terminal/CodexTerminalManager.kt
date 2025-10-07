@@ -5,11 +5,15 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
+import com.intellij.openapi.util.SystemInfoRt
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.ui.TerminalWidget
 import com.intellij.ui.content.Content
+import com.intellij.util.concurrency.AppExecutorUtil
 import org.jetbrains.plugins.terminal.TerminalToolWindowManager
 import org.jetbrains.plugins.terminal.TerminalToolWindowFactory
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
 
 /**
  * Project-level service responsible for managing Codex terminals.
@@ -22,6 +26,9 @@ class CodexTerminalManager(private val project: Project) {
         private val CODEX_TERMINAL_KEY = Key.create<Boolean>("codex.launcher.codexTerminal")
         private val CODEX_TERMINAL_RUNNING_KEY = Key.create<Boolean>("codex.launcher.codexTerminal.running")
         private val CODEX_TERMINAL_CALLBACK_KEY = Key.create<Boolean>("codex.launcher.codexTerminal.callbackRegistered")
+        private val CODEX_TERMINAL_WATCHER_KEY = Key.create<ScheduledFuture<*>>("codex.launcher.codexTerminal.commandWatcher")
+        private const val COMMAND_WATCH_INITIAL_DELAY_MS = 1000L
+        private const val COMMAND_WATCH_INTERVAL_MS = 1000L
     }
 
     private val logger = logger<CodexTerminalManager>()
@@ -76,7 +83,8 @@ class CodexTerminalManager(private val project: Project) {
     fun isCodexTerminalActive(): Boolean {
         return try {
             val terminalManager = TerminalToolWindowManager.getInstance(project)
-            findDisplayedCodexTerminal(terminalManager) != null
+            val terminal = findDisplayedCodexTerminal(terminalManager) ?: return false
+            isCodexRunning(terminal)
         } catch (t: Throwable) {
             logger.warn("Failed to inspect Codex terminal active state", t)
             false
@@ -191,6 +199,7 @@ class CodexTerminalManager(private val project: Project) {
     }
 
     private fun clearCodexMetadata(content: Content) {
+        stopCommandWatcher(content)
         content.putUserData(CODEX_TERMINAL_KEY, null)
         content.putUserData(CODEX_TERMINAL_RUNNING_KEY, null)
         content.putUserData(CODEX_TERMINAL_CALLBACK_KEY, null)
@@ -212,6 +221,7 @@ class CodexTerminalManager(private val project: Project) {
         return try {
             widget.sendCommandToExecute(command)
             setCodexRunning(content, true)
+            startCommandWatcher(widget, content)
             true
         } catch (t: Throwable) {
             logger.warn("Failed to execute Codex command", t)
@@ -231,6 +241,9 @@ class CodexTerminalManager(private val project: Project) {
 
     private fun setCodexRunning(content: Content?, running: Boolean) {
         content?.putUserData(CODEX_TERMINAL_RUNNING_KEY, running)
+        if (!running) {
+            stopCommandWatcher(content)
+        }
     }
 
     private fun ensureTerminationCallback(widget: TerminalWidget, content: Content?) {
@@ -245,10 +258,43 @@ class CodexTerminalManager(private val project: Project) {
     }
 
     private fun invokeIsCommandRunning(widget: TerminalWidget): Boolean? {
+        if (SystemInfoRt.isWindows && ApplicationManager.getApplication().isDispatchThread) {
+            // Windows implementation falls back to a blocking wait that freezes the EDT.
+            return null
+        }
         return runCatching {
             val method = widget.javaClass.methods.firstOrNull { it.name == "isCommandRunning" && it.parameterCount == 0 }
             method?.apply { isAccessible = true }?.invoke(widget) as? Boolean
         }.getOrNull()
+    }
+
+    private fun startCommandWatcher(widget: TerminalWidget, content: Content?) {
+        if (content == null) return
+        stopCommandWatcher(content)
+        val future = AppExecutorUtil.getAppScheduledExecutorService().scheduleWithFixedDelay({
+            if (project.isDisposed) {
+                stopCommandWatcher(content)
+                return@scheduleWithFixedDelay
+            }
+            val running = invokeIsCommandRunning(widget)
+            if (running == null || running) {
+                return@scheduleWithFixedDelay
+            }
+            stopCommandWatcher(content)
+            ApplicationManager.getApplication().invokeLater {
+                if (!project.isDisposed) {
+                    setCodexRunning(content, false)
+                }
+            }
+        }, COMMAND_WATCH_INITIAL_DELAY_MS, COMMAND_WATCH_INTERVAL_MS, TimeUnit.MILLISECONDS)
+        content.putUserData(CODEX_TERMINAL_WATCHER_KEY, future)
+    }
+
+    private fun stopCommandWatcher(content: Content?) {
+        if (content == null) return
+        val future = content.getUserData(CODEX_TERMINAL_WATCHER_KEY) ?: return
+        future.cancel(false)
+        content.putUserData(CODEX_TERMINAL_WATCHER_KEY, null)
     }
 
     private fun typeText(widget: TerminalWidget, text: String): Boolean {
