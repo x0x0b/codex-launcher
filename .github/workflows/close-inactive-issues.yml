@@ -15,6 +15,7 @@ jobs:
           days-before-issue-stale: 7
           days-before-issue-close: 5
           stale-issue-label: "stale"
+          exempt-issue-labels: "author:x0x0b"
           stale-issue-message: "This issue is stale because it has been open for 7 days with no activity. It will be closed in 5 days if no further activity occurs."
           close-issue-message: "This issue was closed because it has been inactive for 5 days since being marked as stale."
           days-before-pr-stale: -1
