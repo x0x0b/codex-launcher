@@ -9,7 +9,7 @@ on:
 
 jobs:
   enforce:
-    if: github.event_name != 'issues' || github.event.action == 'opened' || (github.event.action == 'labeled' && github.event.label.name == 'author:x0x0b')
+    if: github.event_name != 'issues' || github.event.action == 'opened' || (github.event.action == 'labeled' && github.event.label.name == 'author:maintainer')
     permissions:
       issues: write
     runs-on: ubuntu-latest
@@ -18,7 +18,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # ratchet:actions/github-script@v8
         with:
           script: |
-            const labelName = 'author:x0x0b';
+            const labelName = 'author:maintainer';
             const { owner, repo } = context.repo;
 
             const ensureLabelExists = async () => {
@@ -35,7 +35,7 @@ jobs:
                     repo,
                     name: labelName,
                     color: 'ededed',
-                    description: 'Issues opened by x0x0b remain active'
+                    description: 'Issues opened by repository maintainers remain active'
                   });
                   core.info(`Created label ${labelName}.`);
                 } else {
@@ -111,16 +111,12 @@ jobs:
 
             core.info(`Auditing usage of ${labelName}.`);
 
-            const issues = await github.paginate(
-              github.rest.issues.listForRepo,
-              {
-                owner,
-                repo,
-                labels: labelName,
-                state: 'all',
-                per_page: 100
-              }
-            );
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner,
+              repo,
+              state: 'all',
+              per_page: 100
+            });
 
             for (const issue of issues) {
               const author = issue.user?.login ?? 'unknown';
@@ -128,9 +124,15 @@ jobs:
                 core.info(`Skipping pull request #${issue.number} by ${author}.`);
                 continue;
               }
-              const remove = shouldRemoveLabel(issue);
+              const hasLabel = issue.labels?.some(label => label.name === labelName) ?? false;
+              if (author === 'x0x0b' && !hasLabel) {
+                core.info(`Issue #${issue.number} by ${author} missing ${labelName}; adding.`);
+                await addLabel(issue.number);
+                continue;
+              }
+              const remove = shouldRemoveLabel(issue) && hasLabel;
               core.info(
-                `Issue #${issue.number} by ${author}: ${remove ? 'label will be removed' : 'label remains'}.`
+                `Issue #${issue.number} by ${author}: ${remove ? 'label will be removed' : hasLabel ? 'label remains' : 'label not present'}.`
               );
               if (remove) {
                 await removeLabel(issue.number);
