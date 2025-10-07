@@ -203,6 +203,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         state.mcpConfigInput = mcpWindows
         state.openFileOnChange = true
         state.enableNotification = true
+        state.enableCdProjectRoot = true
 
         val result = CodexArgsBuilder.build(state, 44444, osProvider = osProvider)
 

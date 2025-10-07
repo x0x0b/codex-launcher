@@ -48,6 +48,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var enableNotificationCheckbox: JBCheckBox
     private lateinit var enableSearchCheckbox: JBCheckBox
     private lateinit var enableCdProjectRootCheckbox: JBCheckBox
+    private lateinit var cdProjectRootWarningLabel: JBLabel
     private lateinit var winShellCombo: JComboBox<WinShell>
     private lateinit var mcpConfigInputArea: JBTextArea
     private lateinit var mcpServerWarningLabel: JBLabel
@@ -83,6 +84,11 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         modeFullAutoCheckbox = JBCheckBox("--full-auto (Low-friction sandboxed automatic execution)")
         enableSearchCheckbox = JBCheckBox("--search (Enable web search)")
         enableCdProjectRootCheckbox = JBCheckBox("--cd <project root> (Turn this on only when you explicitly need to set the working directory.)")
+        cdProjectRootWarningLabel = JBLabel("--cd <project root> is unavailable when WSL shell is selected.").apply {
+            foreground = UIUtil.getErrorForeground()
+            border = JBUI.Borders.emptyTop(4)
+            isVisible = false
+        }
 
         // File opening control
         openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed")
@@ -197,6 +203,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 }
                 row {
                     cell(enableSearchCheckbox)
+                }
+                row {
+                    cell(cdProjectRootWarningLabel)
                 }
                 row {
                     cell(enableCdProjectRootCheckbox)
@@ -365,7 +374,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         if (!::mcpConfigInputArea.isInitialized ||
             !::mcpServerWarningLabel.isInitialized ||
             !::fileHandlingWarningLabel.isInitialized ||
-            !::notificationsWarningLabel.isInitialized
+            !::notificationsWarningLabel.isInitialized ||
+            !::enableCdProjectRootCheckbox.isInitialized ||
+            !::cdProjectRootWarningLabel.isInitialized
         ) {
             return
         }
@@ -376,10 +387,12 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         mcpServerWarningLabel.isVisible = isWslSelected
         fileHandlingWarningLabel.isVisible = isWslSelected
         notificationsWarningLabel.isVisible = isWslSelected
+        cdProjectRootWarningLabel.isVisible = isWslSelected
 
         mcpConfigInputArea.isEnabled = !isWslSelected
         openFileOnChangeCheckbox.isEnabled = !isWslSelected
         enableNotificationCheckbox.isEnabled = !isWslSelected
+        enableCdProjectRootCheckbox.isEnabled = !isWslSelected
 
         mcpConfigInputArea.toolTipText = if (isWslSelected) {
             "Integrated MCP Server is unavailable when WSL shell is selected."
@@ -395,6 +408,12 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
         enableNotificationCheckbox.toolTipText = if (isWslSelected) {
             "Notifications are unavailable when WSL shell is selected."
+        } else {
+            null
+        }
+
+        enableCdProjectRootCheckbox.toolTipText = if (isWslSelected) {
+            "--cd <project root> is unavailable when WSL shell is selected."
         } else {
             null
         }
