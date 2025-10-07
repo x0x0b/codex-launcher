@@ -74,7 +74,11 @@ object CodexArgsBuilder {
             parts += "--search"
         }
 
-        if (state.enableCdProjectRoot && !projectBasePath.isNullOrBlank()) {
+        if (
+            state.enableCdProjectRoot &&
+            !projectBasePath.isNullOrBlank() &&
+            !(osProvider.isWindows && state.winShell == WinShell.WSL)
+        ) {
             parts += listOf("--cd", "'${projectBasePath}'")
         }
 
