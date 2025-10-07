@@ -81,6 +81,7 @@ jobs:
             if (context.eventName === 'issues') {
               const issue = context.payload.issue;
               const action = context.payload.action;
+              const author = issue?.user?.login ?? 'unknown';
 
               if (!issue || issue.pull_request) {
                 core.info('Ignoring pull request event.');
@@ -89,17 +90,20 @@ jobs:
 
               if (action === 'opened') {
                 if (issue.user?.login === 'x0x0b') {
+                  core.info(`Issue #${issue.number} opened by ${author}; ensuring ${labelName}.`);
                   await addLabel(issue.number);
                 } else {
+                  core.info(`Issue #${issue.number} opened by ${author}; removing ${labelName} if present.`);
                   await removeLabel(issue.number);
                 }
                 return;
               }
 
               if (action === 'labeled' && shouldRemoveLabel(issue)) {
+                core.info(`Issue #${issue.number} labeled event by ${author}; label should be removed.`);
                 await removeLabel(issue.number);
               } else {
-                core.info(`No action needed for issue #${issue.number}.`);
+                core.info(`No action needed for issue #${issue.number} (author: ${author}).`);
               }
 
               return;
@@ -119,7 +123,16 @@ jobs:
             );
 
             for (const issue of issues) {
-              if (shouldRemoveLabel(issue)) {
+              const author = issue.user?.login ?? 'unknown';
+              if (issue.pull_request) {
+                core.info(`Skipping pull request #${issue.number} by ${author}.`);
+                continue;
+              }
+              const remove = shouldRemoveLabel(issue);
+              core.info(
+                `Issue #${issue.number} by ${author}: ${remove ? 'label will be removed' : 'label remains'}.`
+              );
+              if (remove) {
                 await removeLabel(issue.number);
               }
             }
