@@ -9,6 +9,13 @@ body:
     attributes:
       value: |
         Thanks for reaching out! Share details so the community can help quickly.
+  - type: checkboxes
+    id: launcher_focus
+    attributes:
+      label: Confirm question scope
+      options:
+        - label: I confirm this question is about Codex Launcher, not Codex CLI.
+          required: true
   - type: textarea
     id: question_details
     attributes:

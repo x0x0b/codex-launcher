@@ -8,6 +8,16 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report! Please provide as much detail as possible so we can reproduce and address the problem quickly.
+  - type: checkboxes
+    id: launcher_specific
+    attributes:
+      label: Confirm Codex Launcher-only issue
+      description: Help us focus on Codex Launcher bugs.
+      options:
+        - label: I confirm this is an issue with Codex Launcher, not Codex CLI.
+          required: true
+        - label: I confirm the bug happens only when Codex CLI is launched via Codex Launcher, and it does not reproduce when running Codex CLI directly from the JetBrains IDE terminal.
+          required: true
   - type: input
     id: plugin_version
     attributes:
