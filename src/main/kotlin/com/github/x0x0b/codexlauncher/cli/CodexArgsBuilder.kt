@@ -33,7 +33,7 @@ object DefaultOsProvider : OsProvider {
  * This builder translates the plugin's settings into appropriate command-line arguments
  * that can be passed to the codex CLI tool. It handles:
  * - Mode selection (--full-auto flag)
- * - Optional project search flag (--search)
+ * - Optional web search enablement (--enable web_search_request)
  * - Optional working directory selection (--cd)
  * - Model specification (--model parameter)
  * - Custom model handling with proper validation
@@ -71,7 +71,7 @@ object CodexArgsBuilder {
         }
 
         if (state.enableSearch) {
-            parts += "--search"
+            parts += listOf("--enable", "web_search_request")
         }
 
         if (

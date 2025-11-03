@@ -78,7 +78,8 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         assertEquals(
             listOf(
                 """--full-auto""",
-                """--search""",
+                """--enable""",
+                """web_search_request""",
                 """--cd""",
                 """'/home/user/project'""",
                 """--model""",
@@ -118,7 +119,8 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         assertEquals(
             listOf(
                 """--full-auto""",
-                """--search""",
+                """--enable""",
+                """web_search_request""",
                 """--cd""",
                 """'C:\Projects\Demo'""",
                 """--model""",
@@ -159,7 +161,8 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         assertEquals(
             listOf(
                 """--full-auto""",
-                """--search""",
+                """--enable""",
+                """web_search_request""",
                 """--cd""",
                 """'C:\Projects\Demo'""",
                 """--model""",
