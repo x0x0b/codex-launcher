@@ -22,8 +22,8 @@ enum class Model {
 
     fun toDisplayName(): String = when (this) {
         DEFAULT -> "Default"
-        GPT_5 -> "gpt-5.1"
-        GPT_5_CODEX -> "gpt-5.1-codex"
+        GPT_5_1 -> "gpt-5.1"
+        GPT_5_1_CODEX -> "gpt-5.1-codex"
         CODEX_MINI_LATEST -> "gpt-5.1-codex-mini"
         CUSTOM -> "Custom..."
     }
