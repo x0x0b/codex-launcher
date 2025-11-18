@@ -63,7 +63,24 @@ class SendRangeToCodexAction : AnAction(
     override fun update(e: AnActionEvent) {
         val project = e.project
         val editor = e.getData(CommonDataKeys.EDITOR)
-        e.presentation.isEnabledAndVisible = project != null && editor != null
+
+        if (project == null || editor == null) {
+            e.presentation.isEnabledAndVisible = false
+            return
+        }
+
+        val terminalManager = project.service<CodexTerminalManager>()
+        if (!terminalManager.isCodexTerminalActive()) {
+            e.presentation.isEnabledAndVisible = false
+            return
+        }
+
+        val hasSelection = editor.selectionModel.hasSelection()
+        val inContextBar = e.place == "EditorContextBar"
+
+        val visible = !inContextBar || hasSelection
+        e.presentation.isVisible = visible
+        e.presentation.isEnabled = visible && (hasSelection || !inContextBar)
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
