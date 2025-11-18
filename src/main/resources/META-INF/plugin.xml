@@ -81,6 +81,8 @@
       icon="icons/codex_active.svg">
       <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="Copy"/>
       <add-to-group group-id="EditorTabPopupMenu" anchor="last"/>
+      <add-to-group group-id="Floating.CodeToolbar" anchor="last"/>
+      <add-to-group group-id="Floating.CodeToolbar.Minimal" anchor="last"/>
     </action>
   </actions>
 </idea-plugin>
