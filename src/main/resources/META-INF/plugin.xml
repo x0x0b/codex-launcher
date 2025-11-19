@@ -1,14 +1,14 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
   <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-  <id>com.github.x0x0b.gemini-launcher</id>
+  <id>com.github.eisermann.gemini-launcher</id>
 
   <!-- Public plugin name should be written in Title Case.
        Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
   <name>Gemini Launcher</name>
 
   <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-  <vendor url="https://x0x0b.github.io/">x0x0b</vendor>
+  <vendor url="https://eisermann.github.io/">eisermann</vendor>
 
   <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
        Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
@@ -58,13 +58,13 @@
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
   <extensions defaultExtensionNs="com.intellij">
     <notificationGroup id="GeminiLauncher" displayType="BALLOON" isLogByDefault="true"/>
-    <applicationConfigurable instance="com.github.x0x0b.geminilauncher.settings.ui.GeminiLauncherConfigurable" id="com.github.x0x0b.geminilauncher.settings" displayName="Gemini Launcher"/>
-    <postStartupActivity implementation="com.github.x0x0b.geminilauncher.startup.GeminiStartupActivity"/>
+    <applicationConfigurable instance="com.github.eisermann.geminilauncher.settings.ui.GeminiLauncherConfigurable" id="com.github.eisermann.geminilauncher.settings" displayName="Gemini Launcher"/>
+    <postStartupActivity implementation="com.github.eisermann.geminilauncher.startup.GeminiStartupActivity"/>
   </extensions>
 
   <actions>
-    <action id="com.github.x0x0b.geminilauncher.launch"
-      class="com.github.x0x0b.geminilauncher.actions.LaunchGeminiAction"
+    <action id="com.github.eisermann.geminilauncher.launch"
+      class="com.github.eisermann.geminilauncher.actions.LaunchGeminiAction"
       text="Launch Gemini" description="Open a Gemini terminal" icon="icons/gemini.svg">
       <!-- Keyboard shortcut: Option+Cmd+G (macOS) or Alt+Ctrl+G (Windows/Linux) -->
       <keyboard-shortcut keymap="$default" first-keystroke="control alt G"/>

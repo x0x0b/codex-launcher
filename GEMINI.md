@@ -41,7 +41,7 @@ This project uses the IntelliJ Platform Gradle Plugin.
 
 ### Configuration
 *   **Gradle:** `build.gradle.kts` configures the IntelliJ Platform version (currently targeting `2025.2`) and Kotlin version (`2.2.10`).
-*   **Plugin ID:** `com.github.x0x0b.gemini-launcher`
+*   **Plugin ID:** `com.github.eisermann.gemini-launcher`
 
 ### Testing
 *   Uses JUnit 4.

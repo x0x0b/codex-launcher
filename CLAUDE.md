@@ -11,7 +11,7 @@ Gemini Launcher is an unofficial IntelliJ IDEA plugin that integrates Google Gem
 - Target: JVM 21
 - Framework: IntelliJ Platform SDK 2025.2
 - Build: Gradle with Kotlin DSL
-- Plugin ID: `com.github.x0x0b.gemini-launcher`
+- Plugin ID: `com.github.eisermann.gemini-launcher`
 
 ## Essential Commands
 
@@ -36,7 +36,7 @@ Gemini Launcher is an unofficial IntelliJ IDEA plugin that integrates Google Gem
 ./gradlew test
 
 # Run specific test class
-./gradlew test --tests "com.github.x0x0b.geminilauncher.cli.GeminiArgsBuilderTest"
+./gradlew test --tests "com.github.eisermann.geminilauncher.cli.GeminiArgsBuilderTest"
 ```
 
 ## Architecture
@@ -131,7 +131,7 @@ Environment variable injection differs by shell for MCP port configuration.
 
 The plugin implements the MCP protocol for IDE ↔ Gemini CLI integration:
 - HTTP server on dynamic port (exposed via `GEMINI_CLI_IDE_SERVER_PORT`)
-- Discovery file at `.gemini/discovery/com.github.x0x0b.gemini-launcher.json`
+- Discovery file at `.gemini/discovery/com.github.eisermann.gemini-launcher.json`
 - Authorization via bearer token in discovery file
 - SSE endpoint for server-to-client notifications
 - JSON-RPC for client-to-server tool calls
@@ -226,7 +226,7 @@ Services implementing `Disposable` must clean up resources:
 
 ## Testing Strategy
 
-Tests are in `src/test/kotlin/com/github/x0x0b/geminilauncher/`:
+Tests are in `src/test/kotlin/com/github/eisermann/geminilauncher/`:
 - `cli/GeminiArgsBuilderTest.kt`: CLI argument construction logic
 - Uses JUnit 4 framework
 - Integration tests via `testFramework(Platform)` in Gradle

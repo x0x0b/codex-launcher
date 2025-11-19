@@ -4,7 +4,7 @@ plugins {
     id("org.jetbrains.intellij.platform") version "2.8.0"
 }
 
-group = "com.github.x0x0b"
+group = "com.github.eisermann"
 version = "1.1.7"
 
 repositories {

@@ -1,8 +1,8 @@
 # Gemini Launcher - IntelliJ Plugin
 
-[![Version](https://img.shields.io/badge/version-1.1.6-blue.svg)](https://github.com/x0x0b/gemini-launcher/releases)
+[![Version](https://img.shields.io/badge/version-1.1.6-blue.svg)](https://github.com/eisermann/gemini-launcher/releases)
 [![IntelliJ IDEA](https://img.shields.io/badge/IntelliJ%20IDEA-2024.2+-orange.svg)](https://www.jetbrains.com/idea/)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/x0x0b/gemini-launcher)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/eisermann/gemini-launcher)
 
 <img width="800" alt="The screenshot of Gemini Launcher." src="https://github.com/user-attachments/assets/4ee3fbd8-e384-4672-94c6-e4e9041a8e0d" />
 
@@ -44,7 +44,7 @@ Open **Settings (→ Other Settings) → Gemini Launcher** to pick the launch mo
 
 ### Building from Source
 ```bash
-git clone https://github.com/x0x0b/gemini-launcher.git
+git clone https://github.com/eisermann/gemini-launcher.git
 cd gemini-launcher
 ./gradlew buildPlugin
 ```
