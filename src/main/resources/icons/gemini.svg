@@ -1,8 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Codex Launcher">
-  <!-- frame: inherits color from parent -->
-  <rect x="2" y="3" width="20" height="18" rx="3.2" fill="none" stroke="#CED0D5" stroke-width="1.8" stroke-linejoin="round"></rect>
-  <!-- "C" stroke: fixed to #2cb491 -->
-  <path d="M11 9.1 A3 3.3 0 1 0 11 15" fill="none" stroke="#2cb491" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
-  <!-- small underscore/prompt: inherits color -->
-  <rect x="13.5" y="14.3" width="4" height="1.6" rx="0.6" fill="#CED0D5"></rect>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Gemini Launcher">
+  <!-- Gemini sparkle/star icon - default state -->
+
+  <!-- Main star shape - solid blue -->
+  <path d="M12 2 L14.5 9.5 L22 12 L14.5 14.5 L12 22 L9.5 14.5 L2 12 L9.5 9.5 Z"
+        fill="#4285F4" stroke="#1A73E8" stroke-width="0.5"/>
+
+  <!-- Inner center accent -->
+  <circle cx="12" cy="12" r="2" fill="#34A853"/>
+  <circle cx="12" cy="12" r="0.8" fill="#ffffff"/>
+
+  <!-- Small accent sparkle -->
+  <circle cx="17" cy="7" r="1.5" fill="#EA4335" opacity="0.8"/>
+  <circle cx="17" cy="7" r="0.5" fill="#ffffff"/>
 </svg>

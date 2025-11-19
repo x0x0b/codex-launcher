@@ -1,7 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Codex Launcher (active)">
-  <!-- Active placeholder variant -->
-  <rect x="2" y="3" width="20" height="18" rx="3.2" fill="#2cb491" stroke="#355a52" stroke-width="1.8" stroke-linejoin="round"></rect>
-  <!-- "./" hint to imply path insertion -->
-  <circle cx="8" cy="16" r="1.2" fill="#eeeeee" opacity="0.94"></circle>
-  <path d="M17 8 L13 16.5" stroke="#eeeeee" stroke-width="1.8" stroke-linecap="round"></path>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" role="img" aria-label="Gemini Launcher (active)">
+  <!-- Gemini sparkle/star icon - active state with animated feel -->
+
+  <!-- Outer glow rings -->
+  <circle cx="12" cy="12" r="10" fill="#4285F4" opacity="0.15"/>
+  <circle cx="12" cy="12" r="8" fill="#34A853" opacity="0.2"/>
+
+  <!-- Main star shape - filled solid -->
+  <path d="M12 2 L14.5 9.5 L22 12 L14.5 14.5 L12 22 L9.5 14.5 L2 12 L9.5 9.5 Z"
+        fill="#34A853" stroke="#1A73E8" stroke-width="1"/>
+
+  <!-- Inner bright center -->
+  <circle cx="12" cy="12" r="3" fill="#FBBC04"/>
+  <circle cx="12" cy="12" r="1.5" fill="#ffffff"/>
+
+  <!-- Corner accent sparkles for active indication -->
+  <circle cx="18" cy="6" r="2" fill="#EA4335"/>
+  <circle cx="18" cy="6" r="0.8" fill="#ffffff"/>
+
+  <circle cx="6" cy="18" r="1.5" fill="#4285F4"/>
+  <circle cx="6" cy="18" r="0.6" fill="#ffffff"/>
+
+  <circle cx="18" cy="18" r="1.2" fill="#FBBC04" opacity="0.8"/>
 </svg>
