@@ -22,7 +22,6 @@ class InsertPayloadResolverTest : BasePlatformTestCase() {
 
         val payload = InsertPayloadResolver.resolve(
             project = project,
-            includeCaretClass = true,
             editor = editor,
             file = virtualFile
         )
@@ -41,7 +40,7 @@ class InsertPayloadResolverTest : BasePlatformTestCase() {
         assertEquals(4, range.end)
     }
 
-    fun testCaretClassRangeWhenNoSelection() {
+    fun testNoSelectionProducesNoLineRange() {
         val fileText = """
             class Foo {
                 fun bar() {
@@ -63,7 +62,6 @@ class InsertPayloadResolverTest : BasePlatformTestCase() {
 
         val payload = InsertPayloadResolver.resolve(
             project = project,
-            includeCaretClass = true,
             editor = editor,
             file = virtualFile
         )
@@ -71,12 +69,9 @@ class InsertPayloadResolverTest : BasePlatformTestCase() {
         assertNotNull("Payload should be resolved when caret is inside a class", payload)
         payload!!
 
+        // Without an explicit selection we now only send the file path,
+        // so there should be no line range.
         val range = payload.lineRange
-        assertNotNull("Line range must be present when caret fallback is used", range)
-        range!!
-
-        // Whole class span (class Foo { ... })
-        assertEquals(1, range.start)
-        assertEquals(6, range.end)
+        assertNull("Line range must be null when there is no selection", range)
     }
 }

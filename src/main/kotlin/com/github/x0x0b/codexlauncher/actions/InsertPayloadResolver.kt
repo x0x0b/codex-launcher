@@ -6,10 +6,6 @@ import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiDocumentManager
-import com.intellij.psi.util.PsiTreeUtil
-import org.jetbrains.kotlin.psi.KtClassOrObject
 import java.nio.file.Path
 
 object InsertPayloadResolver {
@@ -18,7 +14,6 @@ object InsertPayloadResolver {
 
     fun resolve(
         project: Project,
-        includeCaretClass: Boolean = false,
         editor: Editor? = null,
         file: VirtualFile? = null
     ): InsertPayload? {
@@ -27,10 +22,7 @@ object InsertPayloadResolver {
         val relativePath = resolveRelativePath(project, targetFile) ?: return null
 
         val targetEditor = editor ?: editorManager.selectedTextEditor
-        val lineRange = targetEditor?.let {
-            resolveSelectionLineRange(it)
-                ?: if (includeCaretClass) resolveCaretClassRange(project, it) else null
-        }
+        val lineRange = targetEditor?.let { resolveSelectionLineRange(it) }
 
         return InsertPayload(relativePath, lineRange)
     }
@@ -70,24 +62,6 @@ object InsertPayloadResolver {
         }
 
         return toLineRange(editor.document, selectionModel.selectionStart, selectionModel.selectionEnd)
-    }
-
-    private fun resolveCaretClassRange(project: Project, editor: Editor): LineRange? {
-        val document = editor.document
-        val psiManager = PsiDocumentManager.getInstance(project)
-        val psiFile = psiManager.getPsiFile(document) ?: return null
-        psiManager.commitDocument(document)
-
-        val caretOffset = editor.caretModel.offset.coerceIn(0, document.textLength)
-        val element = psiFile.findElementAt(caretOffset) ?: return null
-
-        val javaClass = PsiTreeUtil.getParentOfType(element, PsiClass::class.java, false)
-        val ktClass = if (javaClass == null) {
-            PsiTreeUtil.getParentOfType(element, KtClassOrObject::class.java, false)
-        } else null
-
-        val targetRange = (javaClass ?: ktClass)?.textRange ?: return null
-        return toLineRange(document, targetRange.startOffset, targetRange.endOffset)
     }
 
     private fun toLineRange(document: Document, startOffset: Int, endOffset: Int): LineRange? {

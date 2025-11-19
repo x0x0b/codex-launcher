@@ -23,8 +23,6 @@ dependencies {
         create("IC", "2025.2")
         // Use bundled Terminal plugin APIs
         bundledPlugin("org.jetbrains.plugins.terminal")
-        // Access Kotlin PSI types for editor analysis
-        bundledPlugin("org.jetbrains.kotlin")
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
 
         // Add necessary plugin dependencies for compilation here, example:

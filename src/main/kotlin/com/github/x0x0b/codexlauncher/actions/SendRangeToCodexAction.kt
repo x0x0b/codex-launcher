@@ -35,7 +35,6 @@ class SendRangeToCodexAction : AnAction(
 
         val payload = InsertPayloadResolver.resolve(
             project = project,
-            includeCaretClass = true,
             editor = editor,
             file = virtualFile
         )
