@@ -1,15 +1,14 @@
-package com.github.x0x0b.codexlauncher.cli
+package com.github.x0x0b.geminilauncher.cli
 
-import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
-import com.github.x0x0b.codexlauncher.settings.options.Model
-import com.github.x0x0b.codexlauncher.settings.options.ModelReasoningEffort
-import com.github.x0x0b.codexlauncher.settings.options.Mode
-import com.github.x0x0b.codexlauncher.settings.options.WinShell
+import com.github.x0x0b.geminilauncher.settings.GeminiLauncherSettings
+import com.github.x0x0b.geminilauncher.settings.options.Model
+import com.github.x0x0b.geminilauncher.settings.options.ModelReasoningEffort
+import com.github.x0x0b.geminilauncher.settings.options.Mode
+import com.github.x0x0b.geminilauncher.settings.options.WinShell
 import com.google.gson.JsonArray
 import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSyntaxException
-import groovy.json.StringEscapeUtils
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.util.SystemInfo
 
@@ -28,21 +27,34 @@ object DefaultOsProvider : OsProvider {
 }
 
 /**
- * Utility object for building command-line arguments for codex execution.
- * 
+ * Utility object for building command-line arguments for gemini execution.
+ *
  * This builder translates the plugin's settings into appropriate command-line arguments
- * that can be passed to the codex CLI tool. It handles:
+ * that can be passed to the gemini CLI tool. It handles:
  * - Mode selection (--full-auto flag)
  * - Optional web search enablement (--enable web_search_request)
  * - Optional working directory selection (--cd)
  * - Model specification (--model parameter)
  * - Custom model handling with proper validation
- * 
+ *
  * @since 1.0.0
  */
-object CodexArgsBuilder {
+object GeminiArgsBuilder {
+
     /**
-     * Builds the command-line argument list for codex based on the provided settings state.
+     * Escapes a string for safe use in shell commands.
+     * Handles backslashes, quotes, and special characters.
+     */
+    private fun escapeForShell(str: String): String {
+        return str
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t")
+    }
+    /**
+     * Builds the command-line argument list for gemini based on the provided settings state.
      * 
      * The method processes the settings and generates appropriate arguments:
      * - Adds --full-auto flag if the mode is set to FULL_AUTO
@@ -52,14 +64,14 @@ object CodexArgsBuilder {
      * @param state The current settings state containing user preferences
      * @param port Optional HTTP service port for notify command
      * @param projectBasePath Optional project base path for --cd handling
-     * @return A list of command-line arguments to pass to codex
+     * @return A list of command-line arguments to pass to gemini
      * 
      * @example
-     * For settings with mode=FULL_AUTO and model=GPT_5:
-     * Returns: ["--full-auto", "--model", "gpt-5"]
+     * For settings with mode=FULL_AUTO and model=GEMINI_PRO:
+     * Returns: ["--full-auto", "--model", "gemini-pro"]
      */
     fun build(
-        state: CodexLauncherSettings.State,
+        state: GeminiLauncherSettings.State,
         port: Int? = null,
         osProvider: OsProvider = DefaultOsProvider,
         projectBasePath: String? = null
@@ -84,7 +96,7 @@ object CodexArgsBuilder {
 
         // Determine the model name to use
         val modelName: String? = when (state.model) {
-            Model.DEFAULT -> null // Use codex default model
+            Model.DEFAULT -> null // Use gemini default model
             Model.CUSTOM -> state.customModel.trim().ifBlank { null }
             else -> state.model.cliName()
         }
@@ -96,7 +108,7 @@ object CodexArgsBuilder {
 
         // Add reasoning effort parameter if specified
         val reasoningEffort: String? = when (state.modelReasoningEffort) {
-            ModelReasoningEffort.DEFAULT -> null // Use codex default
+            ModelReasoningEffort.DEFAULT -> null // Use gemini default
             else -> state.modelReasoningEffort.cliName()
         }
 
@@ -191,10 +203,10 @@ object CodexArgsBuilder {
         return if (osProvider.isWindows && winShell != WinShell.WSL) {
             if (winShell == WinShell.POWERSHELL_73_PLUS) {
                 // PowerShell 7.3+ on Windows
-                argsArray.joinToString(", ") { "\"${StringEscapeUtils.escapeJava(it.asString)}\"" }
+                argsArray.joinToString(", ") { "\"${escapeForShell(it.asString)}\"" }
             } else {
                 // Pre PowerShell 7.3 on Windows
-                argsArray.joinToString(", ") { "\\\"${StringEscapeUtils.escapeJava(it.asString)}\\\"" }
+                argsArray.joinToString(", ") { "\\\"${escapeForShell(it.asString)}\\\"" }
             }
         } else {
             // Non-Windows OS or Windows/WSL
@@ -212,7 +224,7 @@ object CodexArgsBuilder {
         // Add SystemRoot for Windows if not already present
         // https://github.com/openai/codex/issues/3311
         if (osProvider.isWindows && winShell != WinShell.WSL && !envMap.containsKey("SystemRoot")) {
-            envMap["SystemRoot"] = "C:\\\\Windows"
+            envMap["SystemRoot"] = "C:\\Windows"
         }
         
         val envEntries = if (osProvider.isWindows && winShell == WinShell.POWERSHELL_LT_73) {

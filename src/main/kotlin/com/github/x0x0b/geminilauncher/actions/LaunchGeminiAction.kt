@@ -1,8 +1,10 @@
-package com.github.x0x0b.codexlauncher.actions
+package com.github.x0x0b.geminilauncher.actions
 
-import com.github.x0x0b.codexlauncher.http.HttpTriggerService
-import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
-import com.github.x0x0b.codexlauncher.terminal.CodexTerminalManager
+import com.github.x0x0b.geminilauncher.http.HttpTriggerService
+import com.github.x0x0b.geminilauncher.mcp.McpServer
+import com.github.x0x0b.geminilauncher.settings.GeminiLauncherSettings
+import com.github.x0x0b.geminilauncher.settings.options.WinShell
+import com.github.x0x0b.geminilauncher.terminal.GeminiTerminalManager
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
@@ -15,38 +17,39 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.IconLoader
+import com.intellij.openapi.util.SystemInfo
 import java.nio.file.Path
 import javax.swing.Icon
 
-class LaunchCodexAction : AnAction(DEFAULT_TEXT, DEFAULT_DESCRIPTION, null), DumbAware {
+class LaunchGeminiAction : AnAction(DEFAULT_TEXT, DEFAULT_DESCRIPTION, null), DumbAware {
 
     companion object {
-        private const val CODEX_COMMAND = "codex"
-        private const val NOTIFICATION_TITLE = "Codex Launcher"
-        private const val DEFAULT_TEXT = "Launch Codex"
-        private const val DEFAULT_DESCRIPTION = "Open a Codex terminal"
-        private const val ACTIVE_TEXT = "Insert File Path into Codex"
-        private const val ACTIVE_DESCRIPTION = "Send the current file path to the Codex terminal"
-        private val DEFAULT_ICON = IconLoader.getIcon("/icons/codex.svg", LaunchCodexAction::class.java)
-        private val ACTIVE_ICON = IconLoader.getIcon("/icons/codex_active.svg", LaunchCodexAction::class.java)
+        private const val GEMINI_COMMAND = "gemini"
+        private const val NOTIFICATION_TITLE = "Gemini Launcher"
+        private const val DEFAULT_TEXT = "Launch Gemini"
+        private const val DEFAULT_DESCRIPTION = "Open a Gemini terminal"
+        private const val ACTIVE_TEXT = "Insert File Path into Gemini"
+        private const val ACTIVE_DESCRIPTION = "Send the current file path to the Gemini terminal"
+        private val DEFAULT_ICON = IconLoader.getIcon("/icons/gemini.svg", LaunchGeminiAction::class.java)
+        private val ACTIVE_ICON = IconLoader.getIcon("/icons/gemini_active.svg", LaunchGeminiAction::class.java)
     }
 
-    private val logger = logger<LaunchCodexAction>()
+    private val logger = logger<LaunchGeminiAction>()
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project
         if (project == null) {
-            logger.warn("No project context available for Codex launch")
+            logger.warn("No project context available for Gemini launch")
             return
         }
 
-        val terminalManager = project.service<CodexTerminalManager>()
-        if (terminalManager.isCodexTerminalActive()) {
+        val terminalManager = project.service<GeminiTerminalManager>()
+        if (terminalManager.isGeminiTerminalActive()) {
             performInsert(project, terminalManager)
             return
         }
 
-        launchCodex(project, terminalManager)
+        launchGemini(project, terminalManager)
     }
 
     override fun update(e: AnActionEvent) {
@@ -59,57 +62,79 @@ class LaunchCodexAction : AnAction(DEFAULT_TEXT, DEFAULT_DESCRIPTION, null), Dum
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
 
-    private fun performInsert(project: Project, terminalManager: CodexTerminalManager) {
+    private fun performInsert(project: Project, terminalManager: GeminiTerminalManager) {
         val insertText = resolveInsertText(project)
         if (insertText == null) {
-            notify(project, "No active file to send to Codex", NotificationType.INFORMATION)
+            notify(project, "No active file to send to Gemini", NotificationType.INFORMATION)
             return
         }
 
-        if (!terminalManager.typeIntoActiveCodexTerminal(insertText)) {
-            notify(project, "Failed to send file path to Codex terminal", NotificationType.WARNING)
+        if (!terminalManager.typeIntoActiveGeminiTerminal(insertText)) {
+            notify(project, "Failed to send file path to Gemini terminal", NotificationType.WARNING)
             return
         }
 
-        logger.info("Sent active file path to Codex terminal: $insertText")
+        logger.info("Sent active file path to Gemini terminal: $insertText")
     }
 
-    private fun launchCodex(project: Project, terminalManager: CodexTerminalManager) {
+    private fun launchGemini(project: Project, terminalManager: GeminiTerminalManager) {
         val baseDir = project.basePath ?: System.getProperty("user.home")
-        logger.info("Launching Codex in directory: $baseDir")
+        logger.info("Launching Gemini in directory: $baseDir")
 
         try {
             val httpService = ApplicationManager.getApplication().service<HttpTriggerService>()
             val port = httpService.getActualPort()
-            if (port == 0) {
-                logger.warn("HTTP service port is not available")
-                notify(project, "HTTP service is not properly initialized", NotificationType.WARNING)
-                return
-            }
+            // Note: port can be 0 if failed, handled gracefully by CLI usually or we warn
+            
+            val mcpServer = ApplicationManager.getApplication().service<McpServer>()
+            val mcpPort = mcpServer.port
 
-            val settings = service<CodexLauncherSettings>()
-            val command = buildCommand(settings.getArgs(port, baseDir))
+            val settings = service<GeminiLauncherSettings>()
+            val args = settings.getArgs(port, baseDir)
+            val command = buildCommand(args, mcpPort, settings.state.winShell)
+            
             terminalManager.launch(baseDir, command)
-            logger.info("Codex command executed successfully: $command")
+            logger.info("Gemini command executed successfully: $command")
         } catch (t: Throwable) {
-            logger.error("Failed to launch Codex", t)
-            notify(project, "Failed to launch Codex: ${t.message}", NotificationType.ERROR)
+            logger.error("Failed to launch Gemini", t)
+            notify(project, "Failed to launch Gemini: ${t.message}", NotificationType.ERROR)
         }
     }
 
-    private fun buildCommand(args: String): String {
-        return buildString {
-            append(CODEX_COMMAND)
+    private fun buildCommand(args: String, mcpPort: Int, winShell: WinShell): String {
+        val geminiCmd = buildString {
+            append(GEMINI_COMMAND)
             if (args.isNotBlank()) {
                 append(' ')
                 append(args)
             }
         }
+        
+        if (mcpPort <= 0) {
+            return geminiCmd
+        }
+
+        // Prepend environment variable for tie-breaking if possible
+        return if (SystemInfo.isWindows) {
+            if (winShell == WinShell.WSL) {
+                 "export GEMINI_CLI_IDE_SERVER_PORT=$mcpPort && $geminiCmd"
+            } else if (winShell == WinShell.POWERSHELL_73_PLUS || winShell == WinShell.POWERSHELL_LT_73) {
+                 // PowerShell syntax: $env:VAR='val'; cmd
+                 "\$env:GEMINI_CLI_IDE_SERVER_PORT='$mcpPort'; $geminiCmd"
+            } else {
+                // Default cmd syntax? IntelliJ terminal on Windows typically uses cmd.exe or PowerShell.
+                // If it's cmd.exe: set VAR=val && cmd
+                "set GEMINI_CLI_IDE_SERVER_PORT=$mcpPort && $geminiCmd"
+            }
+        } else {
+            // Unix/Mac
+            "export GEMINI_CLI_IDE_SERVER_PORT=$mcpPort && $geminiCmd"
+        }
     }
 
     private fun notify(project: Project, content: String, type: NotificationType) {
         runCatching {
-            val group = NotificationGroupManager.getInstance().getNotificationGroup("CodexLauncher")
+            val group = NotificationGroupManager.getInstance().getNotificationGroup("GeminiLauncher")
             group.createNotification(NOTIFICATION_TITLE, content, type).notify(project)
         }.onFailure { error ->
             logger.error("Failed to show notification: $content", error)
@@ -195,8 +220,8 @@ class LaunchCodexAction : AnAction(DEFAULT_TEXT, DEFAULT_DESCRIPTION, null), Dum
             return ToolbarState(DEFAULT_ICON, DEFAULT_TEXT, DEFAULT_DESCRIPTION)
         }
 
-        val manager = project.service<CodexTerminalManager>()
-        return if (manager.isCodexTerminalActive()) {
+        val manager = project.service<GeminiTerminalManager>()
+        return if (manager.isGeminiTerminalActive()) {
             ToolbarState(ACTIVE_ICON, ACTIVE_TEXT, ACTIVE_DESCRIPTION)
         } else {
             ToolbarState(DEFAULT_ICON, DEFAULT_TEXT, DEFAULT_DESCRIPTION)

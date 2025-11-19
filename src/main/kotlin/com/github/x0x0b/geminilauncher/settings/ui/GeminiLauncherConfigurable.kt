@@ -1,10 +1,10 @@
-package com.github.x0x0b.codexlauncher.settings.ui
+package com.github.x0x0b.geminilauncher.settings.ui
 
-import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
-import com.github.x0x0b.codexlauncher.settings.options.Model
-import com.github.x0x0b.codexlauncher.settings.options.ModelReasoningEffort
-import com.github.x0x0b.codexlauncher.settings.options.Mode
-import com.github.x0x0b.codexlauncher.settings.options.WinShell
+import com.github.x0x0b.geminilauncher.settings.GeminiLauncherSettings
+import com.github.x0x0b.geminilauncher.settings.options.Model
+import com.github.x0x0b.geminilauncher.settings.options.ModelReasoningEffort
+import com.github.x0x0b.geminilauncher.settings.options.Mode
+import com.github.x0x0b.geminilauncher.settings.options.WinShell
 import com.intellij.ide.DataManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.ConfigurationException
@@ -38,7 +38,7 @@ import javax.swing.JList
 import java.util.function.Consumer
 import java.util.function.Predicate
 
-class CodexLauncherConfigurable : SearchableConfigurable {
+class GeminiLauncherConfigurable : SearchableConfigurable {
     private lateinit var root: JComponent
     private lateinit var modeFullAutoCheckbox: JBCheckBox
     private lateinit var modelCombo: JComboBox<Model>
@@ -55,7 +55,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var fileHandlingWarningLabel: JBLabel
     private lateinit var notificationsWarningLabel: JBLabel
 
-    private val settings by lazy { service<CodexLauncherSettings>() }
+    private val settings by lazy { service<GeminiLauncherSettings>() }
 
     companion object {
         private val ALLOWED_CUSTOM_MODEL_REGEX = Regex("^[A-Za-z0-9._-]*$")
@@ -65,16 +65,16 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         private const val COMMENT_FONT_SIZE_DELTA = 0.8f
     }
 
-    override fun getId(): String = "com.github.x0x0b.codexlauncher.settings"
+    override fun getId(): String = "com.github.x0x0b.geminilauncher.settings"
 
-    override fun getDisplayName(): String = "Codex Launcher"
+    override fun getDisplayName(): String = "Gemini Launcher"
 
     override fun createComponent(): JComponent {
 
         // Model controls
         modelCombo = ComboBox(Model.entries.toTypedArray())
         customModelField = JBTextField()
-        customModelField.emptyText.text = "e.g. gpt-5"
+        customModelField.emptyText.text = "e.g. gemini-pro"
         customModelField.isEnabled = false
 
         // Model reasoning effort controls
@@ -99,7 +99,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         }
 
         // Notification control
-        enableNotificationCheckbox = JBCheckBox("Enable notifications when events are completed by Codex CLI")
+        enableNotificationCheckbox = JBCheckBox("Enable notifications when events are completed by Gemini CLI")
         notificationsWarningLabel = JBLabel("Notifications are unavailable when WSL shell is selected.").apply {
             foreground = UIUtil.getErrorForeground()
             border = JBUI.Borders.emptyTop(4)
@@ -211,7 +211,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(enableCdProjectRootCheckbox)
                 }
                 row {
-                    this.largeComment("For more information, run codex --help")
+                    this.largeComment("For more information, run gemini --help")
                 }
             }
             group("File Handling") {
@@ -222,7 +222,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                     cell(openFileOnChangeCheckbox)
                 }
                 row {
-                    this.largeComment("Changes will take effect after restarting Codex.")
+                    this.largeComment("Changes will take effect after restarting Gemini.")
                 }
             }
             group("Notifications") {
@@ -234,12 +234,12 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 }
                 row {
                     this.largeComment(
-                        "Customize notification sounds and display options in <a href='notifications'>Settings &gt; Appearance &amp; Behavior &gt; Notifications &gt; CodexLauncher</a>.",
+                        "Customize notification sounds and display options in <a href='notifications'>Settings &gt; Appearance &amp; Behavior &gt; Notifications &gt; GeminiLauncher</a>.",
                         action = HyperlinkEventAction { openApplicationConfigurable(NOTIFICATIONS_CONFIGURABLE_ID) }
                     )
                 }
                 row {
-                    this.largeComment("Changes will take effect after restarting Codex.")
+                    this.largeComment("Changes will take effect after restarting Gemini.")
                 }
                 row {
                     val link = HyperlinkLabel("Learn more about IntelliJ notification settings")

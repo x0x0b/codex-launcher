@@ -1,11 +1,11 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
   <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-  <id>com.github.x0x0b.codex-launcher</id>
+  <id>com.github.x0x0b.gemini-launcher</id>
 
   <!-- Public plugin name should be written in Title Case.
        Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-name -->
-  <name>Codex Launcher</name>
+  <name>Gemini Launcher</name>
 
   <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
   <vendor url="https://x0x0b.github.io/">x0x0b</vendor>
@@ -13,39 +13,39 @@
   <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
        Guidelines: https://plugins.jetbrains.com/docs/marketplace/best-practices-for-listing.html#plugin-description -->
   <description><![CDATA[
-        <blockquote><b>Important:</b> Install the <a href="https://github.com/openai/codex/blob/main/README.md">OpenAI Codex CLI</a> separately before using this plugin.</blockquote>
+        <blockquote><b>Important:</b> Install the <a href="https://github.com/google/gemini-cli">Gemini CLI</a> separately before using this plugin.</blockquote>
 
-        <blockquote><b>For Windows users:</b> Please select your terminal shell in the plugin settings (<em>Settings (→ Other Settings) → Codex Launcher</em>) to ensure proper functionality.</blockquote>
+        <blockquote><b>For Windows users:</b> Please select your terminal shell in the plugin settings (<em>Settings (→ Other Settings) → Gemini Launcher</em>) to ensure proper functionality.</blockquote>
 
         <h2>Overview</h2>
         <p>
-          Codex Launcher is an <b>unofficial</b> IntelliJ IDEA plugin that keeps the OpenAI Codex CLI one click away inside the IDE.
+          Gemini Launcher is an <b>unofficial</b> IntelliJ IDEA plugin that keeps the Google Gemini CLI one click away inside the IDE.
         </p>
 
         <h2>Features</h2>
         <ul>
           <li><b>One-click launch</b> from the toolbar or Tools menu</li>
-          <li><b>Integrated terminal</b> that opens a dedicated "Codex" tab in the project root</li>
-          <li><b>Completion notifications</b> after Codex CLI finishes processing the current run</li>
-          <li><b>Automatic file opening</b> for files updated by Codex</li>
+          <li><b>Integrated terminal</b> that opens a dedicated "Gemini" tab in the project root</li>
+          <li><b>Completion notifications</b> after Gemini CLI finishes processing the current run</li>
+          <li><b>Automatic file opening</b> for files updated by Gemini</li>
           <li><b>Built-in MCP server pairing</b> with guided setup for IntelliJ's MCP server (2025.2+)</li>
           <li><b>Flexible configuration</b> for launch modes, models, and notifications</li>
         </ul>
 
         <h2>Usage</h2>
         <ol>
-          <li>Click the <b>Launch Codex</b> button in the main toolbar</li>
-          <li>Or choose <b>Tools</b> → <b>Launch Codex</b></li>
-          <li>The integrated terminal opens a new "Codex" tab and runs <code>codex</code> automatically</li>
+          <li>Click the <b>Launch Gemini</b> button in the main toolbar</li>
+          <li>Or choose <b>Tools</b> → <b>Launch Gemini</b></li>
+          <li>The integrated terminal opens a new "Gemini" tab and runs <code>gemini</code> automatically</li>
         </ol>
 
         <h2>Configuration</h2>
-        <p>Open <em>Settings (→ Other Settings) → Codex Launcher</em> to pick the launch mode, model, notification behavior, and auto-open options.</p>
+        <p>Open <em>Settings (→ Other Settings) → Gemini Launcher</em> to pick the launch mode, model, notification behavior, and auto-open options.</p>
 
         <h2>Requirements</h2>
         <ul>
           <li>IntelliJ IDEA 2024.2 or later (or other compatible JetBrains IDEs)</li>
-          <li>OpenAI Codex CLI installed and available in your system PATH</li>
+          <li>Google Gemini CLI installed and available in your system PATH</li>
         </ul>
     ]]></description>
 
@@ -57,15 +57,17 @@
   <!-- Extension points defined by the plugin.
        Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
   <extensions defaultExtensionNs="com.intellij">
-    <notificationGroup id="CodexLauncher" displayType="BALLOON" isLogByDefault="true"/>
-    <applicationConfigurable instance="com.github.x0x0b.codexlauncher.settings.ui.CodexLauncherConfigurable" id="com.github.x0x0b.codexlauncher.settings" displayName="Codex Launcher"/>
-    <postStartupActivity implementation="com.github.x0x0b.codexlauncher.startup.CodexStartupActivity"/>
+    <notificationGroup id="GeminiLauncher" displayType="BALLOON" isLogByDefault="true"/>
+    <applicationConfigurable instance="com.github.x0x0b.geminilauncher.settings.ui.GeminiLauncherConfigurable" id="com.github.x0x0b.geminilauncher.settings" displayName="Gemini Launcher"/>
+    <postStartupActivity implementation="com.github.x0x0b.geminilauncher.startup.GeminiStartupActivity"/>
   </extensions>
 
   <actions>
-    <action id="com.github.x0x0b.codexlauncher.launch"
-      class="com.github.x0x0b.codexlauncher.actions.LaunchCodexAction"
-      text="Launch Codex" description="Open a Codex terminal" icon="icons/codex.svg">
+    <action id="com.github.x0x0b.geminilauncher.launch"
+      class="com.github.x0x0b.geminilauncher.actions.LaunchGeminiAction"
+      text="Launch Gemini" description="Open a Gemini terminal" icon="icons/gemini.svg">
+      <!-- Keyboard shortcut: Option+Cmd+G (macOS) or Alt+Ctrl+G (Windows/Linux) -->
+      <keyboard-shortcut keymap="$default" first-keystroke="control alt G"/>
       <!-- New UI toolbar (2022.3+) -->
       <add-to-group group-id="MainToolbarRight" anchor="last"/>
       <add-to-group group-id="MainToolbarLeft" anchor="last"/>

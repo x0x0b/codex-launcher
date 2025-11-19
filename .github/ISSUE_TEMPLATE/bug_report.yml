@@ -1,5 +1,5 @@
 name: Bug report
-description: File a bug report to help us improve Codex Launcher.
+description: File a bug report to help us improve Gemini Launcher.
 title: "[Bug]: "
 labels:
   - request ai review
@@ -11,26 +11,26 @@ body:
   - type: checkboxes
     id: launcher_specific
     attributes:
-      label: Confirm Codex Launcher-only issue
-      description: Help us focus on Codex Launcher bugs.
+      label: Confirm Gemini Launcher-only issue
+      description: Help us focus on Gemini Launcher bugs.
       options:
-        - label: I confirm this is an issue with Codex Launcher, not Codex CLI.
+        - label: I confirm this is an issue with Gemini Launcher, not Gemini CLI.
           required: true
-        - label: I confirm the bug happens only when Codex CLI is launched via Codex Launcher, and it does not reproduce when running Codex CLI directly from the JetBrains IDE terminal.
+        - label: I confirm the bug happens only when Gemini CLI is launched via Gemini Launcher, and it does not reproduce when running Gemini CLI directly from the JetBrains IDE terminal.
           required: true
   - type: input
     id: plugin_version
     attributes:
-      label: Codex Launcher version
-      description: Which Codex Launcher plugin version are you using?
+      label: Gemini Launcher version
+      description: Which Gemini Launcher plugin version are you using?
       placeholder: e.g. 1.x.y
     validations:
       required: true
   - type: input
-    id: codex_cli_version
+    id: gemini_cli_version
     attributes:
-      label: Codex CLI version
-      description: Which Codex CLI version are you using?
+      label: Gemini CLI version
+      description: Which Gemini CLI version are you using?
       placeholder: e.g. 0.4x.y
     validations:
       required: true

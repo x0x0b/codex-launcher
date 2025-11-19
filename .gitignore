@@ -45,3 +45,5 @@ bin/
 
 .gemini/
 gha-creds-*.json
+
+/claudedocs

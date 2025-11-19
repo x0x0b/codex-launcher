@@ -1,4 +1,4 @@
-package com.github.x0x0b.codexlauncher.settings.options
+package com.github.x0x0b.geminilauncher.settings.options
 
 /**
  * Windows shell selection for command formatting.

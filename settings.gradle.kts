@@ -1,1 +1,1 @@
-rootProject.name = "codex-launcher"
+rootProject.name = "gemini-launcher"

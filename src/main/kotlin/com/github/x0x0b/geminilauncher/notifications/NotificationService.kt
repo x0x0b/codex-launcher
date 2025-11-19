@@ -1,4 +1,4 @@
-package com.github.x0x0b.codexlauncher.notifications
+package com.github.x0x0b.geminilauncher.notifications
 
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -9,15 +9,15 @@ import com.intellij.openapi.project.Project
 class NotificationService(private val project: Project) {
     
     companion object {
-        private const val NOTIFICATION_GROUP_ID = "CodexLauncher"
+        private const val NOTIFICATION_GROUP_ID = "GeminiLauncher"
     }
     
-    fun notifyRefreshReceived(message: String = "Codex CLI processing completed.") {
+    fun notifyRefreshReceived(message: String = "Gemini CLI processing completed.") {
         val notificationGroup = NotificationGroupManager.getInstance()
             .getNotificationGroup(NOTIFICATION_GROUP_ID)
             
         val notification = notificationGroup.createNotification(
-            "Codex Launcher",
+            "Gemini Launcher",
             message,
             NotificationType.INFORMATION
         )
@@ -30,7 +30,7 @@ class NotificationService(private val project: Project) {
             .getNotificationGroup(NOTIFICATION_GROUP_ID)
             
         val notification = notificationGroup.createNotification(
-            "Codex Launcher",
+            "Gemini Launcher",
             "Error processing refresh request: $error",
             NotificationType.ERROR
         )

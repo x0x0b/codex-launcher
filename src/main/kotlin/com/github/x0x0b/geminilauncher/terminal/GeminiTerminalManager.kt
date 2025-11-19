@@ -1,4 +1,4 @@
-package com.github.x0x0b.codexlauncher.terminal
+package com.github.x0x0b.geminilauncher.terminal
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
@@ -12,106 +12,106 @@ import org.jetbrains.plugins.terminal.TerminalToolWindowManager
 import org.jetbrains.plugins.terminal.TerminalToolWindowFactory
 
 /**
- * Project-level service responsible for managing Codex terminals.
+ * Project-level service responsible for managing Gemini terminals.
  * Encapsulates lookup, reuse, focus, and command execution logic so actions stay thin.
  */
 @Service(Service.Level.PROJECT)
-class CodexTerminalManager(private val project: Project) {
+class GeminiTerminalManager(private val project: Project) {
 
     companion object {
-        private val CODEX_TERMINAL_KEY = Key.create<Boolean>("codex.launcher.codexTerminal")
-        private val CODEX_TERMINAL_RUNNING_KEY = Key.create<Boolean>("codex.launcher.codexTerminal.running")
-        private val CODEX_TERMINAL_CALLBACK_KEY = Key.create<Boolean>("codex.launcher.codexTerminal.callbackRegistered")
+        private val GEMINI_TERMINAL_KEY = Key.create<Boolean>("gemini.launcher.geminiTerminal")
+        private val GEMINI_TERMINAL_RUNNING_KEY = Key.create<Boolean>("gemini.launcher.geminiTerminal.running")
+        private val GEMINI_TERMINAL_CALLBACK_KEY = Key.create<Boolean>("gemini.launcher.geminiTerminal.callbackRegistered")
     }
 
-    private val logger = logger<CodexTerminalManager>()
+    private val logger = logger<GeminiTerminalManager>()
 
-    private data class CodexTerminal(val widget: TerminalWidget, val content: Content)
+    private data class GeminiTerminal(val widget: TerminalWidget, val content: Content)
 
     /**
-     * Launches or reuses the Codex terminal for the given command.
+     * Launches or reuses the Gemini terminal for the given command.
      * @throws Throwable when terminal creation or command execution fails.
      */
     fun launch(baseDir: String, command: String) {
         val terminalManager = TerminalToolWindowManager.getInstance(project)
-        var existingTerminal = locateCodexTerminal(terminalManager)
+        var existingTerminal = locateGeminiTerminal(terminalManager)
 
         existingTerminal?.let { terminal ->
             ensureTerminationCallback(terminal.widget, terminal.content)
-            if (isCodexRunning(terminal)) {
-                logger.info("Focusing active Codex terminal")
-                focusCodexTerminal(terminalManager, terminal)
+            if (isGeminiRunning(terminal)) {
+                logger.info("Focusing active Gemini terminal")
+                focusGeminiTerminal(terminalManager, terminal)
                 return
             }
 
-            if (reuseCodexTerminal(terminal, command)) {
-                logger.info("Reused existing Codex terminal for new Codex run")
-                focusCodexTerminal(terminalManager, terminal)
+            if (reuseGeminiTerminal(terminal, command)) {
+                logger.info("Reused existing Gemini terminal for new Gemini run")
+                focusGeminiTerminal(terminalManager, terminal)
                 return
             } else {
-                clearCodexMetadata(terminalManager, terminal.widget)
+                clearGeminiMetadata(terminalManager, terminal.widget)
                 existingTerminal = null
             }
         }
 
         var widget: TerminalWidget? = null
         try {
-            widget = terminalManager.createShellWidget(baseDir, "Codex", true, true)
-            val content = markCodexTerminal(terminalManager, widget)
+            widget = terminalManager.createShellWidget(baseDir, "Gemini", true, true)
+            val content = markGeminiTerminal(terminalManager, widget)
             if (!sendCommandToTerminal(widget, content, command)) {
-                throw IllegalStateException("Failed to execute Codex command")
+                throw IllegalStateException("Failed to execute Gemini command")
             }
             if (content != null) {
-                focusCodexTerminal(terminalManager, CodexTerminal(widget, content))
+                focusGeminiTerminal(terminalManager, GeminiTerminal(widget, content))
             }
         } catch (sendError: Throwable) {
-            widget?.let { clearCodexMetadata(terminalManager, it) }
+            widget?.let { clearGeminiMetadata(terminalManager, it) }
             throw sendError
         }
     }
 
     /**
-     * Returns true when the Codex terminal tab is currently selected in the terminal tool window.
+     * Returns true when the Gemini terminal tab is currently selected in the terminal tool window.
      */
-    fun isCodexTerminalActive(): Boolean {
+    fun isGeminiTerminalActive(): Boolean {
         return try {
             val terminalManager = TerminalToolWindowManager.getInstance(project)
-            findDisplayedCodexTerminal(terminalManager) != null
+            findDisplayedGeminiTerminal(terminalManager) != null
         } catch (t: Throwable) {
-            logger.warn("Failed to inspect Codex terminal active state", t)
+            logger.warn("Failed to inspect Gemini terminal active state", t)
             false
         }
     }
 
-    fun typeIntoActiveCodexTerminal(text: String): Boolean {
+    fun typeIntoActiveGeminiTerminal(text: String): Boolean {
         return try {
             val terminalManager = TerminalToolWindowManager.getInstance(project)
-            val terminal = findDisplayedCodexTerminal(terminalManager) ?: return false
+            val terminal = findDisplayedGeminiTerminal(terminalManager) ?: return false
             typeText(terminal.widget, text)
         } catch (t: Throwable) {
-            logger.warn("Failed to type into Codex terminal", t)
+            logger.warn("Failed to type into Gemini terminal", t)
             false
         }
     }
 
-    private fun locateCodexTerminal(manager: TerminalToolWindowManager): CodexTerminal? = try {
+    private fun locateGeminiTerminal(manager: TerminalToolWindowManager): GeminiTerminal? = try {
         manager.terminalWidgets.asSequence().mapNotNull { widget ->
             val content = manager.getContainer(widget)?.content ?: return@mapNotNull null
-            val isCodex = content.getUserData(CODEX_TERMINAL_KEY) == true || content.displayName == "Codex"
-            if (!isCodex) {
+            val isGemini = content.getUserData(GEMINI_TERMINAL_KEY) == true || content.displayName == "Gemini"
+            if (!isGemini) {
                 return@mapNotNull null
             }
-            CodexTerminal(widget, content)
+            GeminiTerminal(widget, content)
         }.firstOrNull()
     } catch (t: Throwable) {
         logger.warn("Failed to inspect existing terminal widgets", t)
         null
     }
 
-    private fun findDisplayedCodexTerminal(
+    private fun findDisplayedGeminiTerminal(
         manager: TerminalToolWindowManager
-    ): CodexTerminal? {
-        val terminal = locateCodexTerminal(manager) ?: return null
+    ): GeminiTerminal? {
+        val terminal = locateGeminiTerminal(manager) ?: return null
         val toolWindow = resolveTerminalToolWindow(manager) ?: return null
         val selectedContent = toolWindow.contentManager.selectedContent ?: return null
         if (selectedContent != terminal.content) {
@@ -126,9 +126,9 @@ class CodexTerminalManager(private val project: Project) {
         return terminal
     }
 
-    private fun focusCodexTerminal(
+    private fun focusGeminiTerminal(
         manager: TerminalToolWindowManager,
-        terminal: CodexTerminal
+        terminal: GeminiTerminal
     ) {
         ApplicationManager.getApplication().invokeLater {
             if (project.isDisposed) {
@@ -138,7 +138,7 @@ class CodexTerminalManager(private val project: Project) {
             try {
                 val toolWindow = resolveTerminalToolWindow(manager)
                 if (toolWindow == null) {
-                    logger.warn("Terminal tool window is not available for focusing Codex")
+                    logger.warn("Terminal tool window is not available for focusing Gemini")
                     return@invokeLater
                 }
 
@@ -151,11 +151,11 @@ class CodexTerminalManager(private val project: Project) {
                     try {
                         terminal.widget.requestFocus()
                     } catch (focusError: Throwable) {
-                        logger.warn("Failed to request focus for Codex terminal", focusError)
+                        logger.warn("Failed to request focus for Gemini terminal", focusError)
                     }
                 }, true)
             } catch (focusError: Throwable) {
-                logger.warn("Failed to focus existing Codex terminal", focusError)
+                logger.warn("Failed to focus existing Gemini terminal", focusError)
             }
         }
     }
@@ -166,38 +166,38 @@ class CodexTerminalManager(private val project: Project) {
         ?: ToolWindowManager.getInstance(project)
             .getToolWindow(TerminalToolWindowFactory.TOOL_WINDOW_ID)
 
-    private fun markCodexTerminal(manager: TerminalToolWindowManager, widget: TerminalWidget): Content? {
+    private fun markGeminiTerminal(manager: TerminalToolWindowManager, widget: TerminalWidget): Content? {
         return try {
             manager.getContainer(widget)?.content?.also { content ->
-                content.putUserData(CODEX_TERMINAL_KEY, true)
-                setCodexRunning(content, false)
+                content.putUserData(GEMINI_TERMINAL_KEY, true)
+                setGeminiRunning(content, false)
                 ensureTerminationCallback(widget, content)
-                content.displayName = "Codex"
+                content.displayName = "Gemini"
             }
         } catch (t: Throwable) {
-            logger.warn("Failed to tag Codex terminal metadata", t)
+            logger.warn("Failed to tag Gemini terminal metadata", t)
             null
         }
     }
 
-    private fun clearCodexMetadata(manager: TerminalToolWindowManager, widget: TerminalWidget) {
+    private fun clearGeminiMetadata(manager: TerminalToolWindowManager, widget: TerminalWidget) {
         try {
             manager.getContainer(widget)?.content?.let { content ->
-                clearCodexMetadata(content)
+                clearGeminiMetadata(content)
             }
         } catch (t: Throwable) {
-            logger.warn("Failed to clear Codex terminal metadata", t)
+            logger.warn("Failed to clear Gemini terminal metadata", t)
         }
     }
 
-    private fun clearCodexMetadata(content: Content) {
-        content.putUserData(CODEX_TERMINAL_KEY, null)
-        content.putUserData(CODEX_TERMINAL_RUNNING_KEY, null)
-        content.putUserData(CODEX_TERMINAL_CALLBACK_KEY, null)
+    private fun clearGeminiMetadata(content: Content) {
+        content.putUserData(GEMINI_TERMINAL_KEY, null)
+        content.putUserData(GEMINI_TERMINAL_RUNNING_KEY, null)
+        content.putUserData(GEMINI_TERMINAL_CALLBACK_KEY, null)
     }
 
-    private fun reuseCodexTerminal(
-        terminal: CodexTerminal,
+    private fun reuseGeminiTerminal(
+        terminal: GeminiTerminal,
         command: String
     ): Boolean {
         ensureTerminationCallback(terminal.widget, terminal.content)
@@ -211,34 +211,34 @@ class CodexTerminalManager(private val project: Project) {
     ): Boolean {
         return try {
             widget.sendCommandToExecute(command)
-            setCodexRunning(content, true)
+            setGeminiRunning(content, true)
             true
         } catch (t: Throwable) {
-            logger.warn("Failed to execute Codex command", t)
-            setCodexRunning(content, false)
+            logger.warn("Failed to execute Gemini command", t)
+            setGeminiRunning(content, false)
             false
         }
     }
 
-    private fun isCodexRunning(terminal: CodexTerminal): Boolean {
+    private fun isGeminiRunning(terminal: GeminiTerminal): Boolean {
         val liveState = invokeIsCommandRunning(terminal.widget)
         if (liveState != null) {
-            setCodexRunning(terminal.content, liveState)
+            setGeminiRunning(terminal.content, liveState)
             return liveState
         }
-        return terminal.content.getUserData(CODEX_TERMINAL_RUNNING_KEY) ?: false
+        return terminal.content.getUserData(GEMINI_TERMINAL_RUNNING_KEY) ?: false
     }
 
-    private fun setCodexRunning(content: Content?, running: Boolean) {
-        content?.putUserData(CODEX_TERMINAL_RUNNING_KEY, running)
+    private fun setGeminiRunning(content: Content?, running: Boolean) {
+        content?.putUserData(GEMINI_TERMINAL_RUNNING_KEY, running)
     }
 
     private fun ensureTerminationCallback(widget: TerminalWidget, content: Content?) {
         if (content == null) return
-        if (content.getUserData(CODEX_TERMINAL_CALLBACK_KEY) == true) return
+        if (content.getUserData(GEMINI_TERMINAL_CALLBACK_KEY) == true) return
         try {
-            widget.addTerminationCallback({ setCodexRunning(content, false) }, content)
-            content.putUserData(CODEX_TERMINAL_CALLBACK_KEY, true)
+            widget.addTerminationCallback({ setGeminiRunning(content, false) }, content)
+            content.putUserData(GEMINI_TERMINAL_CALLBACK_KEY, true)
         } catch (t: Throwable) {
             logger.warn("Failed to register termination callback", t)
         }
@@ -258,7 +258,7 @@ class CodexTerminalManager(private val project: Project) {
                 connector.write(text)
                 true
             }.getOrElse {
-                logger.warn("Failed to write to Codex terminal connector", it)
+                logger.warn("Failed to write to Gemini terminal connector", it)
                 false
             }
         }
@@ -271,7 +271,7 @@ class CodexTerminalManager(private val project: Project) {
                 typeMethod.invoke(widget, text)
                 true
             }.getOrElse {
-                logger.warn("Failed to invoke typeText on Codex terminal", it)
+                logger.warn("Failed to invoke typeText on Gemini terminal", it)
                 false
             }
         }
@@ -283,7 +283,7 @@ class CodexTerminalManager(private val project: Project) {
                 pasteMethod.invoke(widget, text)
                 true
             }.getOrElse {
-                logger.warn("Failed to invoke pasteText on Codex terminal", it)
+                logger.warn("Failed to invoke pasteText on Gemini terminal", it)
                 false
             }
         }

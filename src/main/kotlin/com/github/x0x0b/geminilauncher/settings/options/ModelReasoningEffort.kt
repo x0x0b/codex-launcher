@@ -1,4 +1,4 @@
-package com.github.x0x0b.codexlauncher.settings.options
+package com.github.x0x0b.geminilauncher.settings.options
 
 enum class ModelReasoningEffort {
     DEFAULT,

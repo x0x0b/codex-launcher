@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an improvement or new capability for Codex Launcher.
+description: Suggest an improvement or new capability for Gemini Launcher.
 title: "[Feature]: "
 labels:
   - enhancement
@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for contributing ideas to make Codex Launcher better! Share as much detail as you can so we can evaluate and prioritize the request.
+        Thanks for contributing ideas to make Gemini Launcher better! Share as much detail as you can so we can evaluate and prioritize the request.
   - type: textarea
     id: problem
     attributes:

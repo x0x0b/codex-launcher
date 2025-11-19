@@ -1,8 +1,8 @@
-package com.github.x0x0b.codexlauncher.http
+package com.github.x0x0b.geminilauncher.http
 
-import com.github.x0x0b.codexlauncher.files.FileOpenService
-import com.github.x0x0b.codexlauncher.notifications.NotificationService
-import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
+import com.github.x0x0b.geminilauncher.files.FileOpenService
+import com.github.x0x0b.geminilauncher.notifications.NotificationService
+import com.github.x0x0b.geminilauncher.settings.GeminiLauncherSettings
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -29,6 +29,7 @@ class HttpTriggerService : Disposable {
     companion object {
         private const val DEFAULT_PORT = 0 // Use random available port
         private const val SERVER_SHUTDOWN_TIMEOUT_SECONDS = 1
+        private const val SERVER_THREAD_POOL_SIZE = 4 // Bounded thread pool
         private const val LOCALHOST = "localhost"
         private const val REFRESH_ENDPOINT = "/refresh"
         private const val HTTP_METHOD_POST = "POST"
@@ -65,7 +66,8 @@ class HttpTriggerService : Disposable {
                 handleRefreshRequest(exchange)
             }
 
-            server?.executor = Executors.newCachedThreadPool()
+            // Use bounded thread pool to prevent resource exhaustion
+            server?.executor = Executors.newFixedThreadPool(SERVER_THREAD_POOL_SIZE)
             server?.start()
 
             logger.info("HTTP Trigger Server started on http://localhost:$actualPort")
@@ -89,13 +91,13 @@ class HttpTriggerService : Disposable {
                 val notificationMessage = try {
                     if (requestBody.isNotEmpty()) {
                         val json = Json.parseToJsonElement(requestBody) as JsonObject
-                        json["last-assistant-message"]?.jsonPrimitive?.content ?: "Codex CLI processing completed."
+                        json["last-assistant-message"]?.jsonPrimitive?.content ?: "Gemini CLI processing completed."
                     } else {
-                        "Codex CLI processing completed."
+                        "Gemini CLI processing completed."
                     }
                 } catch (e: Exception) {
                     logger.warn("Failed to parse request body as JSON: ${e.message}")
-                    "Codex CLI processing completed."
+                    "Gemini CLI processing completed."
                 }
 
                 // Check for specific notification type in JSON
@@ -133,7 +135,7 @@ class HttpTriggerService : Disposable {
         LocalFileSystem.getInstance().refresh(false)
 
         // Process changed files for all open projects
-        val settings = service<CodexLauncherSettings>()
+        val settings = service<GeminiLauncherSettings>()
         val openProjects = ProjectManager.getInstance().openProjects
         for (project in openProjects) {
             if (!project.isDisposed) {

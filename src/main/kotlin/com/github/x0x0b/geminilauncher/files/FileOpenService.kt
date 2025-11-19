@@ -1,4 +1,4 @@
-package com.github.x0x0b.codexlauncher.files
+package com.github.x0x0b.geminilauncher.files
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
@@ -9,9 +9,11 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vcs.changes.ChangeListManager
-import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
+import com.github.x0x0b.geminilauncher.settings.GeminiLauncherSettings
 import com.intellij.openapi.vcs.changes.InvokeAfterUpdateMode
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.util.concurrency.AppExecutorUtil
+import java.util.concurrent.TimeUnit
 
 /**
  * Service responsible for monitoring file changes and automatically opening them in the editor.
@@ -43,18 +45,36 @@ class FileOpenService(private val project: Project) : Disposable {
     /**
      * Processes recently changed files and opens them in the editor if configured to do so.
      * This includes both tracked (version-controlled) and untracked (new) files.
+     *
+     * Uses async scheduling to avoid blocking the Event Dispatch Thread.
      */
     fun processChangedFilesAndOpen() {
         val changeListManager = ChangeListManager.getInstance(project)
-        changeListManager.invokeAfterUpdate({
-            val thresholdTime = calculateThresholdTime()
-            waitForVcsUpdate()
-            
-            val filesToOpen = mutableSetOf<VirtualFile>()
-            collectTrackedChangedFiles(changeListManager, thresholdTime, filesToOpen)
-            collectUntrackedFiles(changeListManager, thresholdTime, filesToOpen)
-            openCollectedFiles(filesToOpen)
-        }, InvokeAfterUpdateMode.SYNCHRONOUS_NOT_CANCELLABLE, null, null)
+        val thresholdTime = calculateThresholdTime()
+
+        // Schedule async check after VCS update delay
+        AppExecutorUtil.getAppScheduledExecutorService().schedule({
+            if (project.isDisposed) {
+                return@schedule
+            }
+
+            ApplicationManager.getApplication().runReadAction {
+                try {
+                    val filesToOpen = mutableSetOf<VirtualFile>()
+                    collectTrackedChangedFiles(changeListManager, thresholdTime, filesToOpen)
+                    collectUntrackedFiles(changeListManager, thresholdTime, filesToOpen)
+
+                    // Back to EDT for UI operations
+                    ApplicationManager.getApplication().invokeLater {
+                        if (!project.isDisposed) {
+                            openCollectedFiles(filesToOpen)
+                        }
+                    }
+                } catch (e: Exception) {
+                    logger.error("Error collecting changed files", e)
+                }
+            }
+        }, VCS_UPDATE_WAIT_MS, TimeUnit.MILLISECONDS)
     }
     
     /**
@@ -64,18 +84,6 @@ class FileOpenService(private val project: Project) : Disposable {
      */
     private fun calculateThresholdTime(): Long {
         return lastRefreshTime + REFRESH_BUFFER_MS
-    }
-    
-    /**
-     * Waits for VCS operations to complete to ensure all changes are detected.
-     */
-    private fun waitForVcsUpdate() {
-        try {
-            Thread.sleep(VCS_UPDATE_WAIT_MS)
-        } catch (e: InterruptedException) {
-            logger.warn("VCS update wait was interrupted", e)
-            Thread.currentThread().interrupt()
-        }
     }
     
     /**
@@ -141,7 +149,7 @@ class FileOpenService(private val project: Project) : Disposable {
 
     private fun openFileInEditor(file: VirtualFile) {
         try {
-            val settings = service<CodexLauncherSettings>()
+            val settings = service<GeminiLauncherSettings>()
             if (!settings.state.openFileOnChange) {
                 return
             }

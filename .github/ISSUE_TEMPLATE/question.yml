@@ -1,5 +1,5 @@
 name: Question
-description: Ask a question about using or configuring Codex Launcher.
+description: Ask a question about using or configuring Gemini Launcher.
 title: "[Question]: "
 labels:
   - question
@@ -14,7 +14,7 @@ body:
     attributes:
       label: Confirm question scope
       options:
-        - label: I confirm this question is about Codex Launcher, not Codex CLI.
+        - label: I confirm this question is about Gemini Launcher, not Gemini CLI.
           required: true
   - type: textarea
     id: question_details
@@ -28,10 +28,10 @@ body:
     validations:
       required: true
   - type: input
-    id: codex_cli_version
+    id: gemini_cli_version
     attributes:
-      label: Codex CLI version
-      description: Which Codex CLI version are you using?
+      label: Gemini CLI version
+      description: Which Gemini CLI version are you using?
       placeholder: e.g. 0.4x.y
   - type: dropdown
     id: shell
@@ -48,7 +48,7 @@ body:
   - type: input
     id: plugin_version
     attributes:
-      label: Codex Launcher version
+      label: Gemini Launcher version
       placeholder: e.g. 1.x.y
   - type: input
     id: ide_version
