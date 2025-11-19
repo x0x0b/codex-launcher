@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.github.x0x0b"
-version = "1.1.5"
+version = "1.1.6"
 
 repositories {
     mavenCentral()
@@ -37,7 +37,7 @@ intellijPlatform {
         }
 
         changeNotes = """
-            Added feature to insert current file path and line number into Codex terminal.
+            Support for GPT 5.1 models.
         """.trimIndent()
     }
     publishing {
