@@ -14,6 +14,7 @@ enum class Model {
     // New gpt-5.1 based models (optional additions)
     GPT_5_1,
     GPT_5_1_CODEX,
+    GPT_5_1_CODEX_MAX,
     GPT_5_1_CODEX_MINI,
 
     // Legacy / existing models (kept for enterprise compatibility)
@@ -30,6 +31,7 @@ enum class Model {
         // New 5.1 models
         GPT_5_1 -> "gpt-5.1"
         GPT_5_1_CODEX -> "gpt-5.1-codex"
+        GPT_5_1_CODEX_MAX -> "gpt-5.1-codex-max"
         GPT_5_1_CODEX_MINI -> "gpt-5.1-codex-mini"
 
         // Legacy
@@ -46,6 +48,7 @@ enum class Model {
         // New 5.1 models
         GPT_5_1 -> "gpt-5.1"
         GPT_5_1_CODEX -> "gpt-5.1-codex"
+        GPT_5_1_CODEX_MAX -> "gpt-5.1-codex-max"
         GPT_5_1_CODEX_MINI -> "gpt-5.1-codex-mini"
 
         // Legacy
