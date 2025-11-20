@@ -222,4 +222,27 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
             result
         )
     }
+
+    fun testExtraHighReasoningEffortProducesXHighConfig() {
+        val osProvider = TestOsProvider(isWindows = false)
+        state.mode = Mode.DEFAULT
+        state.model = Model.DEFAULT
+        state.customModel = ""
+        state.enableSearch = false
+        state.enableCdProjectRoot = false
+        state.enableNotification = false
+        state.openFileOnChange = false
+        state.mcpConfigInput = ""
+        state.modelReasoningEffort = ModelReasoningEffort.EXTRA_HIGH
+
+        val result = CodexArgsBuilder.build(state, osProvider = osProvider)
+
+        assertEquals(
+            listOf(
+                """-c""",
+                """'model_reasoning_effort=xhigh'"""
+            ),
+            result
+        )
+    }
 }
