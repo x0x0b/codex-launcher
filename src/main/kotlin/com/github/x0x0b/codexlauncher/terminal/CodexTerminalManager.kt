@@ -2,14 +2,23 @@ package com.github.x0x0b.codexlauncher.terminal
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Key
 import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.ui.TerminalWidget
+import com.intellij.terminal.ui.TtyConnectorAccessor
 import com.intellij.ui.content.Content
+import com.jediterm.terminal.TtyConnector
 import org.jetbrains.plugins.terminal.TerminalToolWindowManager
 import org.jetbrains.plugins.terminal.TerminalToolWindowFactory
+import org.jetbrains.plugins.terminal.TerminalEngine
+import org.jetbrains.plugins.terminal.TerminalOptionsProvider
+import org.jetbrains.plugins.terminal.TerminalTabState
+import org.jetbrains.plugins.terminal.fus.TerminalOpeningWay
+import org.jetbrains.plugins.terminal.fus.TerminalStartupFusInfo
+import java.util.function.Consumer
 
 /**
  * Project-level service responsible for managing Codex terminals.
@@ -56,7 +65,7 @@ class CodexTerminalManager(private val project: Project) {
 
         var widget: TerminalWidget? = null
         try {
-            widget = terminalManager.createShellWidget(baseDir, "Codex", true, true)
+            widget = createCodexTerminalWidget(terminalManager, baseDir)
             val content = markCodexTerminal(terminalManager, widget)
             if (!sendCommandToTerminal(widget, content, command)) {
                 throw IllegalStateException("Failed to execute Codex command")
@@ -68,6 +77,51 @@ class CodexTerminalManager(private val project: Project) {
             widget?.let { clearCodexMetadata(terminalManager, it) }
             throw sendError
         }
+    }
+
+    private fun createCodexTerminalWidget(
+        manager: TerminalToolWindowManager,
+        baseDir: String
+    ): TerminalWidget {
+        return tryCreateReworkedTerminalWidget(manager, baseDir)
+            ?: manager.createShellWidget(baseDir, "Codex", true, true)
+    }
+
+    private fun tryCreateReworkedTerminalWidget(
+        manager: TerminalToolWindowManager,
+        baseDir: String
+    ): TerminalWidget? {
+        val engine = currentTerminalEngine()
+        if (engine == null || !isReworkedEngine(engine)) {
+            return null
+        }
+
+        val tabState = TerminalTabState().apply {
+            myTabName = "Codex"
+            myWorkingDirectory = baseDir
+            myIsUserDefinedTabTitle = true
+        }
+
+        val fusInfo = TerminalStartupFusInfo(TerminalOpeningWay.OPEN_NEW_TAB)
+
+        return runCatching {
+            manager.createNewTab(engine, fusInfo, tabState)
+        }.onFailure {
+            logger.warn("Falling back to Classic Codex terminal", it)
+        }.getOrNull()
+    }
+
+    private fun currentTerminalEngine(): TerminalEngine? {
+        return runCatching {
+            service<TerminalOptionsProvider>().terminalEngine
+        }.getOrElse {
+            logger.warn("Unable to resolve terminal engine preference", it)
+            null
+        }
+    }
+
+    private fun isReworkedEngine(engine: TerminalEngine): Boolean {
+        return engine == TerminalEngine.REWORKED || engine == TerminalEngine.NEW_TERMINAL
     }
 
     /**
@@ -252,6 +306,19 @@ class CodexTerminalManager(private val project: Project) {
     }
 
     private fun typeText(widget: TerminalWidget, text: String): Boolean {
+        val accessor = getTtyConnectorAccessor(widget)
+        if (accessor != null) {
+            return runCatching {
+                accessor.executeWithTtyConnector(Consumer<TtyConnector> { connector ->
+                    connector.write(text)
+                })
+                true
+            }.getOrElse {
+                logger.warn("Failed to write to Codex terminal accessor", it)
+                false
+            }
+        }
+
         val connector = runCatching { widget.ttyConnector }.getOrNull()
         if (connector != null) {
             return runCatching {
@@ -289,5 +356,19 @@ class CodexTerminalManager(private val project: Project) {
         }
 
         return false
+    }
+
+    private fun getTtyConnectorAccessor(widget: TerminalWidget): TtyConnectorAccessor? {
+        val accessorMethod = widget.javaClass.methods.firstOrNull {
+            it.name == "getTtyConnectorAccessor" && it.parameterCount == 0
+        } ?: return null
+
+        return runCatching {
+            accessorMethod.isAccessible = true
+            accessorMethod.invoke(widget) as? TtyConnectorAccessor
+        }.getOrElse {
+            logger.warn("Failed to obtain TTY accessor from Codex terminal", it)
+            null
+        }
     }
 }
