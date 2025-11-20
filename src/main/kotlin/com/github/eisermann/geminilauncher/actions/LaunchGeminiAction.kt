@@ -144,6 +144,7 @@ class LaunchGeminiAction : AnAction(DEFAULT_TEXT, DEFAULT_DESCRIPTION, null), Du
     private fun resolveInsertText(project: Project): String? {
         val payload = resolveInsertPayload(project) ?: return null
         return buildString {
+            append('@')
             append(payload.relativePath)
             payload.lineRange?.let { range ->
                 append(':')

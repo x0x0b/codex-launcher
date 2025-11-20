@@ -87,7 +87,11 @@ class GeminiTerminalManager(private val project: Project) {
         return try {
             val terminalManager = TerminalToolWindowManager.getInstance(project)
             val terminal = findDisplayedGeminiTerminal(terminalManager) ?: return false
-            typeText(terminal.widget, text)
+            val success = typeText(terminal.widget, text)
+            if (success) {
+                focusGeminiTerminal(terminalManager, terminal)
+            }
+            success
         } catch (t: Throwable) {
             logger.warn("Failed to type into Gemini terminal", t)
             false
