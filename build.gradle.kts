@@ -37,7 +37,7 @@ intellijPlatform {
         }
 
         changeNotes = """
-            Support for GPT 5.1 models.
+            Support for GPT 5.1 Codex Max model.
         """.trimIndent()
     }
     publishing {
