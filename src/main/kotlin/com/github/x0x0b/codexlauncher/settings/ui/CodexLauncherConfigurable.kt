@@ -72,13 +72,13 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     override fun createComponent(): JComponent {
 
         // Model controls
-        modelCombo = ComboBox(Model.entries.toTypedArray())
+        modelCombo = ComboBox(Model.entries.toTypedArray(), 180)
         customModelField = JBTextField()
         customModelField.emptyText.text = "e.g. gpt-5"
         customModelField.isEnabled = false
 
         // Model reasoning effort controls
-        modelReasoningEffortCombo = ComboBox(ModelReasoningEffort.entries.toTypedArray())
+        modelReasoningEffortCombo = ComboBox(ModelReasoningEffort.entries.toTypedArray(), 130)
 
         // Options controls
         modeFullAutoCheckbox = JBCheckBox("--full-auto (Low-friction sandboxed automatic execution)")
