@@ -13,6 +13,7 @@ import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.options.ex.Settings
+import com.intellij.openapi.project.ProjectManager
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
@@ -47,6 +48,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var openFileOnChangeCheckbox: JBCheckBox
     private lateinit var enableNotificationCheckbox: JBCheckBox
     private lateinit var enableSearchCheckbox: JBCheckBox
+    private lateinit var cdWorkingDirectoryField: JBTextField
     private lateinit var enableCdProjectRootCheckbox: JBCheckBox
     private lateinit var cdProjectRootWarningLabel: JBLabel
     private lateinit var winShellCombo: JComboBox<WinShell>
@@ -83,12 +85,17 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         // Options controls
         modeFullAutoCheckbox = JBCheckBox("--full-auto (Low-friction sandboxed automatic execution)")
         enableSearchCheckbox = JBCheckBox("--enable web_search_request (Enable web search)")
+        cdWorkingDirectoryField = JBTextField()
+        cdWorkingDirectoryField.emptyText.text = resolveDefaultWorkingDirectory().ifBlank {
+            "Defaults to current project directory"
+        }
         enableCdProjectRootCheckbox = JBCheckBox("--cd <project root> (Turn this on only when you explicitly need to set the working directory.)")
         cdProjectRootWarningLabel = JBLabel("--cd <project root> is unavailable when WSL shell is selected.").apply {
             foreground = UIUtil.getErrorForeground()
             border = JBUI.Borders.emptyTop(4)
             isVisible = false
         }
+        enableCdProjectRootCheckbox.addActionListener { updateWslDependentAvailability() }
 
         // File opening control
         openFileOnChangeCheckbox = JBCheckBox("Open files automatically when changed")
@@ -210,6 +217,11 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 row {
                     cell(enableCdProjectRootCheckbox)
                 }
+                row("Working directory (--cd)") {
+                    cell(cdWorkingDirectoryField)
+                        .resizableColumn()
+                        .applyToComponent { columns = 50 }
+                }
                 row {
                     this.largeComment("For more information, run codex --help")
                 }
@@ -283,6 +295,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 getOpenFileOnChange() != s.openFileOnChange ||
                 getEnableNotification() != s.enableNotification ||
                 getEnableSearch() != s.enableSearch ||
+                getCdWorkingDirectory() != s.cdWorkingDirectory ||
                 getEnableCdProjectRoot() != s.enableCdProjectRoot ||
                 (SystemInfo.isWindows && getWinShell() != s.winShell) ||
                 getMcpConfigInput() != s.mcpConfigInput
@@ -303,6 +316,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         s.openFileOnChange = getOpenFileOnChange()
         s.enableNotification = getEnableNotification()
         s.enableSearch = getEnableSearch()
+        s.cdWorkingDirectory = getCdWorkingDirectory()
         s.enableCdProjectRoot = getEnableCdProjectRoot()
         if (SystemInfo.isWindows) {
             s.winShell = getWinShell()
@@ -322,6 +336,16 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         openFileOnChangeCheckbox.isSelected = s.openFileOnChange
         enableNotificationCheckbox.isSelected = s.enableNotification
         enableSearchCheckbox.isSelected = s.enableSearch
+        cdWorkingDirectoryField.text = s.cdWorkingDirectory
+        if (cdWorkingDirectoryField.text.isNullOrBlank()) {
+            val defaultPath = resolveDefaultWorkingDirectory()
+            if (defaultPath.isNotBlank()) {
+                cdWorkingDirectoryField.text = defaultPath
+            }
+        }
+        cdWorkingDirectoryField.emptyText.text = resolveDefaultWorkingDirectory().ifBlank {
+            "Defaults to current project directory"
+        }
         enableCdProjectRootCheckbox.isSelected = s.enableCdProjectRoot
         if (SystemInfo.isWindows) {
             winShellCombo.selectedItem = s.winShell
@@ -358,6 +382,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         return enableSearchCheckbox.isSelected
     }
 
+    private fun getCdWorkingDirectory(): String {
+        return cdWorkingDirectoryField.text?.trim() ?: ""
+    }
+
     private fun getEnableCdProjectRoot(): Boolean {
         return enableCdProjectRootCheckbox.isSelected
     }
@@ -370,12 +398,18 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         }
     }
 
+    private fun resolveDefaultWorkingDirectory(): String {
+        val project = ProjectManager.getInstance().openProjects.firstOrNull()
+        return project?.basePath ?: ""
+    }
+
     private fun updateWslDependentAvailability() {
         if (!::mcpConfigInputArea.isInitialized ||
             !::mcpServerWarningLabel.isInitialized ||
             !::fileHandlingWarningLabel.isInitialized ||
             !::notificationsWarningLabel.isInitialized ||
             !::enableCdProjectRootCheckbox.isInitialized ||
+            !::cdWorkingDirectoryField.isInitialized ||
             !::cdProjectRootWarningLabel.isInitialized
         ) {
             return
@@ -383,6 +417,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         val isWslSelected = SystemInfo.isWindows &&
                 ::winShellCombo.isInitialized &&
                 (winShellCombo.selectedItem as? WinShell) == WinShell.WSL
+        val isCdEnabled = enableCdProjectRootCheckbox.isSelected && !isWslSelected
 
         mcpServerWarningLabel.isVisible = isWslSelected
         fileHandlingWarningLabel.isVisible = isWslSelected
@@ -393,6 +428,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         openFileOnChangeCheckbox.isEnabled = !isWslSelected
         enableNotificationCheckbox.isEnabled = !isWslSelected
         enableCdProjectRootCheckbox.isEnabled = !isWslSelected
+        cdWorkingDirectoryField.isEnabled = isCdEnabled
 
         mcpConfigInputArea.toolTipText = if (isWslSelected) {
             "Integrated MCP Server is unavailable when WSL shell is selected."
@@ -416,6 +452,12 @@ class CodexLauncherConfigurable : SearchableConfigurable {
             "--cd <project root> is unavailable when WSL shell is selected."
         } else {
             null
+        }
+
+        cdWorkingDirectoryField.toolTipText = when {
+            isCdEnabled -> "Defaults to current project directory when left blank."
+            isWslSelected -> "--cd <project root> is unavailable when WSL shell is selected."
+            else -> "Enable --cd to set a custom working directory."
         }
     }
 

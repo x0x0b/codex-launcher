@@ -74,12 +74,14 @@ object CodexArgsBuilder {
             parts += listOf("--enable", "web_search_request")
         }
 
+        val workingDirectory = state.cdWorkingDirectory.trim().ifBlank { projectBasePath.orEmpty() }
+
         if (
             state.enableCdProjectRoot &&
-            !projectBasePath.isNullOrBlank() &&
+            workingDirectory.isNotBlank() &&
             !(osProvider.isWindows && state.winShell == WinShell.WSL)
         ) {
-            parts += listOf("--cd", "'${projectBasePath}'")
+            parts += listOf("--cd", "'${workingDirectory}'")
         }
 
         // Determine the model name to use
