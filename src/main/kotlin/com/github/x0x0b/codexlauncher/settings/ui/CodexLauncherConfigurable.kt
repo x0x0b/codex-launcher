@@ -13,7 +13,7 @@ import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.options.ex.Settings
-import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
@@ -36,10 +36,10 @@ import java.awt.Component
 import java.awt.Font
 import javax.swing.DefaultListCellRenderer
 import javax.swing.JList
-import java.util.function.Consumer
 import java.util.function.Predicate
+import java.util.function.Consumer
 
-class CodexLauncherConfigurable : SearchableConfigurable {
+class CodexLauncherConfigurable(private val project: Project) : SearchableConfigurable {
     private lateinit var root: JComponent
     private lateinit var modeFullAutoCheckbox: JBCheckBox
     private lateinit var modelCombo: JComboBox<Model>
@@ -57,7 +57,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var fileHandlingWarningLabel: JBLabel
     private lateinit var notificationsWarningLabel: JBLabel
 
-    private val settings by lazy { service<CodexLauncherSettings>() }
+    private val settings by lazy { project.service<CodexLauncherSettings>() }
 
     companion object {
         private val ALLOWED_CUSTOM_MODEL_REGEX = Regex("^[A-Za-z0-9._-]*$")
@@ -399,8 +399,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     }
 
     private fun resolveDefaultWorkingDirectory(): String {
-        val project = ProjectManager.getInstance().openProjects.firstOrNull()
-        return project?.basePath ?: ""
+        return project.basePath ?: ""
     }
 
     private fun updateWslDependentAvailability() {

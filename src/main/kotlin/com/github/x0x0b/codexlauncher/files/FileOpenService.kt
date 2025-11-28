@@ -141,7 +141,7 @@ class FileOpenService(private val project: Project) : Disposable {
 
     private fun openFileInEditor(file: VirtualFile) {
         try {
-            val settings = service<CodexLauncherSettings>()
+            val settings = project.service<CodexLauncherSettings>()
             if (!settings.state.openFileOnChange) {
                 return
             }

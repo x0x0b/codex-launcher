@@ -87,7 +87,7 @@ class LaunchCodexAction : AnAction(DEFAULT_TEXT, DEFAULT_DESCRIPTION, null), Dum
                 return
             }
 
-            val settings = service<CodexLauncherSettings>()
+            val settings = project.service<CodexLauncherSettings>()
             val command = buildCommand(settings.getArgs(port, baseDir))
             terminalManager.launch(baseDir, command)
             logger.info("Codex command executed successfully: $command")

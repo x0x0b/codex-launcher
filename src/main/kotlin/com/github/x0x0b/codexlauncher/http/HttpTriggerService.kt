@@ -133,11 +133,11 @@ class HttpTriggerService : Disposable {
         LocalFileSystem.getInstance().refresh(false)
 
         // Process changed files for all open projects
-        val settings = service<CodexLauncherSettings>()
         val openProjects = ProjectManager.getInstance().openProjects
         for (project in openProjects) {
             if (!project.isDisposed) {
                 try {
+                    val settings = project.service<CodexLauncherSettings>()
                     val fileOpenService = project.service<FileOpenService>()
                     val notificationService = project.service<NotificationService>()
 
