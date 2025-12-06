@@ -2,9 +2,9 @@ package com.github.x0x0b.codexlauncher.startup
 
 import com.github.x0x0b.codexlauncher.files.FileOpenService
 import com.github.x0x0b.codexlauncher.http.HttpTriggerService
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.startup.StartupActivity
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.startup.ProjectActivity
 
 /**
  * Startup activity that initializes essential services when a project is opened.
@@ -15,7 +15,7 @@ import com.intellij.openapi.application.ApplicationManager
  * @since 1.0.0
  */
 
-class CodexStartupActivity : StartupActivity {
+class CodexStartupActivity : ProjectActivity {
     
     /**
      * Runs the startup activity for the given project.
@@ -26,7 +26,7 @@ class CodexStartupActivity : StartupActivity {
      * 
      * @param project The project being opened
      */
-    override fun runActivity(project: Project) {
+    override suspend fun execute(project: Project) {
         // Explicitly initialize core services
         project.getService(FileOpenService::class.java)
         // HttpTriggerService is application-level, so initialize it via ApplicationManager

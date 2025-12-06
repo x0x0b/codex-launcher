@@ -48,6 +48,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var enableNotificationCheckbox: JBCheckBox
     private lateinit var enableSearchCheckbox: JBCheckBox
     private lateinit var enableCdProjectRootCheckbox: JBCheckBox
+    private lateinit var customArgsField: JBTextField
     private lateinit var cdProjectRootWarningLabel: JBLabel
     private lateinit var winShellCombo: JComboBox<WinShell>
     private lateinit var mcpConfigInputArea: JBTextArea
@@ -72,22 +73,26 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     override fun createComponent(): JComponent {
 
         // Model controls
-        modelCombo = ComboBox(Model.entries.toTypedArray())
+        modelCombo = ComboBox(Model.entries.toTypedArray(), 180)
         customModelField = JBTextField()
         customModelField.emptyText.text = "e.g. gpt-5"
         customModelField.isEnabled = false
 
         // Model reasoning effort controls
-        modelReasoningEffortCombo = ComboBox(ModelReasoningEffort.entries.toTypedArray())
+        modelReasoningEffortCombo = ComboBox(ModelReasoningEffort.entries.toTypedArray(), 130)
 
         // Options controls
         modeFullAutoCheckbox = JBCheckBox("--full-auto (Low-friction sandboxed automatic execution)")
-        enableSearchCheckbox = JBCheckBox("--search (Enable web search)")
+        enableSearchCheckbox = JBCheckBox("--enable web_search_request (Enable web search)")
         enableCdProjectRootCheckbox = JBCheckBox("--cd <project root> (Turn this on only when you explicitly need to set the working directory.)")
         cdProjectRootWarningLabel = JBLabel("--cd <project root> is unavailable when WSL shell is selected.").apply {
             foreground = UIUtil.getErrorForeground()
             border = JBUI.Borders.emptyTop(4)
             isVisible = false
+        }
+        customArgsField = JBTextField().apply {
+            emptyText.text = "e.g. --foo bar --config '{\"a\":1}'"
+            columns = 50
         }
 
         // File opening control
@@ -213,6 +218,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 row {
                     this.largeComment("For more information, run codex --help")
                 }
+                row("Custom args") {
+                    cell(customArgsField)
+                        .resizableColumn()
+                }
             }
             group("File Handling") {
                 row {
@@ -284,6 +293,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 getEnableNotification() != s.enableNotification ||
                 getEnableSearch() != s.enableSearch ||
                 getEnableCdProjectRoot() != s.enableCdProjectRoot ||
+                getCustomArgs() != s.customArgs ||
                 (SystemInfo.isWindows && getWinShell() != s.winShell) ||
                 getMcpConfigInput() != s.mcpConfigInput
     }
@@ -304,6 +314,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         s.enableNotification = getEnableNotification()
         s.enableSearch = getEnableSearch()
         s.enableCdProjectRoot = getEnableCdProjectRoot()
+        s.customArgs = getCustomArgs()
         if (SystemInfo.isWindows) {
             s.winShell = getWinShell()
             // update legacy field
@@ -323,6 +334,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         enableNotificationCheckbox.isSelected = s.enableNotification
         enableSearchCheckbox.isSelected = s.enableSearch
         enableCdProjectRootCheckbox.isSelected = s.enableCdProjectRoot
+        customArgsField.text = s.customArgs
         if (SystemInfo.isWindows) {
             winShellCombo.selectedItem = s.winShell
         }
@@ -360,6 +372,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
     private fun getEnableCdProjectRoot(): Boolean {
         return enableCdProjectRootCheckbox.isSelected
+    }
+
+    private fun getCustomArgs(): String {
+        return customArgsField.text?.trim() ?: ""
     }
 
     private fun getWinShell(): WinShell {

@@ -45,3 +45,6 @@ bin/
 
 .gemini/
 gha-creds-*.json
+
+.idea
+.tool-versions

@@ -78,7 +78,8 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         assertEquals(
             listOf(
                 """--full-auto""",
-                """--search""",
+                """--enable""",
+                """web_search_request""",
                 """--cd""",
                 """'/home/user/project'""",
                 """--model""",
@@ -118,7 +119,8 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         assertEquals(
             listOf(
                 """--full-auto""",
-                """--search""",
+                """--enable""",
+                """web_search_request""",
                 """--cd""",
                 """'C:\Projects\Demo'""",
                 """--model""",
@@ -159,7 +161,8 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         assertEquals(
             listOf(
                 """--full-auto""",
-                """--search""",
+                """--enable""",
+                """web_search_request""",
                 """--cd""",
                 """'C:\Projects\Demo'""",
                 """--model""",
@@ -174,6 +177,28 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
                 """mcp_servers.intellij.args='["-classpath", "C:\\Program Files\\JetBrains\\IntelliJ IDEA Community Edition 2025.2.1\\plugins\\mcpserver\\lib\\mcpserver-frontend.jar;C:\\Program Files\\JetBrains\\IntelliJ IDEA Community Edition 2025.2.1\\lib\\util-8.jar", "com.intellij.mcpserver.stdio.McpStdioRunnerKt"]'""",
                 """-c""",
                 """mcp_servers.intellij.env='{"IJ_MCP_SERVER_PORT"="64342","SystemRoot"="C:\\Windows"}'"""
+            ),
+            result
+        )
+    }
+
+    fun testCustomArgsAreAppendedAsIs() {
+        val osProvider = TestOsProvider(isWindows = false)
+        state.mode = Mode.FULL_AUTO
+        state.model = Model.CUSTOM
+        state.customModel = "gpt-4o"
+        state.customArgs = """--foo bar --json '{"x":1}'"""
+
+        val result = CodexArgsBuilder.build(state, osProvider = osProvider)
+
+        assertEquals(
+            listOf(
+                """--full-auto""",
+                """--model""",
+                """'gpt-4o'""",
+                """-c""",
+                """'model_reasoning_effort=high'""",
+                """--foo bar --json '{"x":1}'"""
             ),
             result
         )
@@ -215,6 +240,29 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
                 """'gpt-4o'""",
                 """-c""",
                 """'model_reasoning_effort=high'"""
+            ),
+            result
+        )
+    }
+
+    fun testExtraHighReasoningEffortProducesXHighConfig() {
+        val osProvider = TestOsProvider(isWindows = false)
+        state.mode = Mode.DEFAULT
+        state.model = Model.DEFAULT
+        state.customModel = ""
+        state.enableSearch = false
+        state.enableCdProjectRoot = false
+        state.enableNotification = false
+        state.openFileOnChange = false
+        state.mcpConfigInput = ""
+        state.modelReasoningEffort = ModelReasoningEffort.EXTRA_HIGH
+
+        val result = CodexArgsBuilder.build(state, osProvider = osProvider)
+
+        assertEquals(
+            listOf(
+                """-c""",
+                """'model_reasoning_effort=xhigh'"""
             ),
             result
         )
