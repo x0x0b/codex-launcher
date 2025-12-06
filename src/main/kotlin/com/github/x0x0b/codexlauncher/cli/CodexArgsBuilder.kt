@@ -115,6 +115,11 @@ object CodexArgsBuilder {
             parts += buildMcpConfigArgs(state.mcpConfigInput, osProvider, state.winShell)
         }
 
+        val customArgs = state.customArgs.trim()
+        if (customArgs.isNotEmpty()) {
+            parts += customArgs
+        }
+
         return parts
     }
 

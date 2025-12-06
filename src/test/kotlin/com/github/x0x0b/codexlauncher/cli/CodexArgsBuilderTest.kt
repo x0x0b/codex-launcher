@@ -182,6 +182,28 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         )
     }
 
+    fun testCustomArgsAreAppendedAsIs() {
+        val osProvider = TestOsProvider(isWindows = false)
+        state.mode = Mode.FULL_AUTO
+        state.model = Model.CUSTOM
+        state.customModel = "gpt-4o"
+        state.customArgs = """--foo bar --json '{"x":1}'"""
+
+        val result = CodexArgsBuilder.build(state, osProvider = osProvider)
+
+        assertEquals(
+            listOf(
+                """--full-auto""",
+                """--model""",
+                """'gpt-4o'""",
+                """-c""",
+                """'model_reasoning_effort=high'""",
+                """--foo bar --json '{"x":1}'"""
+            ),
+            result
+        )
+    }
+
     fun testMinimalArgs() {
         // Test minimal args on non-Windows
         val osProvider = TestOsProvider(isWindows = false)
