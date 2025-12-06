@@ -1,4 +1,3 @@
- wo
 # Repository Guidelines
 
 ## Project Structure & Module Organization
