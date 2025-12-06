@@ -46,7 +46,7 @@ class SendRangeToCodexAction : AnAction(
 
         val insertText = InsertPayloadResolver.formatInsertText(payload)
         val terminalManager = project.service<CodexTerminalManager>()
-        if (!terminalManager.isCodexTerminalActive()) {
+        if (!terminalManager.currentState().activeAndRunning) {
             notify(project, "Launch Codex first to send ranges", NotificationType.INFORMATION)
             return
         }
@@ -69,7 +69,7 @@ class SendRangeToCodexAction : AnAction(
         }
 
         val terminalManager = project.service<CodexTerminalManager>()
-        if (!terminalManager.isCodexTerminalActive()) {
+        if (!terminalManager.currentState().activeAndRunning) {
             e.presentation.isEnabledAndVisible = false
             return
         }

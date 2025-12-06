@@ -39,12 +39,17 @@ class LaunchCodexAction : AnAction(DEFAULT_TEXT, DEFAULT_DESCRIPTION, null), Dum
         }
 
         val terminalManager = project.service<CodexTerminalManager>()
-        if (terminalManager.isCodexTerminalActive()) {
-            performInsert(project, terminalManager)
-            return
+        val state = terminalManager.currentState()
+        when {
+            state.activeAndRunning -> performInsert(project, terminalManager)
+            state.running -> {
+                // Codex is running but tab not active → just surface it
+                if (!terminalManager.focusExistingCodexTerminal()) {
+                    launchCodex(project, terminalManager)
+                }
+            }
+            else -> launchCodex(project, terminalManager)
         }
-
-        launchCodex(project, terminalManager)
     }
 
     override fun update(e: AnActionEvent) {
@@ -53,6 +58,7 @@ class LaunchCodexAction : AnAction(DEFAULT_TEXT, DEFAULT_DESCRIPTION, null), Dum
         e.presentation.icon = state.icon
         e.presentation.text = state.text
         e.presentation.description = state.description
+        e.presentation.isEnabled = state.enabled
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.EDT
@@ -118,16 +124,35 @@ class LaunchCodexAction : AnAction(DEFAULT_TEXT, DEFAULT_DESCRIPTION, null), Dum
 
     private fun determineToolbarState(project: Project?): ToolbarState {
         if (project == null) {
-            return ToolbarState(DEFAULT_ICON, DEFAULT_TEXT, DEFAULT_DESCRIPTION)
+            return ToolbarState(DEFAULT_ICON, DEFAULT_TEXT, DEFAULT_DESCRIPTION, enabled = false)
         }
 
         val manager = project.service<CodexTerminalManager>()
-        return if (manager.isCodexTerminalActive()) {
-            ToolbarState(ACTIVE_ICON, ACTIVE_TEXT, ACTIVE_DESCRIPTION)
-        } else {
-            ToolbarState(DEFAULT_ICON, DEFAULT_TEXT, DEFAULT_DESCRIPTION)
+        val state = manager.currentState()
+
+        return when {
+            state.activeAndRunning -> ToolbarState(
+                icon = ACTIVE_ICON,
+                text = ACTIVE_TEXT,
+                description = ACTIVE_DESCRIPTION,
+                enabled = true
+            )
+
+            state.running -> ToolbarState(
+                icon = DEFAULT_ICON,
+                text = "Show Codex Terminal",
+                description = "Bring the running Codex terminal to the front",
+                enabled = true
+            )
+
+            else -> ToolbarState(
+                icon = DEFAULT_ICON,
+                text = DEFAULT_TEXT,
+                description = DEFAULT_DESCRIPTION,
+                enabled = true
+            )
         }
     }
 
-    private data class ToolbarState(val icon: Icon, val text: String, val description: String)
+    private data class ToolbarState(val icon: Icon, val text: String, val description: String, val enabled: Boolean)
 }

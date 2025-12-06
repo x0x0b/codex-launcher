@@ -29,6 +29,16 @@ class CodexTerminalManager(private val project: Project) {
     private data class CodexTerminal(val widget: TerminalWidget, val content: Content)
 
     /**
+     * Snapshot of Codex terminal state used by toolbar/actions.
+     * @property exists   true if a tab tagged as "Codex" is present
+     * @property running  true if the Codex process in that tab is still alive
+     * @property active   true if the Codex tab is currently selected & visible
+     */
+    data class CodexState(val exists: Boolean, val running: Boolean, val active: Boolean) {
+        val activeAndRunning: Boolean get() = active && running
+    }
+
+    /**
      * Launches or reuses the Codex terminal for the given command.
      * @throws Throwable when terminal creation or command execution fails.
      */
@@ -73,12 +83,35 @@ class CodexTerminalManager(private val project: Project) {
     /**
      * Returns true when the Codex terminal tab is currently selected in the terminal tool window.
      */
-    fun isCodexTerminalActive(): Boolean {
+    fun isCodexTerminalActive(): Boolean = currentState().activeAndRunning
+
+    /** Current Codex terminal state without expensive polling. */
+    fun currentState(): CodexState {
         return try {
-            val terminalManager = TerminalToolWindowManager.getInstance(project)
-            findDisplayedCodexTerminal(terminalManager) != null
+            val manager = TerminalToolWindowManager.getInstance(project)
+            val terminal = locateCodexTerminal(manager)
+            if (terminal == null) {
+                CodexState(exists = false, running = false, active = false)
+            } else {
+                val running = isCodexRunning(terminal)
+                val active = isTerminalDisplayed(manager, terminal)
+                CodexState(exists = true, running = running, active = active)
+            }
         } catch (t: Throwable) {
-            logger.warn("Failed to inspect Codex terminal active state", t)
+            logger.warn("Failed to inspect Codex terminal state", t)
+            CodexState(exists = false, running = false, active = false)
+        }
+    }
+
+    /** Focuses existing Codex terminal if present. */
+    fun focusExistingCodexTerminal(): Boolean {
+        return try {
+            val manager = TerminalToolWindowManager.getInstance(project)
+            val terminal = locateCodexTerminal(manager) ?: return false
+            focusCodexTerminal(manager, terminal)
+            true
+        } catch (t: Throwable) {
+            logger.warn("Failed to focus Codex terminal", t)
             false
         }
     }
@@ -112,18 +145,14 @@ class CodexTerminalManager(private val project: Project) {
         manager: TerminalToolWindowManager
     ): CodexTerminal? {
         val terminal = locateCodexTerminal(manager) ?: return null
-        val toolWindow = resolveTerminalToolWindow(manager) ?: return null
-        val selectedContent = toolWindow.contentManager.selectedContent ?: return null
-        if (selectedContent != terminal.content) {
-            return null
-        }
+        return if (isTerminalDisplayed(manager, terminal)) terminal else null
+    }
 
-        val isDisplayed = toolWindow.isVisible
-        if (!isDisplayed) {
-            return null
-        }
-
-        return terminal
+    private fun isTerminalDisplayed(manager: TerminalToolWindowManager, terminal: CodexTerminal): Boolean {
+        val toolWindow = resolveTerminalToolWindow(manager) ?: return false
+        val selectedContent = toolWindow.contentManager.selectedContent ?: return false
+        if (selectedContent != terminal.content) return false
+        return toolWindow.isVisible
     }
 
     private fun focusCodexTerminal(
