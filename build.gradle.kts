@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.github.x0x0b"
-version = "1.1.8"
+version = "1.1.9"
 
 repositories {
     mavenCentral()
@@ -37,7 +37,7 @@ intellijPlatform {
         }
 
         changeNotes = """
-            Support for GPT 5.1 Codex Max model.
+            Add custom argument setting.
         """.trimIndent()
     }
     publishing {

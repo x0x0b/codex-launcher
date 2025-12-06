@@ -1,6 +1,6 @@
 # Codex Launcher - IntelliJ Plugin
 
-[![Version](https://img.shields.io/badge/version-1.1.8-blue.svg)](https://github.com/x0x0b/codex-launcher/releases)
+[![Version](https://img.shields.io/badge/version-1.1.9-blue.svg)](https://github.com/x0x0b/codex-launcher/releases)
 [![IntelliJ IDEA](https://img.shields.io/badge/IntelliJ%20IDEA-2024.2+-orange.svg)](https://www.jetbrains.com/idea/)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/x0x0b/codex-launcher)
 
