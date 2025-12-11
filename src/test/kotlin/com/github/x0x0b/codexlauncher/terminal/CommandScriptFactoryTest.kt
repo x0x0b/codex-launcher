@@ -1,7 +1,6 @@
 package com.github.x0x0b.codexlauncher.terminal
 
 import com.intellij.openapi.project.Project
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
