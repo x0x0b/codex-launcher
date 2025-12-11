@@ -15,11 +15,6 @@ class CommandScriptFactoryTest {
         private const val INLINE_THRESHOLD = 1024
     }
 
-    @After
-    fun tearDown() {
-        // ensure any lingering temp files are cleaned by the service
-    }
-
     @Test
     fun `inline commands under threshold are sent directly`() {
         val factory = CommandScriptFactory(dummyProject(), isWindows = false)
