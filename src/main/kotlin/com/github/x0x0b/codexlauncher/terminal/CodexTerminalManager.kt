@@ -217,7 +217,7 @@ class CodexTerminalManager(private val project: Project) {
             setCodexRunning(content, true)
             true
         } catch (throwable: Throwable) {
-            logger.warn("Failed to execute Codex command via temporary script", throwable)
+            logger.warn("Failed to execute Codex command", throwable)
             setCodexRunning(content, false)
             runCatching { plan.cleanupOnFailure() }
             false
