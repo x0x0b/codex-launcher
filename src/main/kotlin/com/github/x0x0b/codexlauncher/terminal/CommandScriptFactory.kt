@@ -6,11 +6,7 @@ import com.intellij.openapi.util.SystemInfoRt
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.attribute.PosixFilePermission
-import java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE
-import java.nio.file.attribute.PosixFilePermission.OWNER_READ
-import java.nio.file.attribute.PosixFilePermission.OWNER_WRITE
-import java.util.Locale
+import java.util.*
 
 /**
  * Builds terminal execution plans for Codex commands, falling back to temporary scripts for
@@ -85,7 +81,9 @@ internal class CommandScriptFactory(
             return null
         }
         runCatching { scriptCleanupService?.register(scriptPath) } // Register for project cleanup
+            .onFailure { logger.warn("Failed to register temporary Codex command cleanup: $scriptPath", it) }
         runCatching { scriptPath.toFile().deleteOnExit() } // Remove on JVM exit as a last resort
+            .onFailure { logger.warn("Failed to mark temporary Codex script for JVM exit deletion: $scriptPath", it) }
 
         val writeResult = runCatching {
             val resourcePath = if (isWindows) TEMPLATE_WINDOWS else TEMPLATE_POSIX
