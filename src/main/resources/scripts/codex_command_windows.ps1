@@ -3,5 +3,5 @@ try {
 %s
 }
 finally {
-  Remove-Item -Force "$PSCommandPath"
+  Remove-Item -LiteralPath -Force "$PSCommandPath"
 }
