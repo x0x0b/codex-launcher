@@ -59,7 +59,7 @@ class CommandScriptFactoryTest {
             ${"x".repeat(INLINE_THRESHOLD + 2)}$command
             }
             finally {
-              Remove-Item -LiteralPath -Force "${'$'}PSCommandPath"
+              Remove-Item -LiteralPath "${'$'}PSCommandPath" -Force
             }
         """.trimIndent() + "\n"
 
