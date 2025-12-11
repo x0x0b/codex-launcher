@@ -35,7 +35,6 @@ class CommandScriptFactoryTest {
         val content = Files.readString(scriptPath, StandardCharsets.UTF_8)
 
         val expected = """
-            #!/bin/sh
             trap 'rm -f "$0"' EXIT INT TERM
             set -e
             ${"a".repeat(INLINE_THRESHOLD + 1)}$command
