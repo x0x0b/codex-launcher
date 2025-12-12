@@ -1,22 +1,41 @@
 package com.github.x0x0b.codexlauncher.terminal
 
 import com.intellij.openapi.project.Project
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 import java.lang.reflect.Proxy
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.io.path.exists
 
-class CommandScriptFactoryTest {
+@RunWith(Parameterized::class)
+class CommandScriptFactoryTest(private val isWindows: Boolean) {
 
     companion object {
         private const val INLINE_THRESHOLD = 1024
+
+        @JvmStatic
+        @Parameterized.Parameters(name = "isWindows={0}")
+        fun parameters() = listOf(true, false)
+    }
+
+    private val createdScripts = mutableListOf<Path>()
+
+    @After
+    fun tearDown() {
+        createdScripts.forEach { Files.deleteIfExists(it) }
+        createdScripts.clear()
     }
 
     @Test
     fun `inline commands under threshold are sent directly`() {
-        val factory = CommandScriptFactory(dummyProject(), isWindows = false)
+        val factory = CommandScriptFactory(dummyProject(), isWindows = isWindows)
         val command = "a".repeat(INLINE_THRESHOLD - 1)
 
         val plan = factory.buildPlan(command) ?: error("Expected plan for command")
@@ -25,12 +44,33 @@ class CommandScriptFactoryTest {
     }
 
     @Test
-    fun `posix script is created with trap and cleanup`() {
+    fun `inline commands at threshold are sent directly`() {
+        val factory = CommandScriptFactory(dummyProject(), isWindows = isWindows)
+        val command = "a".repeat(INLINE_THRESHOLD)
+
+        val plan = factory.buildPlan(command) ?: error("Expected plan for command")
+
+        assertEquals(command, plan.command)
+    }
+
+    @Test
+    fun `inline commands for windows are always sent directly`() {
+        val factory = CommandScriptFactory(dummyProject(), isWindows = true)
+        val command = "a".repeat(INLINE_THRESHOLD + 100)
+
+        val plan = factory.buildPlan(command) ?: error("Expected plan for command")
+
+        assertEquals(command, plan.command)
+    }
+
+    @Test
+    fun `script is created with trap and cleanup`() {
         val factory = CommandScriptFactory(dummyProject(), isWindows = false)
-        val command = "echo posix-case"
+        val command = "echo test-command"
 
         val plan = factory.buildPlan("a".repeat(INLINE_THRESHOLD + 1) + command) ?: error("Expected plan")
-        val scriptPath = extractScriptPath(plan.command, prefix = "sh")
+        val scriptPath = extractScriptPath(plan.command)
+        createdScripts.add(scriptPath)
         val content = Files.readString(scriptPath, StandardCharsets.UTF_8)
 
         val expected = """
@@ -41,38 +81,36 @@ class CommandScriptFactoryTest {
 
         assertEquals(expected, content)
         assertTrue(Files.exists(scriptPath))
-        Files.deleteIfExists(scriptPath)
+        val expectedQuotedPath = "'${scriptPath.toAbsolutePath().toString().replace("'", "'\"'\"'")}'"
+        assertEquals("sh $expectedQuotedPath", plan.command)
+
+        plan.cleanupOnFailure()
+        assertFalse(scriptPath.exists())
     }
 
     @Test
-    fun `windows script is created with try-finally cleanup`() {
-        val factory = CommandScriptFactory(dummyProject(), isWindows = true)
-        val command = "Write-Output \"windows-case\""
+    fun `script is registered for cleanup service`() {
+        val cleanupService = TempScriptCleanupService()
+        val factory = CommandScriptFactory(dummyProject(), isWindows = false, cleanupService = cleanupService)
+        val plan = factory.buildPlan("a".repeat(INLINE_THRESHOLD + 10)) ?: error("Expected plan")
+        val scriptPath = extractScriptPath(plan.command)
+        createdScripts.add(scriptPath)
 
-        val plan = factory.buildPlan("x".repeat(INLINE_THRESHOLD + 2) + command) ?: error("Expected plan")
-        val scriptPath = extractScriptPath(plan.command, prefix = "powershell")
-        val content = Files.readString(scriptPath, StandardCharsets.UTF_8)
-
-        val expected = """
-            ${'$'}ErrorActionPreference = "Stop"
-            try {
-            ${"x".repeat(INLINE_THRESHOLD + 2)}$command
-            }
-            finally {
-              Remove-Item -LiteralPath "${'$'}PSCommandPath" -Force
-            }
-        """.trimIndent() + "\n"
-
-        assertEquals(expected, content)
-        assertTrue(Files.exists(scriptPath))
-        Files.deleteIfExists(scriptPath)
+        assertTrue(registeredPaths(cleanupService).contains(scriptPath))
     }
 
-    private fun extractScriptPath(command: String, prefix: String): java.nio.file.Path {
+    private fun extractScriptPath(command: String): java.nio.file.Path {
         val parts = command.split(" ")
         val last = parts.lastOrNull() ?: error("Command missing script path")
         val trimmed = last.trim('\'', '"')
         return java.nio.file.Paths.get(trimmed)
+    }
+
+    private fun registeredPaths(service: TempScriptCleanupService): Set<Path> {
+        val field = TempScriptCleanupService::class.java.getDeclaredField("scriptPaths")
+        field.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
+        return (field.get(service) as Set<Path>).toSet()
     }
 
     private fun dummyProject(): Project {

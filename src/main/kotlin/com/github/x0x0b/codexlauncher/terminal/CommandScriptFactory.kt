@@ -28,11 +28,8 @@ internal class CommandScriptFactory(
     companion object {
         internal const val MAX_INLINE_COMMAND_LENGTH = 1024
         private const val SCRIPT_PREFIX = "codex-cmd-"
-        private const val SCRIPT_SUFFIX_POSIX = ".sh"
-        private const val SCRIPT_SUFFIX_WINDOWS = ".ps1"
-        private const val POWERSHELL_FLAGS = "-NoLogo -NoProfile -ExecutionPolicy Bypass -File"
-        private const val TEMPLATE_POSIX = "/scripts/codex_command_posix.sh"
-        private const val TEMPLATE_WINDOWS = "/scripts/codex_command_windows.ps1"
+        private const val SCRIPT_SUFFIX = ".sh"
+        private const val SCRIPT_TEMPLATE = "/scripts/codex_command_wrapper.sh"
     }
 
     private val logger = logger<CommandScriptFactory>()
@@ -46,19 +43,14 @@ internal class CommandScriptFactory(
      * @return [TerminalCommandPlan] describing how to execute the command, or null if setup failed
      */
     internal fun buildPlan(command: String): TerminalCommandPlan? {
-        if (command.length <= MAX_INLINE_COMMAND_LENGTH) {
+        if (command.length <= MAX_INLINE_COMMAND_LENGTH || isWindows) {
             return TerminalCommandPlan(command)
         }
 
         val scriptPath = createCommandScript(command) ?: return null
         val pathString = scriptPath.toAbsolutePath().toString()
-        val planCommand = if (isWindows) {
-            val psQuotedPath = quoteForPowershell(pathString)
-            "powershell $POWERSHELL_FLAGS $psQuotedPath"
-        } else {
-            val escapedPath = quoteForPosix(pathString)
-            "sh $escapedPath"
-        }
+        val escapedPath = quoteForPosix(pathString)
+        val planCommand = "sh $escapedPath"
 
         return TerminalCommandPlan(planCommand) {
             runCatching { Files.deleteIfExists(scriptPath) }.onFailure {
@@ -75,8 +67,7 @@ internal class CommandScriptFactory(
      * @return path to the created script, or null if creation failed
      */
     private fun createCommandScript(command: String): Path? {
-        val suffix = if (isWindows) SCRIPT_SUFFIX_WINDOWS else SCRIPT_SUFFIX_POSIX
-        val scriptPath = runCatching { Files.createTempFile(SCRIPT_PREFIX, suffix) }.getOrElse {
+        val scriptPath = runCatching { Files.createTempFile(SCRIPT_PREFIX, SCRIPT_SUFFIX) }.getOrElse {
             logger.warn("Failed to create temporary Codex command script", it)
             return null
         }
@@ -86,8 +77,7 @@ internal class CommandScriptFactory(
             .onFailure { logger.warn("Failed to mark temporary Codex script for JVM exit deletion: $scriptPath", it) }
 
         val writeResult = runCatching {
-            val resourcePath = if (isWindows) TEMPLATE_WINDOWS else TEMPLATE_POSIX
-            val script = readTemplate(resourcePath, command) ?: return null
+            val script = readTemplate(SCRIPT_TEMPLATE, command) ?: return null
             Files.writeString(scriptPath, script, StandardCharsets.UTF_8)
         }
 
@@ -126,8 +116,6 @@ internal class CommandScriptFactory(
     }
 
     private fun quoteForPosix(path: String): String = "'" + path.replace("'", "'\"'\"'") + "'"
-
-    private fun quoteForPowershell(path: String): String = "'" + path.replace("'", "''") + "'"
 }
 
 internal data class TerminalCommandPlan(val command: String, val cleanupOnFailure: () -> Unit = {})
