@@ -1,7 +1,7 @@
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.2.10"
-    id("org.jetbrains.intellij.platform") version "2.8.0"
+    id("org.jetbrains.kotlin.jvm") version "2.2.21"
+    id("org.jetbrains.intellij.platform") version "2.10.5"
 }
 
 group = "com.github.x0x0b"
@@ -20,7 +20,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.13.1")
     testImplementation("junit:junit:4.13.2")
     intellijPlatform {
-        create("IC", "2025.2")
+        intellijIdeaUltimate("2025.3")
         // Use bundled Terminal plugin APIs
         bundledPlugin("org.jetbrains.plugins.terminal")
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
