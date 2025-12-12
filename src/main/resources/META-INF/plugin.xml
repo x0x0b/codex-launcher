@@ -62,6 +62,11 @@
     <postStartupActivity implementation="com.github.x0x0b.codexlauncher.startup.CodexStartupActivity"/>
   </extensions>
 
+  <projectListeners>
+    <listener class="com.github.x0x0b.codexlauncher.terminal.ProjectClosingListener"
+              topic="com.intellij.openapi.project.ProjectManagerListener"/>
+  </projectListeners>
+
   <actions>
     <action id="com.github.x0x0b.codexlauncher.launch"
       class="com.github.x0x0b.codexlauncher.actions.LaunchCodexAction"

@@ -25,6 +25,7 @@ class CodexTerminalManager(private val project: Project) {
     }
 
     private val logger = logger<CodexTerminalManager>()
+    private val scriptFactory = CommandScriptFactory(project)
 
     private data class CodexTerminal(val widget: TerminalWidget, val content: Content)
 
@@ -209,13 +210,16 @@ class CodexTerminalManager(private val project: Project) {
         content: Content?,
         command: String
     ): Boolean {
+        val plan = scriptFactory.buildPlan(command) ?: return false
+
         return try {
-            widget.sendCommandToExecute(command)
+            widget.sendCommandToExecute(plan.command)
             setCodexRunning(content, true)
             true
-        } catch (t: Throwable) {
-            logger.warn("Failed to execute Codex command", t)
+        } catch (throwable: Throwable) {
+            logger.warn("Failed to execute Codex command", throwable)
             setCodexRunning(content, false)
+            runCatching { plan.cleanupOnFailure() }
             false
         }
     }
