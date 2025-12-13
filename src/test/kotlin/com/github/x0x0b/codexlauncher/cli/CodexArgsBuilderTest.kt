@@ -4,8 +4,10 @@ import com.github.x0x0b.codexlauncher.settings.CodexLauncherSettings
 import com.github.x0x0b.codexlauncher.settings.options.Model
 import com.github.x0x0b.codexlauncher.settings.options.Mode
 import com.github.x0x0b.codexlauncher.settings.options.ModelReasoningEffort
-import com.intellij.testFramework.LightPlatformTestCase
 import com.github.x0x0b.codexlauncher.settings.options.WinShell
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
 /**
  * Test OS provider for mocking Windows/non-Windows behavior
@@ -16,7 +18,7 @@ class TestOsProvider(override val isWindows: Boolean) : OsProvider
  * Windows-specific and PowerShell 7.3+ specific tests for CodexArgsBuilder.
  * These tests verify the OS-specific formatting behavior.
  */
-class CodexArgsBuilderTest : LightPlatformTestCase() {
+class CodexArgsBuilderTest {
 
     private lateinit var state: CodexLauncherSettings.State
     private val mcpNonWindows = """
@@ -48,8 +50,8 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         }
         """.trimIndent()
 
-    override fun setUp() {
-        super.setUp()
+    @BeforeEach
+    fun setUp() {
         state = CodexLauncherSettings.State()
         state.mode = Mode.FULL_AUTO
         state.model = Model.CUSTOM
@@ -59,6 +61,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
 
     // === Complex arguments formatting tests ===
 
+    @Test
     fun testComplexArgsFormattingOnNonWindows() {
         // Test non-Windows formatting
         val osProvider = TestOsProvider(isWindows = false)
@@ -99,6 +102,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         )
     }
 
+    @Test
     fun testComplexArgsFormattingOnWindows() {
         // Test Windows formatting
         val osProvider = TestOsProvider(isWindows = true)
@@ -140,6 +144,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         )
     }
 
+    @Test
     fun testComplexArgsFormattingOnWindowsWithPowerShell73OrOver() {
         // Test Windows formatting with PowerShell 7.3+
         val osProvider = TestOsProvider(isWindows = true)
@@ -182,6 +187,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         )
     }
 
+    @Test
     fun testCustomArgsAreAppendedAsIs() {
         val osProvider = TestOsProvider(isWindows = false)
         state.mode = Mode.FULL_AUTO
@@ -204,6 +210,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         )
     }
 
+    @Test
     fun testMinimalArgs() {
         // Test minimal args on non-Windows
         val osProvider = TestOsProvider(isWindows = false)
@@ -221,6 +228,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         assertEquals(0, result.size)
     }
 
+    @Test
     fun testComplexArgsFormattingOnWindowsWithWSL() {
         // Test Windows host but WSL selected; should format like non-Windows
         val osProvider = TestOsProvider(isWindows = true)
@@ -245,6 +253,7 @@ class CodexArgsBuilderTest : LightPlatformTestCase() {
         )
     }
 
+    @Test
     fun testExtraHighReasoningEffortProducesXHighConfig() {
         val osProvider = TestOsProvider(isWindows = false)
         state.mode = Mode.DEFAULT

@@ -1,40 +1,39 @@
 package com.github.x0x0b.codexlauncher.terminal
 
 import com.intellij.openapi.project.Project
-import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.Parameterized
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import java.lang.reflect.Proxy
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.exists
 
-@RunWith(Parameterized::class)
-class CommandScriptFactoryTest(private val isWindows: Boolean) {
+class CommandScriptFactoryTest {
 
     companion object {
         private const val INLINE_THRESHOLD = 1024
 
         @JvmStatic
-        @Parameterized.Parameters(name = "isWindows={0}")
         fun parameters() = listOf(true, false)
     }
 
     private val createdScripts = mutableListOf<Path>()
 
-    @After
+    @AfterEach
     fun tearDown() {
         createdScripts.forEach { Files.deleteIfExists(it) }
         createdScripts.clear()
     }
 
-    @Test
-    fun `inline commands under threshold are sent directly`() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    fun `inline commands under threshold are sent directly`(isWindows: Boolean) {
         val factory = CommandScriptFactory(dummyProject(), isWindows = isWindows)
         val command = "a".repeat(INLINE_THRESHOLD - 1)
 
@@ -43,8 +42,9 @@ class CommandScriptFactoryTest(private val isWindows: Boolean) {
         assertEquals(command, plan.command)
     }
 
-    @Test
-    fun `inline commands at threshold are sent directly`() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    fun `inline commands at threshold are sent directly`(isWindows: Boolean) {
         val factory = CommandScriptFactory(dummyProject(), isWindows = isWindows)
         val command = "a".repeat(INLINE_THRESHOLD)
 
