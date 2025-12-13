@@ -127,7 +127,7 @@ class InsertPayloadResolverTest {
             if (app != null) {
                 app.invokeAndWait(block)
             } else {
-                SwingUtilities.invokeAndWait(block)
+                error("Application environment is not initialized. Cannot run test code outside of IntelliJ Platform context.")
             }
         }
     }
