@@ -24,12 +24,8 @@ dependencies {
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine")
     intellijPlatform {
         intellijIdeaUltimate("2025.3")
-        // Use bundled Terminal plugin APIs
         bundledPlugin("org.jetbrains.plugins.terminal")
         testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform)
-
-        // Add necessary plugin dependencies for compilation here, example:
-        // bundledPlugin("com.intellij.java")
     }
 }
 
@@ -55,7 +51,6 @@ intellijPlatform {
 }
 
 tasks {
-    // Set the JVM compatibility versions
     withType<JavaCompile> {
         sourceCompatibility = "21"
         targetCompatibility = "21"
