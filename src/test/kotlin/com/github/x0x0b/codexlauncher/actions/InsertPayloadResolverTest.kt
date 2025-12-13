@@ -22,11 +22,13 @@ class InsertPayloadResolverTest {
 
     @BeforeAll
     fun setUp() {
-        val factory = IdeaTestFixtureFactory.getFixtureFactory()
-        val builder = factory.createLightFixtureBuilder(LightProjectDescriptor.EMPTY_PROJECT_DESCRIPTOR, "InsertPayloadResolverTest")
-        val fixture = builder.fixture
-        myFixture = factory.createCodeInsightFixture(fixture, LightTempDirTestFixtureImpl(true))
-        myFixture.setUp()
+        runInEdt {
+            val factory = IdeaTestFixtureFactory.getFixtureFactory()
+            val builder = factory.createLightFixtureBuilder(LightProjectDescriptor.EMPTY_PROJECT_DESCRIPTOR, "InsertPayloadResolverTest")
+            val fixture = builder.fixture
+            myFixture = factory.createCodeInsightFixture(fixture, LightTempDirTestFixtureImpl(true))
+            myFixture.setUp()
+        }
     }
 
     @AfterAll
@@ -121,7 +123,12 @@ class InsertPayloadResolverTest {
         if (SwingUtilities.isEventDispatchThread()) {
             block()
         } else {
-            ApplicationManager.getApplication().invokeAndWait(block)
+            val app = ApplicationManager.getApplication()
+            if (app != null) {
+                app.invokeAndWait(block)
+            } else {
+                SwingUtilities.invokeAndWait(block)
+            }
         }
     }
 }
