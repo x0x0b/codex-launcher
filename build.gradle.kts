@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.github.x0x0b"
-version = "1.1.10"
+version = "1.1.11"
 
 repositories {
     mavenCentral()
@@ -36,7 +36,7 @@ intellijPlatform {
         }
 
         changeNotes = """
-            Add custom argument setting.
+            Add support for GPT‑5.2 models.
         """.trimIndent()
     }
     publishing {
