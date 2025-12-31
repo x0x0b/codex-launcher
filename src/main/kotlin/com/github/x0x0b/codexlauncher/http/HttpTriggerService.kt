@@ -11,7 +11,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
-import com.intellij.openapi.vfs.newvfs.RefreshQueue
+import com.intellij.openapi.vfs.VfsUtil
 import com.sun.net.httpserver.HttpServer
 import com.sun.net.httpserver.HttpExchange
 import java.net.InetSocketAddress
@@ -135,12 +135,12 @@ class HttpTriggerService : Disposable {
                 continue
             }
 
-            RefreshQueue.getInstance().refresh(
-                true,
-                true,
-                Runnable { enqueueProjectProcessing(project, settings, notificationMessage) },
-                projectRoot
-            )
+            try {
+                VfsUtil.markDirtyAndRefresh(false, true, true, projectRoot)
+            } catch (e: Exception) {
+                logger.warn("VFS refresh failed for ${project.name}: ${e.message}")
+            }
+            enqueueProjectProcessing(project, settings, notificationMessage)
         }
     }
 
