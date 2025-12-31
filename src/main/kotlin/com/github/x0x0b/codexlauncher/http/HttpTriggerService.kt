@@ -135,7 +135,11 @@ class HttpTriggerService : Disposable {
                 continue
             }
 
-            VfsUtil.markDirtyAndRefresh(false, true, true, projectRoot)
+            try {
+                VfsUtil.markDirtyAndRefresh(false, true, true, projectRoot)
+            } catch (e: Exception) {
+                logger.warn("VFS refresh failed for ${project.name}: ${e.message}")
+            }
             enqueueProjectProcessing(project, settings, notificationMessage)
         }
     }
