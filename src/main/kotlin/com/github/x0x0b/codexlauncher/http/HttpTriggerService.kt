@@ -86,26 +86,16 @@ class HttpTriggerService : Disposable {
             if (requestMethod == HTTP_METHOD_POST) {
                 // Read request body
                 val requestBody = exchange.requestBody.bufferedReader().use { it.readText() }
-                
-                // Parse JSON and extract last-assistant-message
-                val notificationMessage = try {
-                    if (requestBody.isNotEmpty()) {
-                        val json = Json.parseToJsonElement(requestBody) as JsonObject
-                        json["last-assistant-message"]?.jsonPrimitive?.content ?: "Codex CLI processing completed."
-                    } else {
-                        "Codex CLI processing completed."
-                    }
-                } catch (e: Exception) {
-                    logger.warn("Failed to parse request body as JSON: ${e.message}")
-                    "Codex CLI processing completed."
-                }
 
-                // Check for specific notification type in JSON
                 if (requestBody.isNotEmpty()) {
                     try {
                         val json = Json.parseToJsonElement(requestBody) as JsonObject
                         val type = json["type"]?.jsonPrimitive?.content
+
                         if (type == "agent-turn-complete") {
+                            val notificationMessage = json["last-assistant-message"]?.jsonPrimitive?.content
+                                ?: "Codex CLI processing completed."
+
                             ApplicationManager.getApplication().executeOnPooledThread {
                                 processRefreshRequest(notificationMessage)
                             }
@@ -113,6 +103,7 @@ class HttpTriggerService : Disposable {
                             logger.warn("Ignoring notification with unsupported type: $type")
                         }
                     } catch (e: Exception) {
+                        // Re-throw to be caught by the outer catch block which sends 500
                         throw e
                     }
                 }
