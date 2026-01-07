@@ -47,3 +47,4 @@ bin/
 gha-creds-*.json
 
 /claudedocs
+.idea
