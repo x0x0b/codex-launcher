@@ -60,6 +60,7 @@
     <notificationGroup id="GeminiLauncher" displayType="BALLOON" isLogByDefault="true"/>
     <applicationConfigurable instance="com.github.eisermann.geminilauncher.settings.ui.GeminiLauncherConfigurable" id="com.github.eisermann.geminilauncher.settings" displayName="Gemini Launcher"/>
     <postStartupActivity implementation="com.github.eisermann.geminilauncher.startup.GeminiStartupActivity"/>
+    <projectService serviceImplementation="com.github.eisermann.geminilauncher.mcp.DiffReviewToolWindow"/>
   </extensions>
 
   <actions>

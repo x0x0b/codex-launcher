@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.github.eisermann"
-version = "1.0.0"
+version = "1.1.0"
 
 repositories {
     mavenCentral()
@@ -37,7 +37,7 @@ intellijPlatform {
         }
 
         changeNotes = """
-            Support for GPT 5.1 models.
+            Add Accept/Reject buttons to diff review UI - implement Claude Code-style interactive diff workflow with MCP notifications.
         """.trimIndent()
     }
     publishing {

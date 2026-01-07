@@ -3,9 +3,8 @@ package com.github.eisermann.geminilauncher.mcp
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.intellij.diff.DiffContentFactory
-import com.intellij.diff.DiffManager
-import com.intellij.diff.requests.SimpleDiffRequest
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
@@ -49,39 +48,9 @@ class DiffToolService {
 
         ApplicationManager.getApplication().invokeLater {
             try {
-                val contentFactory = DiffContentFactory.getInstance()
-                val currentContent = contentFactory.create(project, virtualFile)
-                val proposedContent = contentFactory.create(newContent)
-                
-                val request = SimpleDiffRequest(
-                    "Review Changes: ${virtualFile.name}",
-                    currentContent,
-                    proposedContent,
-                    "Current",
-                    "Proposed"
-                )
-                
-                // This opens a modal or tool window. 
-                // For "interactive code modifications", we ideally want a non-modal diff.
-                // IntelliJ's standard DiffManager.showDiff is usually modal or in a dedicated window.
-                // However, for this plugin, showDiff is the standard API.
-                // To capture accept/reject, we'd need a custom diff tool or listener.
-                // Standard SimpleDiffRequest doesn't inherently have "Accept".
-                // We might need to implement a specialized DiffRequest or ToolWindow.
-                
-                // For this implementation, we'll stick to standard showDiff.
-                // Detecting "Accept" is tricky with standard API without a custom action.
-                // The spec says: "The user can then review, edit, and ultimately accept or reject".
-                
-                // A simple approach: Show diff. If user applies changes (e.g. copy paste) and saves, we detect file change.
-                // But the spec expects explicit notifications `ide/diffAccepted`.
-                
-                // Since this is a complex UI feature, for the first pass we will open the diff 
-                // and acknowledge success, but we might not support the full "Accept button" flow 
-                // without a more complex UI implementation (e.g. a custom EditorTab).
-                
-                DiffManager.getInstance().showDiff(project, request)
-                
+                // Use custom tool window with Accept/Reject buttons
+                val diffToolWindow = project.service<DiffReviewToolWindow>()
+                diffToolWindow.showDiff(filePath, newContent)
             } catch (e: Exception) {
                 logger.error("Failed to open diff", e)
             }
@@ -103,7 +72,9 @@ class DiffToolService {
         
         val virtualFile = LocalFileSystem.getInstance().findFileByPath(filePath)
         val currentContent = if (virtualFile != null) {
-             FileDocumentManager.getInstance().getDocument(virtualFile)?.text ?: File(filePath).readText()
+            ReadAction.compute<String, Throwable> {
+                FileDocumentManager.getInstance().getDocument(virtualFile)?.text ?: File(filePath).readText()
+            }
         } else {
             ""
         }
