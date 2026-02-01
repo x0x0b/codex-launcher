@@ -8,6 +8,8 @@
 
 > [!NOTE]
 > Codex is now officially integrated into JetBrains IDEs. We recommend installing the official integration: https://developers.openai.com/codex/ide/#jetbrains-ide-integration.
+>
+> This plugin is no longer actively maintained now that an official option exists.
 
 Codex Launcher is an **unofficial** IntelliJ IDEA plugin that keeps the OpenAI Codex CLI one click away inside the IDE.
 
