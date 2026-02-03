@@ -83,7 +83,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
         // Options controls
         modeFullAutoCheckbox = JBCheckBox("--full-auto (Low-friction sandboxed automatic execution)")
-        enableSearchCheckbox = JBCheckBox("--enable web_search_request (Enable web search)")
+        enableSearchCheckbox = JBCheckBox("--search (Enable web search)")
         enableCdProjectRootCheckbox = JBCheckBox("--cd <project root> (Turn this on only when you explicitly need to set the working directory.)")
         cdProjectRootWarningLabel = JBLabel("--cd <project root> is unavailable when WSL shell is selected.").apply {
             foreground = UIUtil.getErrorForeground()
