@@ -36,7 +36,7 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
      * @property customModel Custom model identifier when model is set to CUSTOM
      * @property openFileOnChange Whether to automatically open files when they change
      * @property enableNotification Whether to enable notifications
-     * @property enableSearch Whether to launch Codex CLI with --enable web_search_request flag
+     * @property enableSearch Whether to launch Codex CLI with --search flag
      * @property enableCdProjectRoot Whether to pass the project root via --cd
      * @property customArgs Additional CLI arguments appended as-is to the Codex command
      * @property isPowerShell73OrOver Whether using PowerShell 7.3 or later (legacy; use winShell instead)

@@ -81,8 +81,7 @@ class CodexArgsBuilderTest {
         assertEquals(
             listOf(
                 """--full-auto""",
-                """--enable""",
-                """web_search_request""",
+                """--search""",
                 """--cd""",
                 """'/home/user/project'""",
                 """--model""",
@@ -123,8 +122,7 @@ class CodexArgsBuilderTest {
         assertEquals(
             listOf(
                 """--full-auto""",
-                """--enable""",
-                """web_search_request""",
+                """--search""",
                 """--cd""",
                 """'C:\Projects\Demo'""",
                 """--model""",
@@ -166,8 +164,7 @@ class CodexArgsBuilderTest {
         assertEquals(
             listOf(
                 """--full-auto""",
-                """--enable""",
-                """web_search_request""",
+                """--search""",
                 """--cd""",
                 """'C:\Projects\Demo'""",
                 """--model""",
