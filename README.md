@@ -8,7 +8,7 @@
 > Codex is now officially integrated into JetBrains IDEs.
 > Install the official integration: https://developers.openai.com/codex/ide/#jetbrains-ide-integration.
 >
-> This plugin is no longer actively maintained now that the official option exists.
+> With an official integration now available, this plugin is expected to transition to maintenance-only mode.
 
 <img width="800" alt="The screenshot of Codex Launcher." src="https://github.com/user-attachments/assets/4ee3fbd8-e384-4672-94c6-e4e9041a8e0d" />
 

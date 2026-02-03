@@ -15,6 +15,8 @@
   <description><![CDATA[
         <blockquote><b>Important:</b> Install the <a href="https://github.com/openai/codex/blob/main/README.md">OpenAI Codex CLI</a> separately before using this plugin.</blockquote>
 
+        <blockquote><b>Notice:</b> Codex is now officially integrated into JetBrains IDEs. Install the official integration: <a href="https://developers.openai.com/codex/ide/#jetbrains-ide-integration">OpenAI Codex IDE integration</a>. With an official integration now available, this plugin is expected to transition to maintenance-only mode.</blockquote>
+
         <blockquote><b>For Windows users:</b> Please select your terminal shell in the plugin settings (<em>Settings (→ Other Settings) → Codex Launcher</em>) to ensure proper functionality.</blockquote>
 
         <h2>Overview</h2>
