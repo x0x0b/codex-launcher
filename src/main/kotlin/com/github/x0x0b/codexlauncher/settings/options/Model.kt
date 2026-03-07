@@ -2,15 +2,19 @@ package com.github.x0x0b.codexlauncher.settings.options
 
 /**
  * Model selection for the `--model` argument.
- *
- * NOTE:
- * - GPT_5* models are kept for compatibility with environments where gpt-5.1 is not yet available.
- * - GPT_5_1* models are additional options and should not replace GPT_5* in enterprise environments.
  */
 enum class Model {
     /** Do not pass --model. */
     DEFAULT,
 
+    // 5.4 models
+    GPT_5_4,
+    GPT_5_4_PRO,
+
+    // 5.3 models
+    GPT_5_3_CODEX,
+
+    // 5.2 models
     GPT_5_2_CODEX,
     GPT_5_2,
 
@@ -30,6 +34,12 @@ enum class Model {
 
     fun cliName(): String = when (this) {
         DEFAULT -> ""
+        // 5.4 models
+        GPT_5_4 -> "gpt-5.4"
+        GPT_5_4_PRO -> "gpt-5.4-pro"
+
+        // 5.3 models
+        GPT_5_3_CODEX -> "gpt-5.3-codex"
 
         // 5.2 models
         GPT_5_2_CODEX -> "gpt-5.2-codex"
@@ -51,6 +61,12 @@ enum class Model {
 
     fun toDisplayName(): String = when (this) {
         DEFAULT -> "Default"
+        // 5.4 models
+        GPT_5_4 -> "gpt-5.4"
+        GPT_5_4_PRO -> "gpt-5.4-pro"
+
+        // 5.3 models
+        GPT_5_3_CODEX -> "gpt-5.3-codex"
 
         // 5.2 models
         GPT_5_2_CODEX -> "gpt-5.2-codex"
