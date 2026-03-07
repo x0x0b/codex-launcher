@@ -223,7 +223,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 row("Custom model id") {
                     cell(customModelField)
                         .resizableColumn()
-                        .applyToComponent { columns = 50 }
+                        .applyToComponent { columns = 30 }
                 }
                 row {
                     this.largeComment("Some models may not support all reasoning effort levels.")
@@ -234,7 +234,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 row("Custom reasoning effort") {
                     cell(customModelReasoningEffortField)
                         .resizableColumn()
-                        .applyToComponent { columns = 50 }
+                        .applyToComponent { columns = 30 }
                 }
             }
             group("Options") {
