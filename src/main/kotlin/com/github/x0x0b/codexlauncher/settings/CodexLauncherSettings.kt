@@ -34,6 +34,7 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
      * @property mode The launch mode for codex execution
      * @property model The selected model for codex
      * @property customModel Custom model identifier when model is set to CUSTOM
+     * @property customModelReasoningEffort Custom model reasoning effort when modelReasoningEffort is set to CUSTOM
      * @property openFileOnChange Whether to automatically open files when they change
      * @property enableNotification Whether to enable notifications
      * @property enableSearch Whether to launch Codex CLI with --search flag
@@ -47,6 +48,7 @@ class CodexLauncherSettings : PersistentStateComponent<CodexLauncherSettings.Sta
         var model: Model = Model.DEFAULT,
         var customModel: String = "",
         var modelReasoningEffort: ModelReasoningEffort = ModelReasoningEffort.DEFAULT,
+        var customModelReasoningEffort: String = "",
         var openFileOnChange: Boolean = false,
         var enableNotification: Boolean = false,
         var enableSearch: Boolean = false,

@@ -6,7 +6,8 @@ enum class ModelReasoningEffort {
     LOW,
     MEDIUM,
     HIGH,
-    EXTRA_HIGH;
+    EXTRA_HIGH,
+    CUSTOM;
 
     fun cliName(): String = when (this) {
         DEFAULT -> ""
@@ -15,6 +16,7 @@ enum class ModelReasoningEffort {
         MEDIUM -> "medium"
         HIGH -> "high"
         EXTRA_HIGH -> "xhigh"
+        CUSTOM -> ""
     }
 
     fun toDisplayName(): String = when (this) {
@@ -24,6 +26,7 @@ enum class ModelReasoningEffort {
         MEDIUM -> "Medium"
         HIGH -> "High"
         EXTRA_HIGH -> "Extra High"
+        CUSTOM -> "Custom..."
     }
 
     override fun toString(): String = toDisplayName()

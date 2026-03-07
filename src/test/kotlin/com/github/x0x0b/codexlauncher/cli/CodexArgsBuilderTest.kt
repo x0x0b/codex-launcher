@@ -273,4 +273,48 @@ class CodexArgsBuilderTest {
             result
         )
     }
+
+    @Test
+    fun testCustomReasoningEffortUsesCustomConfigValue() {
+        val osProvider = TestOsProvider(isWindows = false)
+        state.mode = Mode.DEFAULT
+        state.model = Model.DEFAULT
+        state.customModel = ""
+        state.enableSearch = false
+        state.enableCdProjectRoot = false
+        state.enableNotification = false
+        state.openFileOnChange = false
+        state.mcpConfigInput = ""
+        state.modelReasoningEffort = ModelReasoningEffort.CUSTOM
+        state.customModelReasoningEffort = "ultra"
+
+        val result = CodexArgsBuilder.build(state, osProvider = osProvider)
+
+        assertEquals(
+            listOf(
+                """-c""",
+                """'model_reasoning_effort=ultra'"""
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun testCustomReasoningEffortIsSkippedWhenBlank() {
+        val osProvider = TestOsProvider(isWindows = false)
+        state.mode = Mode.DEFAULT
+        state.model = Model.DEFAULT
+        state.customModel = ""
+        state.enableSearch = false
+        state.enableCdProjectRoot = false
+        state.enableNotification = false
+        state.openFileOnChange = false
+        state.mcpConfigInput = ""
+        state.modelReasoningEffort = ModelReasoningEffort.CUSTOM
+        state.customModelReasoningEffort = ""
+
+        val result = CodexArgsBuilder.build(state, osProvider = osProvider)
+
+        assertEquals(emptyList<String>(), result)
+    }
 }

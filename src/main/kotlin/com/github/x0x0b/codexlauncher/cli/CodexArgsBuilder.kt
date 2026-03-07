@@ -97,6 +97,7 @@ object CodexArgsBuilder {
         // Add reasoning effort parameter if specified
         val reasoningEffort: String? = when (state.modelReasoningEffort) {
             ModelReasoningEffort.DEFAULT -> null // Use codex default
+            ModelReasoningEffort.CUSTOM -> state.customModelReasoningEffort.trim().ifBlank { null }
             else -> state.modelReasoningEffort.cliName()
         }
 
