@@ -2,6 +2,10 @@ package com.github.x0x0b.codexlauncher.settings.options
 
 /**
  * Model selection for the `--model` argument.
+ *
+ * `CUSTOM` is a display/persistence marker only. It is not a direct CLI token:
+ * - `cliName()` returns an empty string for `CUSTOM`
+ * - callers must resolve and validate a separate persisted custom model id before CLI use
  */
 enum class Model {
     /** Do not pass --model. */

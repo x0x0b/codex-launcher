@@ -1,5 +1,13 @@
 package com.github.x0x0b.codexlauncher.settings.options
 
+/**
+ * Model reasoning effort choices.
+ *
+ * `CUSTOM` is a display/persistence marker only. It is not a direct CLI token:
+ * - `cliName()` returns an empty string for `CUSTOM`
+ * - `toDisplayName()` renders `CUSTOM` as "Custom..."
+ * - callers must resolve and validate a separate persisted custom value before CLI use
+ */
 enum class ModelReasoningEffort {
     DEFAULT,
     MINIMAL,

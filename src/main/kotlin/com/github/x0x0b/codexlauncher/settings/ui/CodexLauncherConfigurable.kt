@@ -338,17 +338,20 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         // Validate custom model id before saving
         val selected = getModel()
         val custom = getCustomModel()
-        if (selected == Model.CUSTOM && !ALLOWED_CUSTOM_MODEL_REGEX.matches(custom)) {
-            throw ConfigurationException("Invalid custom model id. Allowed: letters, digits, '.', '-', '_'")
-        }
+        validateRequiredCustomValue(
+            isCustomSelected = (selected == Model.CUSTOM),
+            customValue = custom,
+            allowedRegex = ALLOWED_CUSTOM_MODEL_REGEX,
+            errorMessage = "Custom model id required and must contain only letters, digits, '.', '-', '_'"
+        )
         val selectedReasoningEffort = getModelReasoningEffort()
         val customReasoningEffort = getCustomModelReasoningEffort()
-        if (
-            selectedReasoningEffort == ModelReasoningEffort.CUSTOM &&
-            !ALLOWED_CUSTOM_MODEL_REASONING_EFFORT_REGEX.matches(customReasoningEffort)
-        ) {
-            throw ConfigurationException("Invalid custom reasoning effort. Allowed: letters, digits, '.', '-', '_'")
-        }
+        validateRequiredCustomValue(
+            isCustomSelected = (selectedReasoningEffort == ModelReasoningEffort.CUSTOM),
+            customValue = customReasoningEffort,
+            allowedRegex = ALLOWED_CUSTOM_MODEL_REASONING_EFFORT_REGEX,
+            errorMessage = "Custom reasoning effort required and must contain only letters, digits, '.', '-', '_'"
+        )
         val s = settings.state
         s.mode = getMode()
         s.model = getModel()
@@ -387,6 +390,20 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         }
         mcpConfigInputArea.text = s.mcpConfigInput
         updateWslDependentAvailability()
+    }
+
+    private fun validateRequiredCustomValue(
+        isCustomSelected: Boolean,
+        customValue: String,
+        allowedRegex: Regex,
+        errorMessage: String
+    ) {
+        if (!isCustomSelected) {
+            return
+        }
+        if (customValue.isBlank() || !allowedRegex.matches(customValue)) {
+            throw ConfigurationException(errorMessage)
+        }
     }
 
     fun getMode(): Mode {

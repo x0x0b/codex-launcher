@@ -208,6 +208,50 @@ class CodexArgsBuilderTest {
     }
 
     @Test
+    fun testCustomModelTrimsWhitespaceBeforeModelArgument() {
+        val osProvider = TestOsProvider(isWindows = false)
+        state.mode = Mode.DEFAULT
+        state.model = Model.CUSTOM
+        state.customModel = "  gpt-5.4-pro  "
+        state.modelReasoningEffort = ModelReasoningEffort.DEFAULT
+        state.enableSearch = false
+        state.enableCdProjectRoot = false
+        state.enableNotification = false
+        state.openFileOnChange = false
+        state.mcpConfigInput = ""
+        state.customArgs = ""
+
+        val result = CodexArgsBuilder.build(state, osProvider = osProvider)
+
+        assertEquals(
+            listOf(
+                """--model""",
+                """'gpt-5.4-pro'"""
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun testCustomModelIsSkippedWhenContainsUnsafeCharacters() {
+        val osProvider = TestOsProvider(isWindows = false)
+        state.mode = Mode.DEFAULT
+        state.model = Model.CUSTOM
+        state.customModel = "unsafe'\n`model`"
+        state.modelReasoningEffort = ModelReasoningEffort.DEFAULT
+        state.enableSearch = false
+        state.enableCdProjectRoot = false
+        state.enableNotification = false
+        state.openFileOnChange = false
+        state.mcpConfigInput = ""
+        state.customArgs = ""
+
+        val result = CodexArgsBuilder.build(state, osProvider = osProvider)
+
+        assertEquals(emptyList<String>(), result)
+    }
+
+    @Test
     fun testMinimalArgs() {
         // Test minimal args on non-Windows
         val osProvider = TestOsProvider(isWindows = false)
@@ -297,6 +341,50 @@ class CodexArgsBuilderTest {
             ),
             result
         )
+    }
+
+    @Test
+    fun testCustomReasoningEffortTrimsWhitespaceBeforeConfigValue() {
+        val osProvider = TestOsProvider(isWindows = false)
+        state.mode = Mode.DEFAULT
+        state.model = Model.DEFAULT
+        state.customModel = ""
+        state.enableSearch = false
+        state.enableCdProjectRoot = false
+        state.enableNotification = false
+        state.openFileOnChange = false
+        state.mcpConfigInput = ""
+        state.modelReasoningEffort = ModelReasoningEffort.CUSTOM
+        state.customModelReasoningEffort = "  ultra_2.0-1  "
+
+        val result = CodexArgsBuilder.build(state, osProvider = osProvider)
+
+        assertEquals(
+            listOf(
+                """-c""",
+                """'model_reasoning_effort=ultra_2.0-1'"""
+            ),
+            result
+        )
+    }
+
+    @Test
+    fun testCustomReasoningEffortIsSkippedWhenContainsUnsafeCharacters() {
+        val osProvider = TestOsProvider(isWindows = false)
+        state.mode = Mode.DEFAULT
+        state.model = Model.DEFAULT
+        state.customModel = ""
+        state.enableSearch = false
+        state.enableCdProjectRoot = false
+        state.enableNotification = false
+        state.openFileOnChange = false
+        state.mcpConfigInput = ""
+        state.modelReasoningEffort = ModelReasoningEffort.CUSTOM
+        state.customModelReasoningEffort = "unsafe'\n`value`"
+
+        val result = CodexArgsBuilder.build(state, osProvider = osProvider)
+
+        assertEquals(emptyList<String>(), result)
     }
 
     @Test

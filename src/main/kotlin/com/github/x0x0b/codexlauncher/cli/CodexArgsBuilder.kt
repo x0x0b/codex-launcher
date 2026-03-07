@@ -41,6 +41,8 @@ object DefaultOsProvider : OsProvider {
  * @since 1.0.0
  */
 object CodexArgsBuilder {
+    private val ALLOWED_SAFE_CLI_VALUE_REGEX = Regex("^[A-Za-z0-9._-]+$")
+
     /**
      * Builds the command-line argument list for codex based on the provided settings state.
      * 
@@ -85,7 +87,7 @@ object CodexArgsBuilder {
         // Determine the model name to use
         val modelName: String? = when (state.model) {
             Model.DEFAULT -> null // Use codex default model
-            Model.CUSTOM -> state.customModel.trim().ifBlank { null }
+            Model.CUSTOM -> sanitizeCliValue(state.customModel)
             else -> state.model.cliName()
         }
 
@@ -97,7 +99,7 @@ object CodexArgsBuilder {
         // Add reasoning effort parameter if specified
         val reasoningEffort: String? = when (state.modelReasoningEffort) {
             ModelReasoningEffort.DEFAULT -> null // Use codex default
-            ModelReasoningEffort.CUSTOM -> state.customModelReasoningEffort.trim().ifBlank { null }
+            ModelReasoningEffort.CUSTOM -> sanitizeCliValue(state.customModelReasoningEffort)
             else -> state.modelReasoningEffort.cliName()
         }
 
@@ -122,6 +124,14 @@ object CodexArgsBuilder {
         }
 
         return parts
+    }
+
+    private fun sanitizeCliValue(value: String): String? {
+        val trimmedValue = value.trim()
+        if (trimmedValue.isEmpty()) {
+            return null
+        }
+        return trimmedValue.takeIf { ALLOWED_SAFE_CLI_VALUE_REGEX.matches(it) }
     }
 
     /**
