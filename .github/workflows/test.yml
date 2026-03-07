@@ -21,3 +21,38 @@ jobs:
 
       - name: Run tests
         run: ./gradlew test
+
+      - name: Show test summary
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          shopt -s nullglob
+          files=(build/test-results/test/TEST-*.xml)
+
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No test result files found at build/test-results/test"
+            exit 0
+          fi
+
+          total_tests=0
+          total_failures=0
+          total_errors=0
+          total_skipped=0
+
+          for file in "${files[@]}"; do
+            tests=$(sed -n 's/.*tests="\([0-9][0-9]*\)".*/\1/p' "$file" | head -n1)
+            failures=$(sed -n 's/.*failures="\([0-9][0-9]*\)".*/\1/p' "$file" | head -n1)
+            errors=$(sed -n 's/.*errors="\([0-9][0-9]*\)".*/\1/p' "$file" | head -n1)
+            skipped=$(sed -n 's/.*skipped="\([0-9][0-9]*\)".*/\1/p' "$file" | head -n1)
+
+            total_tests=$((total_tests + ${tests:-0}))
+            total_failures=$((total_failures + ${failures:-0}))
+            total_errors=$((total_errors + ${errors:-0}))
+            total_skipped=$((total_skipped + ${skipped:-0}))
+          done
+
+          total_failed=$((total_failures + total_errors))
+          summary="${total_tests} tests completed, ${total_failed} failed, ${total_skipped} skipped"
+
+          echo "$summary"
+          echo "$summary" >> "$GITHUB_STEP_SUMMARY"
