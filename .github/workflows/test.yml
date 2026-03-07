@@ -21,3 +21,56 @@ jobs:
 
       - name: Run tests
         run: ./gradlew test
+
+      - name: Show test summary
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          shopt -s nullglob
+          files=(build/test-results/test/TEST-*.xml)
+
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No test result files found at build/test-results/test"
+            echo "No test result files found at build/test-results/test" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          total_tests=0
+          total_failures=0
+          total_errors=0
+          total_skipped=0
+
+          for file in "${files[@]}"; do
+            tests=$(sed -n 's/.*tests="\([^"]*\)".*/\1/p' "$file" | head -n1)
+            failures=$(sed -n 's/.*failures="\([^"]*\)".*/\1/p' "$file" | head -n1)
+            errors=$(sed -n 's/.*errors="\([^"]*\)".*/\1/p' "$file" | head -n1)
+            skipped=$(sed -n 's/.*skipped="\([^"]*\)".*/\1/p' "$file" | head -n1)
+
+            if ! [[ "$tests" =~ ^[0-9]+$ ]]; then
+              echo "Failed to parse numeric tests value from ${file}: '${tests:-<empty>}'" >&2
+              exit 1
+            fi
+            if ! [[ "$failures" =~ ^[0-9]+$ ]]; then
+              echo "Failed to parse numeric failures value from ${file}: '${failures:-<empty>}'" >&2
+              exit 1
+            fi
+            if ! [[ "$errors" =~ ^[0-9]+$ ]]; then
+              echo "Failed to parse numeric errors value from ${file}: '${errors:-<empty>}'" >&2
+              exit 1
+            fi
+            if ! [[ "$skipped" =~ ^[0-9]+$ ]]; then
+              echo "Failed to parse numeric skipped value from ${file}: '${skipped:-<empty>}'" >&2
+              exit 1
+            fi
+
+            total_tests=$((total_tests + tests))
+            total_failures=$((total_failures + failures))
+            total_errors=$((total_errors + errors))
+            total_skipped=$((total_skipped + skipped))
+          done
+
+          total_failed=$((total_failures + total_errors))
+          summary="${total_tests} tests completed, ${total_failed} failed, ${total_skipped} skipped"
+
+          echo "$summary"
+          echo "$summary" >> "$GITHUB_STEP_SUMMARY"
