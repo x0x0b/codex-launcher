@@ -44,6 +44,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
     private lateinit var modelCombo: JComboBox<Model>
     private lateinit var customModelField: JBTextField
     private lateinit var modelReasoningEffortCombo: JComboBox<ModelReasoningEffort>
+    private lateinit var customModelReasoningEffortField: JBTextField
     private lateinit var openFileOnChangeCheckbox: JBCheckBox
     private lateinit var enableNotificationCheckbox: JBCheckBox
     private lateinit var enableSearchCheckbox: JBCheckBox
@@ -60,6 +61,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
     companion object {
         private val ALLOWED_CUSTOM_MODEL_REGEX = Regex("^[A-Za-z0-9._-]*$")
+        private val ALLOWED_CUSTOM_MODEL_REASONING_EFFORT_REGEX = Regex("^[A-Za-z0-9._-]*$")
         private const val MCP_SERVER_CONFIGURABLE_ID = "com.intellij.mcpserver.settings"
         private const val NOTIFICATIONS_CONFIGURABLE_ID = "reference.settings.ide.settings.notifications"
         private const val TERMINAL_CONFIGURABLE_ID = "terminal"
@@ -80,6 +82,9 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
         // Model reasoning effort controls
         modelReasoningEffortCombo = ComboBox(ModelReasoningEffort.entries.toTypedArray(), 130)
+        customModelReasoningEffortField = JBTextField()
+        customModelReasoningEffortField.emptyText.text = "e.g. high"
+        customModelReasoningEffortField.isEnabled = false
 
         // Options controls
         modeFullAutoCheckbox = JBCheckBox("--full-auto (Low-friction sandboxed automatic execution)")
@@ -167,9 +172,34 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 }
             }
         }
+        (customModelReasoningEffortField.document as? AbstractDocument)?.documentFilter = object : DocumentFilter() {
+
+            override fun insertString(fb: FilterBypass, offset: Int, string: String?, attr: AttributeSet?) {
+                if (string == null) return
+                val doc = fb.document
+                val current = doc.getText(0, doc.length)
+                val next = StringBuilder(current).insert(offset, string).toString()
+                if (ALLOWED_CUSTOM_MODEL_REASONING_EFFORT_REGEX.matches(next)) {
+                    super.insertString(fb, offset, string, attr)
+                }
+            }
+
+            override fun replace(fb: FilterBypass, offset: Int, length: Int, text: String?, attrs: AttributeSet?) {
+                val doc = fb.document
+                val current = doc.getText(0, doc.length)
+                val next = StringBuilder(current).replace(offset, offset + length, text ?: "").toString()
+                if (ALLOWED_CUSTOM_MODEL_REASONING_EFFORT_REGEX.matches(next)) {
+                    super.replace(fb, offset, length, text, attrs)
+                }
+            }
+        }
         modelCombo.addActionListener {
             val selected = (modelCombo.selectedItem as? Model) ?: Model.DEFAULT
             customModelField.isEnabled = (selected == Model.CUSTOM)
+        }
+        modelReasoningEffortCombo.addActionListener {
+            val selected = (modelReasoningEffortCombo.selectedItem as? ModelReasoningEffort) ?: ModelReasoningEffort.DEFAULT
+            customModelReasoningEffortField.isEnabled = (selected == ModelReasoningEffort.CUSTOM)
         }
 
         root = panel {
@@ -193,13 +223,18 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 row("Custom model id") {
                     cell(customModelField)
                         .resizableColumn()
-                        .applyToComponent { columns = 50 }
+                        .applyToComponent { columns = 30 }
                 }
                 row {
                     this.largeComment("Some models may not support all reasoning effort levels.")
                 }
                 row("Model reasoning effort") {
                     cell(modelReasoningEffortCombo)
+                }
+                row("Custom reasoning effort") {
+                    cell(customModelReasoningEffortField)
+                        .resizableColumn()
+                        .applyToComponent { columns = 30 }
                 }
             }
             group("Options") {
@@ -289,6 +324,7 @@ class CodexLauncherConfigurable : SearchableConfigurable {
                 getModel() != s.model ||
                 getCustomModel() != s.customModel ||
                 getModelReasoningEffort() != s.modelReasoningEffort ||
+                getCustomModelReasoningEffort() != s.customModelReasoningEffort ||
                 getOpenFileOnChange() != s.openFileOnChange ||
                 getEnableNotification() != s.enableNotification ||
                 getEnableSearch() != s.enableSearch ||
@@ -302,14 +338,26 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         // Validate custom model id before saving
         val selected = getModel()
         val custom = getCustomModel()
-        if (selected == Model.CUSTOM && !ALLOWED_CUSTOM_MODEL_REGEX.matches(custom)) {
-            throw ConfigurationException("Invalid custom model id. Allowed: letters, digits, '.', '-', '_'")
-        }
+        validateRequiredCustomValue(
+            isCustomSelected = (selected == Model.CUSTOM),
+            customValue = custom,
+            allowedRegex = ALLOWED_CUSTOM_MODEL_REGEX,
+            errorMessage = "Custom model id required and must contain only letters, digits, '.', '-', '_'"
+        )
+        val selectedReasoningEffort = getModelReasoningEffort()
+        val customReasoningEffort = getCustomModelReasoningEffort()
+        validateRequiredCustomValue(
+            isCustomSelected = (selectedReasoningEffort == ModelReasoningEffort.CUSTOM),
+            customValue = customReasoningEffort,
+            allowedRegex = ALLOWED_CUSTOM_MODEL_REASONING_EFFORT_REGEX,
+            errorMessage = "Custom reasoning effort required and must contain only letters, digits, '.', '-', '_'"
+        )
         val s = settings.state
         s.mode = getMode()
         s.model = getModel()
         s.customModel = getCustomModel()
         s.modelReasoningEffort = getModelReasoningEffort()
+        s.customModelReasoningEffort = getCustomModelReasoningEffort()
         s.openFileOnChange = getOpenFileOnChange()
         s.enableNotification = getEnableNotification()
         s.enableSearch = getEnableSearch()
@@ -330,6 +378,8 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         customModelField.text = s.customModel
         customModelField.isEnabled = (s.model == Model.CUSTOM)
         modelReasoningEffortCombo.selectedItem = s.modelReasoningEffort
+        customModelReasoningEffortField.text = s.customModelReasoningEffort
+        customModelReasoningEffortField.isEnabled = (s.modelReasoningEffort == ModelReasoningEffort.CUSTOM)
         openFileOnChangeCheckbox.isSelected = s.openFileOnChange
         enableNotificationCheckbox.isSelected = s.enableNotification
         enableSearchCheckbox.isSelected = s.enableSearch
@@ -340,6 +390,20 @@ class CodexLauncherConfigurable : SearchableConfigurable {
         }
         mcpConfigInputArea.text = s.mcpConfigInput
         updateWslDependentAvailability()
+    }
+
+    private fun validateRequiredCustomValue(
+        isCustomSelected: Boolean,
+        customValue: String,
+        allowedRegex: Regex,
+        errorMessage: String
+    ) {
+        if (!isCustomSelected) {
+            return
+        }
+        if (customValue.isBlank() || !allowedRegex.matches(customValue)) {
+            throw ConfigurationException(errorMessage)
+        }
     }
 
     fun getMode(): Mode {
@@ -356,6 +420,10 @@ class CodexLauncherConfigurable : SearchableConfigurable {
 
     private fun getModelReasoningEffort(): ModelReasoningEffort {
         return (modelReasoningEffortCombo.selectedItem as? ModelReasoningEffort) ?: ModelReasoningEffort.DEFAULT
+    }
+
+    private fun getCustomModelReasoningEffort(): String {
+        return customModelReasoningEffortField.text?.trim() ?: ""
     }
 
     private fun getOpenFileOnChange(): Boolean {
