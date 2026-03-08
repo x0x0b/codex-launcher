@@ -6,7 +6,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.runReadAction
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vcs.changes.ChangeListManager
@@ -87,7 +87,7 @@ class FileOpenService(private val project: Project) : Disposable {
         thresholdTime: Long,
         filesToOpen: MutableSet<VirtualFile>
     ) {
-        runReadAction {
+        ReadAction.run<RuntimeException> {
             val allChanges = changeListManager.allChanges
             for (change in allChanges) {
                 val virtualFile = change.afterRevision?.file?.virtualFile
@@ -110,7 +110,7 @@ class FileOpenService(private val project: Project) : Disposable {
         thresholdTime: Long,
         filesToOpen: MutableSet<VirtualFile>
     ) {
-        runReadAction {
+        ReadAction.run<RuntimeException> {
             val untrackedFilePaths = changeListManager.unversionedFilesPaths
             for (untrackedPath in untrackedFilePaths) {
                 val virtualFile = LocalFileSystem.getInstance().findFileByPath(untrackedPath.toString())
