@@ -87,7 +87,7 @@ class FileOpenService(private val project: Project) : Disposable {
         thresholdTime: Long,
         filesToOpen: MutableSet<VirtualFile>
     ) {
-        ReadAction.compute<Unit, RuntimeException> {
+        ReadAction.run<RuntimeException> {
             val allChanges = changeListManager.allChanges
             for (change in allChanges) {
                 val virtualFile = change.afterRevision?.file?.virtualFile
@@ -110,7 +110,7 @@ class FileOpenService(private val project: Project) : Disposable {
         thresholdTime: Long,
         filesToOpen: MutableSet<VirtualFile>
     ) {
-        ReadAction.compute<Unit, RuntimeException> {
+        ReadAction.run<RuntimeException> {
             val untrackedFilePaths = changeListManager.unversionedFilesPaths
             for (untrackedPath in untrackedFilePaths) {
                 val virtualFile = LocalFileSystem.getInstance().findFileByPath(untrackedPath.toString())
