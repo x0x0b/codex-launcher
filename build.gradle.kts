@@ -36,7 +36,7 @@ intellijPlatform {
         }
 
         changeNotes = """
-            Update web search flag to --search.
+            Add support for GPT-5.5 model.
         """.trimIndent()
     }
     publishing {
