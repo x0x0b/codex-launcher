@@ -17,6 +17,7 @@ repositories {
 // Configure IntelliJ Platform Gradle Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin.html
 dependencies {
+    implementation("org.apache.commons:commons-text:1.15.0")
     implementation("com.google.code.gson:gson:2.13.2")
     testImplementation(platform("org.junit:junit-bom:5.14.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")

@@ -9,9 +9,9 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSyntaxException
-import groovy.json.StringEscapeUtils
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.util.SystemInfo
+import org.apache.commons.text.StringEscapeUtils
 
 /**
  * Interface for providing OS information, allowing for testing
