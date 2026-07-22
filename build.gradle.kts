@@ -37,7 +37,7 @@ intellijPlatform {
         }
 
         changeNotes = """
-            Add support for GPT-5.5 model.
+            Add support for GPT-5.6 Sol, Terra, and Luna models.
         """.trimIndent()
     }
     publishing {
